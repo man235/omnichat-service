@@ -1,34 +1,36 @@
 stages:
-  - lint
-  - test
+  - build
+  - deploy
 
-variables:
-  POSTGRES_USER: 'sop_chat_service'
-  POSTGRES_PASSWORD: ''
-  POSTGRES_DB: 'test_sop_chat_service'
-  POSTGRES_HOST_AUTH_METHOD: trust
-  CELERY_BROKER_URL: 'redis://redis:6379/0'
-
-flake8:
-  stage: lint
-  image: python:3.9-alpine
-  before_script:
-    - pip install -q flake8
-  script:
-    - flake8
-
-pytest:
-  stage: test
-  image: docker/compose:1.29.2
-  tags:
-    - docker
+build-dev:
+  stage: build
+  only:
+    - dev
+  image: docker:18.09.7-dind
   services:
-    - docker:dind
-  before_script:
-    - docker-compose -f local.yml build
-    # Ensure celerybeat does not crash due to non-existent tables
-    - docker-compose -f local.yml run --rm django python manage.py migrate
-    - docker-compose -f local.yml up -d
-  script:
-    - docker-compose -f local.yml run django pytest
+    - name: docker:18.09.7-dind
 
+  before_script:
+  - docker logout $CI_REGISTRY_URL
+  - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
+  - docker login $CI_REGISTRY_URL
+  script:
+#    - mv $DEV_ENV .env
+#    - cat .env
+    - docker build --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:latest -f compose/production/django/Dockerfile .
+
+    - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:latest
+
+
+deploy-dev:
+  image: alpine
+  stage: deploy
+
+  script:
+    - chmod og= $DEV_ID_RSA
+    - apk update && apk add openssh-client
+
+    - ssh -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker compose pull && docker compose --rm django python manage.py migrate && docker compose up -d"
+  only:
+    - dev
