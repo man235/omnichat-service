@@ -80,6 +80,9 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "sop_chat_service.users",
+    "sop_chat_service.facebook",
+    "sop_chat_service.app_connect",
+
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -326,3 +329,5 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+DJANGO_ALLOWED_HOSTS = ['*']
+SUBCRIBE_FIELDS = 'messages,messaging_postbacks,feed,inbox_labels,message_reads'
