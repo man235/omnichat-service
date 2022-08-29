@@ -66,3 +66,7 @@ INSTALLED_APPS += ["django_extensions"]  # noqa F405
 CELERY_TASK_EAGER_PROPAGATES = True
 # Your stuff...
 # ------------------------------------------------------------------------------
+ALLOWED_HOSTS = ['*']
+FACEBOOK_APP_ID = '459417807935454'
+FACEBOOK_APP_SECRET = '316f7035fded8674d79148a130518ed0'
+FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v12.0'

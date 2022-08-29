@@ -36,6 +36,8 @@ urlpatterns += [
         SpectacularSwaggerView.as_view(url_name="api-schema"),
         name="api-docs",
     ),
+    # path("api/facebook", include('sop_chat_service.facebook.urls')),
+
 ]
 
 if settings.DEBUG:
