@@ -132,3 +132,10 @@ class FacebookViewSet(viewsets.ModelViewSet):
                     return custom_response(500, 'INTERNAL_SERVER_ERROR', [])
             message = "Unsubscribed successfully"
             return custom_response(200, message, [])
+    def destroy(self, request, pk=None):
+        page = FanPage.objects.filter(id=pk).first()
+        if page:
+            page.delete()
+        else:
+            return custom_response(400,"Page Is Not Existed")
+        return custom_response(200,"Deleted Successfull",[])
