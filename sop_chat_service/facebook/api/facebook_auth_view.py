@@ -24,7 +24,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["POST"], url_path="list-page")
     def get_page(self, request, *args):
-        logger.debug(request.headers, "HEADER -------------------")
+        logger.debug(f'headers ----------------- {request.headers}')
         sz = self.get_serializer(data=request.data)
         sz.is_valid(raise_exception=True)
         graph_api = settings.FACEBOOK_GRAPH_API
@@ -33,14 +33,14 @@ class FacebookViewSet(viewsets.ModelViewSet):
                      'client_id': settings.FACEBOOK_APP_ID, 'client_secret': settings.FACEBOOK_APP_SECRET}
 
             access_response = requests.get(f'{graph_api}/oauth/access_token', params=query)
-            logger.debug(access_response.json(), "access_response -------------------")
+            logger.debug(f'access_response ------------------- {access_response.json()}')
             # print(access_response.json(), "access_response ------------------- ")
 
             if access_response.status_code == 200:
                 page_query = {'access_token': access_response.json()['access_token']}
                 page_response = requests.get(f'{graph_api}/me/accounts', params=page_query)
                 # print(page_response.json(), " page_response ------------------- ")
-                logger.debug(page_response.json(), "page_response -------------------")
+                logger.debug(f'page_response ------------------- {page_response.json()}')
                 if page_response.status_code == 200:
                     data = page_response.json()
                     for item in data['data']:
@@ -76,7 +76,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                     query_field = {'subscribed_fields': settings.SUBCRIBE_FIELDS,
                                    'access_token': page.access_token_page}
                     response = requests.post(f'{graph_api}/{page_id}/subscribed_apps', data=query_field)
-                    logger.debug(response.json(), "response -------------------")
+                    logger.debug(f'response ------------------- {response.json()}')
                     
                     if response.status_code == 200:
                         data = response.json()
