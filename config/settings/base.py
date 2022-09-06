@@ -360,3 +360,11 @@ CORS_ALLOWED_ORIGINS = [
     'https://portal.minhhv11.xyz',
     'http://portal.minhhv11.xyz',
 ]
+CORS_ALLOW_METHODS = [
+'DELETE',
+'GET',
+'OPTIONS',
+'PATCH',
+'POST',
+'PUT',
+]
