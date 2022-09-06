@@ -4,6 +4,10 @@ Base settings to build other settings files upon.
 from pathlib import Path
 
 import environ
+import os
+
+# Django: SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # sop_chat_service/
@@ -64,6 +68,7 @@ DJANGO_APPS = [
     # "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
+    "channels",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
@@ -331,3 +336,11 @@ SPECTACULAR_SETTINGS = {
 # ------------------------------------------------------------------------------
 DJANGO_ALLOWED_HOSTS = ['*']
 SUBCRIBE_FIELDS = 'messages,messaging_postbacks,feed,inbox_labels,message_reads'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+USE_TZ = True

@@ -138,3 +138,15 @@ LOGGING = {
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+CHANNELS_SUBSCRIBE = ["omniChat.message.receive.*"]
+WEBSOCKET_URL_CONNECTION = '' # wss://domain/
+
+REDIS_HOST = '172.27.228.229'
+REDIS_PORT = 6379
+REDIS_PASSWORD = '02011993'
+REDIS_USER = ''
+REDIS_DB = 0
+
+NATS_URL = "nats://42.116.253.17:4222"       # nats://172.27.228.190:4222
+ALLOWED_HOSTS = ['*']
+PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'

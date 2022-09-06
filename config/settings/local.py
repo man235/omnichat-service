@@ -69,4 +69,19 @@ CELERY_TASK_EAGER_PROPAGATES = True
 ALLOWED_HOSTS = ['*']
 FACEBOOK_APP_ID = '459417807935454'
 FACEBOOK_APP_SECRET = '316f7035fded8674d79148a130518ed0'
-FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v12.0'
+FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v14.0'
+URL_FACEBOOK_GRAPH_API_SEND_MESSAGE = 'https://graph.facebook.com/me/messages'
+
+CHANNELS_SUBSCRIBE = ["omniChat.message.receive.*"]
+WEBSOCKET_URL_CONNECTION = '' # wss://domain/
+
+REDIS_HOST = '172.27.228.229'
+REDIS_PORT = 6379
+REDIS_PASSWORD = '02011993'
+REDIS_USER = ''
+REDIS_DB = 0
+
+NATS_URL = "nats://172.27.228.190:4222"       # nats://172.27.228.190:4222
+ALLOWED_HOSTS = ['*']
+PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
+SITE_ID = 1

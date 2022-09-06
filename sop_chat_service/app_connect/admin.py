@@ -1,5 +1,5 @@
 from django.contrib import admin
-from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Room
+from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Room, Label, Reminder
 
 
 # Register your models here.
@@ -13,7 +13,7 @@ class PageAdmin(admin.ModelAdmin):
 
 @admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
-    list_display = ["id", "page_id", "approved_date", "type", "conversation_id", "external_id", "user_id", "name"]
+    list_display = ["id", "page_id", "approved_date", "type", "conversation_id", "external_id", "user_id", "name", "room_id"]
     search_fields = ["name", "id"]
 
 
@@ -27,3 +27,11 @@ class MessageAdmin(admin.ModelAdmin):
 class AttachmentAdmin(admin.ModelAdmin):
     list_display = ["id", "mid", "type", "url"]
     search_fields = ["id"]
+
+@admin.register(Label)
+class LabelAdmin(admin.ModelAdmin):
+    list_display = ["id", "name", "room_id"]
+
+@admin.register(Reminder)
+class ReminderAdmin(admin.ModelAdmin):
+    list_display = ["id", "unit", "room_id"]
