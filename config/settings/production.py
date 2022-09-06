@@ -138,6 +138,11 @@ LOGGING = {
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+FACEBOOK_APP_ID = '459417807935454'
+FACEBOOK_APP_SECRET = '316f7035fded8674d79148a130518ed0'
+FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v14.0'
+URL_FACEBOOK_GRAPH_API_SEND_MESSAGE = 'https://graph.facebook.com/me/messages'
+
 CHANNELS_SUBSCRIBE = ["omniChat.message.receive.*"]
 WEBSOCKET_URL_CONNECTION = '' # wss://domain/
 
@@ -147,5 +152,6 @@ REDIS_PASSWORD = '02011993'
 REDIS_USER = ''
 REDIS_DB = 0
 
-NATS_URL = "nats://42.116.253.17:4222"       # nats://172.27.228.190:4222
+NATS_URL = "nats://172.27.228.190:4222"       # nats://172.27.228.190:4222
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
+SITE_ID = 1
