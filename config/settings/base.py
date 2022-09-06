@@ -259,9 +259,21 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
-        }
+        },
+        # "file": {
+        #     "level": "DEBUG",
+        #     "class": "logging.FileHandler",
+        #     "filename": APPS_DIR/"thien.log",
+        # }
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
+    # 'loggers': {
+    #     'sop_chat_service.facebook.api.facebook_auth_view': {
+    #         'level': 'DEBUG',
+    #         'class': 'sop_chat_service.facebook.api.facebook_auth_view',
+    #         'handlers': ['file'],
+    #     }
+    # },
+    "root": {"level": "DEBUG", "handlers": ["console"]},
 }
 
 # Celery

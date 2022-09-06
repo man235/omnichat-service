@@ -18,6 +18,8 @@ import sys
 from pathlib import Path
 
 from django.core.wsgi import get_wsgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter  # noqa isort:skip
+from config.routing import websocket_urlpatterns
 
 # This allows easy placement of apps within the interior
 # sop_chat_service directory.
@@ -32,7 +34,15 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
-application = get_wsgi_application()
+# application = get_wsgi_application()
+
+application = ProtocolTypeRouter(
+    {
+        "http": get_wsgi_application(),
+        "websocket": URLRouter(websocket_urlpatterns),
+    }
+)
+
 # Apply WSGI middleware here.
 # from helloworld.wsgi import HelloWorldApplication
 # application = HelloWorldApplication(application)

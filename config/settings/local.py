@@ -11,7 +11,6 @@ SECRET_KEY = env(
     default="G7SkvKOQpW2Fmw6EreqaLP52au4EKHvk4cu8OP2OMRVuwpRArEQNaKULGlvoJTf4",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -82,6 +81,5 @@ REDIS_USER = ''
 REDIS_DB = 0
 
 NATS_URL = "nats://172.27.228.190:4222"       # nats://172.27.228.190:4222
-ALLOWED_HOSTS = ['*']
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
 SITE_ID = 1

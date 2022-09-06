@@ -6,9 +6,10 @@ from rest_framework import permissions, status
 from django.conf import settings
 from sop_chat_service.app_connect.models import FanPage
 from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
-
 from sop_chat_service.facebook.serializers.facebook_auth_serializers import FacebookAuthenticationSerializer, FacebookConnectPageSerializer
 from sop_chat_service.facebook.utils import custom_response
+import logging
+logger = logging.getLogger(__name__)
 
 
 class FacebookViewSet(viewsets.ModelViewSet):
@@ -23,6 +24,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["POST"], url_path="list-page")
     def get_page(self, request, *args):
+        logger.debug(request.headers, "HEADER -------------------")
         sz = self.get_serializer(data=request.data)
         sz.is_valid(raise_exception=True)
         graph_api = settings.FACEBOOK_GRAPH_API
@@ -31,10 +33,14 @@ class FacebookViewSet(viewsets.ModelViewSet):
                      'client_id': settings.FACEBOOK_APP_ID, 'client_secret': settings.FACEBOOK_APP_SECRET}
 
             access_response = requests.get(f'{graph_api}/oauth/access_token', params=query)
+            logger.debug(access_response.json(), "access_response -------------------")
+            # print(access_response.json(), "access_response ------------------- ")
 
             if access_response.status_code == 200:
                 page_query = {'access_token': access_response.json()['access_token']}
                 page_response = requests.get(f'{graph_api}/me/accounts', params=page_query)
+                # print(page_response.json(), " page_response ------------------- ")
+                logger.debug(page_response.json(), "page_response -------------------")
                 if page_response.status_code == 200:
                     data = page_response.json()
                     for item in data['data']:
@@ -58,7 +64,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
             return custom_response(500, "INTERNAL_SERVER_ERROR", [])
 
     @action(detail=False, methods=["POST"], url_path="page/subscribe")
-    def subcribe_page(self, request, *args):
+    def subscribe_page(self, request, *args):
         sz = FacebookConnectPageSerializer(data=request.data)
         if sz.is_valid(raise_exception=True):
             graph_api = settings.FACEBOOK_GRAPH_API
@@ -70,6 +76,8 @@ class FacebookViewSet(viewsets.ModelViewSet):
                     query_field = {'subscribed_fields': settings.SUBCRIBE_FIELDS,
                                    'access_token': page.access_token_page}
                     response = requests.post(f'{graph_api}/{page_id}/subscribed_apps', data=query_field)
+                    logger.debug(response.json(), "response -------------------")
+                    
                     if response.status_code == 200:
                         data = response.json()
                         if data['success']:
