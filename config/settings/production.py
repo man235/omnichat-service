@@ -6,7 +6,7 @@ from .base import env
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["example.com"])
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -148,5 +148,4 @@ REDIS_USER = ''
 REDIS_DB = 0
 
 NATS_URL = "nats://42.116.253.17:4222"       # nats://172.27.228.190:4222
-ALLOWED_HOSTS = ['*']
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
