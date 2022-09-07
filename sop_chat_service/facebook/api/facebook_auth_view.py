@@ -134,7 +134,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
             return custom_response(200, message, [])
 
     @action(detail=False, methods=['POST'], url_path='delete')
-    def delete(self, request, args, *kwargs):
+    def delete(self, request, *args, **kwargs):
         sz = DeleteFanPageSerializer(data = request.data)
         sz.is_valid(raise_exception=True)
         for id in sz.data['id']:
