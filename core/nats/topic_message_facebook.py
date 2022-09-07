@@ -2,8 +2,10 @@ import asyncio
 import json
 from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook
-
 from config.connect import nats_client
+from nats.aio.client import Client as NATS
+# nats_client = NATS()
+
 
 async def subscribe_handler(msg):
     data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
@@ -12,13 +14,12 @@ async def subscribe_handler(msg):
         return      # No Fanpage to subscribe
     new_topic_publish = f'message_{room.room_id}'
     await nats_client.publish(new_topic_publish, bytes(msg.data))
-    await save_message_store_database(data)
+    await save_message_store_database(room, data)
 
 async def subscribe_channels(topics):
-    # nc = await nats.connect(settings.NATS_URL)
-    # await nc.connect(servers=[settings.NATS_URL])
+    # await nats_client.connect(servers=[settings.NATS_URL])
     for topic in topics:
-        await nats_client.subscribe(topic, "message", subscribe_handler)
+        await nats_client.subscribe(topic, "worker", subscribe_handler)
 
 async def main():
     topics = settings.CHANNELS_SUBSCRIBE

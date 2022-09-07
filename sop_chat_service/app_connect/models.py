@@ -23,14 +23,14 @@ class FanPage(models.Model):
         return str(self.id) + '-' + self.name
 
 
-# class UserApp(models.Model):
-#     user_id = models.CharField(max_length=255, null=True, blank=True)
-#     external_id = models.CharField(max_length=255, null=True, blank=True)   # foreign key with user app
-#     name = models.CharField(max_length=255, null=True, blank=True)
-#     avatar = models.ImageField(null=True, blank=True)
-#     email = models.CharField(max_length=255, null=True, blank=True)
-#     phone = models.CharField(max_length=13, null=True, blank=True)
-#     gender = models.CharField(max_length=20, null=True, blank=True)
+class UserApp(models.Model):
+    # user_id = models.CharField(max_length=255, null=True, blank=True)
+    external_id = models.CharField(max_length=255, null=True, blank=True)   # foreign key with user app
+    name = models.CharField(max_length=255, null=True, blank=True)
+    avatar = models.URLField(max_length=10000,null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
+    phone = models.CharField(max_length=13, null=True, blank=True)
+    gender = models.CharField(max_length=20, null=True, blank=True)
 
 
 class Room(models.Model):

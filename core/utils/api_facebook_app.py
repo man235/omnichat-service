@@ -10,7 +10,7 @@ def get_user_info(user_id, access_token):
         response = requests.get(f'{fb_graph_api}/{user_id}/', params=params)
 
         if response.status_code == 200:
-            return response.data
+            return response.json()
         else:
             return None
     except Exception as e:

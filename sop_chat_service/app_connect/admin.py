@@ -1,5 +1,5 @@
 from django.contrib import admin
-from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Room, Label, Reminder
+from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Room, Label, Reminder, UserApp
 
 
 # Register your models here.
@@ -35,3 +35,8 @@ class LabelAdmin(admin.ModelAdmin):
 @admin.register(Reminder)
 class ReminderAdmin(admin.ModelAdmin):
     list_display = ["id", "unit", "room_id"]
+
+
+@admin.register(UserApp)
+class UserAppAdmin(admin.ModelAdmin):
+    list_display = ["id", "external_id", "name", "avatar",  "email", "phone"]
