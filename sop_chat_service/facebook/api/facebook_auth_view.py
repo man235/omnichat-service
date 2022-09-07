@@ -6,7 +6,7 @@ from rest_framework import permissions, status
 from django.conf import settings
 from sop_chat_service.app_connect.models import FanPage
 from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
-from sop_chat_service.facebook.serializers.facebook_auth_serializers import FacebookAuthenticationSerializer, FacebookConnectPageSerializer
+from sop_chat_service.facebook.serializers.facebook_auth_serializers import FacebookAuthenticationSerializer, FacebookConnectPageSerializer, DeleteFanPageSerializer
 from sop_chat_service.facebook.utils import custom_response
 import logging
 logger = logging.getLogger(__name__)
@@ -18,6 +18,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
     serializer_class = FacebookAuthenticationSerializer
 
     def list(self, request, *args, **kwargs):
+        logger.debug(f'headers ----------------- {request.headers}')
         pages = FanPage.objects.all().exclude(last_subscribe=None)
         sz = FanPageSerializer(pages, many=True)
         return custom_response(200, "Get list page successfully", sz.data)
@@ -28,43 +29,42 @@ class FacebookViewSet(viewsets.ModelViewSet):
         sz = self.get_serializer(data=request.data)
         sz.is_valid(raise_exception=True)
         graph_api = settings.FACEBOOK_GRAPH_API
-        # try:
-        query = {'redirect_uri': sz.data['redirect_url'], 'code': sz.data['code'],
-                    'client_id': settings.FACEBOOK_APP_ID, 'client_secret': settings.FACEBOOK_APP_SECRET}
+        try:
+            query = {'redirect_uri': sz.data['redirect_url'], 'code': sz.data['code'],
+                        'client_id': settings.FACEBOOK_APP_ID, 'client_secret': settings.FACEBOOK_APP_SECRET}
 
-        access_response = requests.get(f'{graph_api}/oauth/access_token', params=query)
-        logger.debug(f'access_response ------------------- {access_response.json()}')
-        # print(access_response.json(), "access_response ------------------- ")
+            access_response = requests.get(f'{graph_api}/oauth/access_token', params=query)
+            logger.debug(f'access_response ------------------- {access_response.json()}')
 
-        if access_response.status_code == 200:
-            page_query = {'access_token': access_response.json()['access_token']}
-            page_response = requests.get(f'{graph_api}/me/accounts', params=page_query)
-            # print(page_response.json(), " page_response ------------------- ")
-            logger.debug(f'page_response ------------------- {page_response.json()}')
-            if page_response.status_code == 200:
-                data = page_response.json()
-                for item in data['data']:
-                    page = FanPage.objects.filter(page_id=item['id']).first()
-                    id = item['id']
-                    if page is None:
-                        FanPage.objects.create(
-                            page_id=item['id'], name=item['name'], access_token_page=item['access_token'],  avatar_url=f'{graph_api}/{id}/picture')
-                    else:
-                        pass
+            if access_response.status_code == 200:
+                page_query = {'access_token': access_response.json()['access_token']}
+                page_response = requests.get(f'{graph_api}/me/accounts', params=page_query)
+                logger.debug(f'page_response ------------------- {page_response.json()}')
+                if page_response.status_code == 200:
+                    data = page_response.json()
+                    for item in data['data']:
+                        page = FanPage.objects.filter(page_id=item['id']).first()
+                        id = item['id']
+                        if page is None:
+                            FanPage.objects.create(
+                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],  avatar_url=f'{graph_api}/{id}/picture')
+                        else:
+                            pass
 
-                list_page = FanPage.objects.filter(is_active=False, last_subscribe=None)
-                pages = FanPageSerializer(list_page, many=True)
+                    list_page = FanPage.objects.filter(is_active=False, last_subscribe=None)
+                    pages = FanPageSerializer(list_page, many=True)
 
-                return custom_response(200, "Get list page success", pages.data)
+                    return custom_response(200, "Get list page success", pages.data)
+                else:
+                    return custom_response(500, "INTERNAL_SERVER_ERROR", [])
             else:
                 return custom_response(500, "INTERNAL_SERVER_ERROR", [])
-        else:
+        except Exception:
             return custom_response(500, "INTERNAL_SERVER_ERROR", [])
-        # except Exception:
-        #     return custom_response(500, "INTERNAL_SERVER_ERROR", [])
 
     @action(detail=False, methods=["POST"], url_path="page/subscribe")
     def subscribe_page(self, request, *args):
+        logger.debug(f'headers ----------------- {request.headers}')
         sz = FacebookConnectPageSerializer(data=request.data)
         if sz.is_valid(raise_exception=True):
             graph_api = settings.FACEBOOK_GRAPH_API
@@ -132,10 +132,24 @@ class FacebookViewSet(viewsets.ModelViewSet):
                     return custom_response(500, 'INTERNAL_SERVER_ERROR', [])
             message = "Unsubscribed successfully"
             return custom_response(200, message, [])
+
+    @action(detail=False, methods=['POST'], url_path='delete')
+    def delete(self, request, args, *kwargs):
+        sz = DeleteFanPageSerializer(data = request.data)
+        sz.is_valid(raise_exception=True)
+        for id in sz.data['id']:
+            page = FanPage.objects.filter(id=id).first()
+            if page:
+                page.delete()
+            else:
+                continue      
+        return custom_response(200,'Delete Pages Successfully',[])
+
     def destroy(self, request, pk=None):
-        page = FanPage.objects.filter(id=pk).first()
-        if page:
-            page.delete()
-        else:
-            return custom_response(400,"Page Is Not Existed")
-        return custom_response(200,"Deleted Successfull",[])
+        pass
+
+    def update(self, request, pk=None):
+        pass
+
+    def create(self, request):
+        pass
