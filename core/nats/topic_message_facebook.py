@@ -3,7 +3,7 @@ import json
 from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook
 from config.connect import nats_client
-from nats.aio.client import Client as NATS
+# from nats.aio.client import Client as NATS
 # nats_client = NATS()
 
 
