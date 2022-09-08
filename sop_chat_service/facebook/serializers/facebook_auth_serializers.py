@@ -17,3 +17,4 @@ class DeleteFanPageSerializer(serializers.ModelSerializer):
     class Meta:
        model = FanPage
        fields = ['id']
+       

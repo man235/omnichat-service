@@ -98,4 +98,16 @@ class RoomViewSet(viewsets.ModelViewSet):
         room.completed_date = datetime.now(tz=timezone.utc)
         room.save()
         return Response(status=status.HTTP_200_OK)
-        
+   
+    def retrieve(self, request, pk=None):
+        room = Room.objects.filter(id =pk).first()        
+        if room:
+            message = Message.objects.filter(room_id = room)
+            sz= MessageSerializer(message,many=True)
+            data = {
+                'room_id' : room.room_id,
+                'message':sz.data
+            }
+            return custom_response(200,"Get Message Successfully",data)
+        return custom_response(200,"Room is not Valid",[])
+    
