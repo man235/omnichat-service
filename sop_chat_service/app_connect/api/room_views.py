@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from sop_chat_service.app_connect.serializers.room_serializers import (
     RoomMessageSerializer,
@@ -23,13 +23,6 @@ class RoomViewSet(viewsets.ModelViewSet):
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
     permission_classes = (permissions.AllowAny, )
-
-    def retrieve(self, request, pk=None):
-        room = Room.objects.get(id =pk)
-        if room & room.is_active == True:
-            message = Message.objects.filter(room_id = room)
-            sz= MessageSerializer(message,many=True)
-        return custom_response(200,"Get Message Successfully",sz.data)
 
     def create(self, request, *args, **kwargs):
         pass
@@ -98,14 +91,18 @@ class RoomViewSet(viewsets.ModelViewSet):
         room = Room.objects.get(id=pk)
         room.completed_date =timezone.now()
         room.save()
-        return Response(status=status.HTTP_200_OK)
+        return custom_response(200,"Completed Room Successfully",[])
    
     def retrieve(self, request, pk=None):
         room = Room.objects.filter(id =pk).first()        
         if room:
             message = Message.objects.filter(room_id = room).order_by("-created_at")
-            message.update(is_seen= timezone.now())
-            
+            for item in message:
+                if item.is_seen:
+                    continue
+                
+                item.is_seen= timezone.now()
+                item.save()
             paginator =  Pagination()
             page = paginator.paginate_queryset(message, request)
             sz= MessageSerializer(page  ,many=True)
@@ -113,6 +110,6 @@ class RoomViewSet(viewsets.ModelViewSet):
                 'room_id' : room.room_id,
                 'message':paginator.get_paginated_response(sz.data)
             }
-            return custom_response(200,"Room is not Valid",data)
+            return custom_response(200,"Get Message Successfully",data)
         return custom_response(200,"Room is not Valid",[])
     
