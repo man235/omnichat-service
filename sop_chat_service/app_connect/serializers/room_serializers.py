@@ -10,25 +10,20 @@ class RoomSerializer(serializers.ModelSerializer):
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
-    url = serializers.SerializerMethodField(source='get_url', read_only=True)
-
     class Meta:
         model = Attachment
         fields = ['mid', 'type', 'url']
-
-    def get_url(self, obj):
-        return obj.file.url
 
 class GetMessageSerializer(serializers.ModelSerializer):
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
 
     class Meta:
         model = Message
-        fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender']
+        fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender', 'created_at']
 
     def get_attachments(self, obj):
-        attachments = Attachment.objects.filter(mid=obj.id)
-        sz = AttachmentSerializer(attachments, many=True)
+        attachments = Attachment.objects.filter(mid=obj.id).first()
+        sz = AttachmentSerializer(attachments, many=False)
         return sz.data
 
 class LastMessageSerializer(serializers.ModelSerializer):
@@ -45,7 +40,7 @@ class RoomMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
-                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count']
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id']
 
     def get_last_message(self, obj):
         message = Message.objects.filter(room_id=obj).order_by('-id').first()
@@ -55,3 +50,21 @@ class RoomMessageSerializer(serializers.ModelSerializer):
     def get_unseen_message_count(self, obj):
         count = Message.objects.filter(room_id=obj, is_seen__isnull=False).count()
         return count
+
+class SearchMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'room_id']
+
+
+class ResponseSearchMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id']
+
+class SearchMessageSerializer(serializers.Serializer):
+    search = serializers.CharField(required=False)
+
+class SortMessageSerializer(serializers.Serializer):
+    sort = serializers.CharField(required=False)
+    filter = serializers.DictField(child=serializers.CharField(), required=False)
