@@ -1,4 +1,3 @@
-from datetime import datetime
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from sop_chat_service.app_connect.serializers.room_serializers import (
@@ -9,15 +8,17 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     ResponseSearchMessageSerializer,
     SortMessageSerializer
 )
+from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
 from sop_chat_service.app_connect.models import Room, Message
 from sop_chat_service.facebook.utils import custom_response
 from rest_framework.decorators import action
 from django.utils import timezone
 from sop_chat_service.facebook.utils import custom_response
-
+from sop_chat_service.utils.pagination import Pagination
 
 class RoomViewSet(viewsets.ModelViewSet):
+    pagination_class=Pagination
 
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
@@ -95,19 +96,23 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["POST"], url_path="complete")
     def complete_room(self, request, pk=None, *args, **kwargs):
         room = Room.objects.get(id=pk)
-        room.completed_date = datetime.now(tz=timezone.utc)
+        room.completed_date =timezone.now()
         room.save()
         return Response(status=status.HTTP_200_OK)
    
     def retrieve(self, request, pk=None):
         room = Room.objects.filter(id =pk).first()        
         if room:
-            message = Message.objects.filter(room_id = room)
-            sz= MessageSerializer(message,many=True)
+            message = Message.objects.filter(room_id = room).order_by("-created_at")
+            message.update(is_seen= timezone.now())
+            
+            paginator =  Pagination()
+            page = paginator.paginate_queryset(message, request)
+            sz= MessageSerializer(page  ,many=True)
             data = {
                 'room_id' : room.room_id,
-                'message':sz.data
+                'message':paginator.get_paginated_response(sz.data)
             }
-            return custom_response(200,"Get Message Successfully",data)
+            return custom_response(200,"Room is not Valid",data)
         return custom_response(200,"Room is not Valid",[])
     

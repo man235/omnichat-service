@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 import requests
 from rest_framework import serializers, viewsets, permissions, status
 from rest_framework.decorators import action
@@ -47,7 +47,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                         id = item['id']
                         if page is None:
                             FanPage.objects.create(
-                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],  avatar_url=f'{graph_api}/{id}/picture',is_active=True,last_subscribe=datetime.now() )
+                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],  avatar_url=f'{graph_api}/{id}/picture',is_active=True,last_subscribe=timezone.now() )
                         else:
                             pass
 
@@ -85,7 +85,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                                 if page.is_active:
                                     pass
                                 page.is_active = True
-                                page.last_subscribe = datetime.now()
+                                page.last_subscribe = timezone.now()
                                 page.save()
                             else:
                                 pass
