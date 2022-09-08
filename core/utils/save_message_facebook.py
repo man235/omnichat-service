@@ -1,6 +1,4 @@
-from sop_chat_service.app_connect.models import FanPage, Room, Message, UserApp
-from .api_facebook_app import get_user_info
-from django.utils import timezone
+from sop_chat_service.app_connect.models import Message, Attachment
 from asgiref.sync import sync_to_async
 
 @sync_to_async
@@ -13,6 +11,12 @@ def save_message_store_database(room, data):
         text = data.get("text")
     )
     message.save()
+    if data.get("attachments"):
+        Attachment.objects.create(
+            mid = message,
+            type = data.get("attachments")[0]['type'],
+            url = data.get("attachments")[0]['payload']['url']
+        )
     return
 
 
@@ -25,3 +29,11 @@ def send_and_save_message_store_database(room, data: dict):
         text = data.get("message")
     )
     message.save()
+    if data.get("attachments"):
+        Attachment.objects.create(
+            mid = message,
+            type = data.get("attachments")[0]['mime_type'],
+            url = data.get("attachments")[0]['image_data']['url'],
+            attachment_id = data.get("attachments")[0]['id']
+        )
+    return
