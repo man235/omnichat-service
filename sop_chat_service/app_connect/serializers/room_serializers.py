@@ -1,6 +1,5 @@
-from ..models import Attachment, Label, Message, Reminder
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Attachment, Message, Reminder, Room
+from sop_chat_service.app_connect.models import Attachment, Message, Reminder, Room, UserApp
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -51,20 +50,26 @@ class RoomMessageSerializer(serializers.ModelSerializer):
         count = Message.objects.filter(room_id=obj, is_seen__isnull=False).count()
         return count
 
-class SearchMessageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'room_id']
 
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserApp
+        fields = ['id', 'name', 'email', 'phone', 'avatar', 'gender']
 
 class ResponseSearchMessageSerializer(serializers.ModelSerializer):
+    user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id']
+        fields = ['id', 'user_id', 'external_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id', 'user_info']
+
+    def get_user_info(self, obj):
+        user_info = UserApp.objects.filter(external_id=obj.external_id).first()
+        sz_user_info = UserInfoSerializer(user_info)
+        return sz_user_info.data
 
 class SearchMessageSerializer(serializers.Serializer):
     search = serializers.CharField(required=False)
 
 class SortMessageSerializer(serializers.Serializer):
     sort = serializers.CharField(required=False)
-    filter = serializers.DictField(child=serializers.CharField(), required=False)
+    filter = serializers.DictField(required=False)
