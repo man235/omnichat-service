@@ -5,10 +5,13 @@ from core.utils import save_message_store_database, check_room_facebook
 from config.connect import nats_client
 # from nats.aio.client import Client as NATS
 # nats_client = NATS()
+import logging
+logger = logging.getLogger(__name__)
 
 
 async def subscribe_handler(msg):
     data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
+    logger.debug(f'data subscribe natsUrl ----------------- {data}')
     room = await check_room_facebook(data)
     if not room:
         return      # No Fanpage to subscribe
