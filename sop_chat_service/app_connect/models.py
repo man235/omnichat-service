@@ -20,7 +20,7 @@ class FanPage(models.Model):
     last_subscribe = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return str(self.id) + '-' + self.name
+        return str(self.id) + '-' + self.name+'-'+self.access_token_page
 
 
 class UserApp(models.Model):
@@ -59,6 +59,9 @@ class Room(models.Model):
     @property
     def room_id(self):
         return f'{self.page_id.id}{self.external_id}'
+    def __str__(self):
+        return str(self.id) + '-' + self.name
+
 
 
 class Reminder(models.Model):

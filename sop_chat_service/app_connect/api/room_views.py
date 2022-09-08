@@ -2,8 +2,7 @@ from datetime import datetime
 from django.conf import settings
 from rest_framework import serializers, viewsets, permissions, status
 from rest_framework.response import Response
-from sop_chat_service.app_connect.api.room_serializers import RoomSerializer
-from sop_chat_service.app_connect.serializers.room_serializers import RoomMessageSerializer, GetMessageSerializer
+from sop_chat_service.app_connect.serializers.room_serializers import RoomMessageSerializer,RoomSerializer
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
 from sop_chat_service.app_connect.models import Room, Message
 from sop_chat_service.facebook.utils import custom_response
@@ -85,4 +84,10 @@ class RoomViewSet(viewsets.ModelViewSet):
             qs = qs.filter(name__icontains=request.query_params['name'])
         sz = RoomMessageSerializer(qs, many=True)
         return custom_response(200, "Get List Room Successfully", sz.data)
-        
+    def retrieve(self, request, pk=None):
+        room = Room.objects.filter(id =pk).first()        
+        if room:
+            message = Message.objects.filter(room_id = room)
+            sz= MessageSerializer(message,many=True)
+            return custom_response(200,"Get Message Successfully",sz.data)
+        return custom_response(200,"Room is not Valid",[])
