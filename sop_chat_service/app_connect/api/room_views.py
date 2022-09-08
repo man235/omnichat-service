@@ -104,5 +104,10 @@ class RoomViewSet(viewsets.ModelViewSet):
         if room:
             message = Message.objects.filter(room_id = room)
             sz= MessageSerializer(message,many=True)
-            return custom_response(200,"Get Message Successfully",sz.data)
+            data = {
+                'room_id' : room.room_id,
+                'message':sz.data
+            }
+            return custom_response(200,"Get Message Successfully",data)
         return custom_response(200,"Room is not Valid",[])
+    
