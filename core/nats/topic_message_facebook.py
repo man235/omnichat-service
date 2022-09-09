@@ -3,6 +3,7 @@ import json
 from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook
 from config.connect import nats_client
+from sop_chat_service.app_connect.models import FanPage
 # from nats.aio.client import Client as NATS
 # nats_client = NATS()
 import logging
@@ -20,13 +21,16 @@ async def subscribe_handler(msg):
     await save_message_store_database(room, data)
 
 async def subscribe_channels(topics):
-    # await nats_client.connect(servers=[settings.NATS_URL])
-    for topic in topics:
+    # await nats_client.connect(servers=[settings.NATS_URL]):
+    all_fanpage = FanPage.objects.all()
+    for fanpage in all_fanpage:
+        topic = topics+fanpage.page_id
         await nats_client.subscribe(topic, "worker", subscribe_handler)
 
 async def main():
     logger.debug(f'data subscribe natsUrl ----------------- {settings.CHANNELS_SUBSCRIBE}')
-    topics = settings.CHANNELS_SUBSCRIBE
+    # topics = settings.CHANNELS_SUBSCRIBE
+    topics = "omniChat.message.receive."
     await asyncio.gather(
         subscribe_channels(topics),
     )

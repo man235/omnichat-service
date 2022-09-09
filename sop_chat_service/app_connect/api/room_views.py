@@ -98,22 +98,24 @@ class RoomViewSet(viewsets.ModelViewSet):
         return custom_response(200,"Completed Room Successfully",[])
    
     def retrieve(self, request, pk=None):
-        room = Room.objects.filter(id =pk).first()        
-        if room:
-            message = Message.objects.filter(room_id = room).order_by("-created_at")
-            for item in message:
-                if item.is_seen:
-                    continue
-                
-                item.is_seen= timezone.now()
-                item.save()
-            paginator =  Pagination()
-            page = paginator.paginate_queryset(message, request)
-            sz= MessageSerializer(page  ,many=True)
-            data = {
-                'room_id' : room.room_id,
-                'message':paginator.get_paginated_response(sz.data)
-            }
-            return custom_response(200,"Get Message Successfully",data)
+        # room = Room.objects.filter(id =pk).first()
+        room_all = Room.objects.all()
+        for room in room_all:
+            if room.room_id == pk:
+                message = Message.objects.filter(room_id = room).order_by("-created_at")
+                for item in message:
+                    if item.is_seen:
+                        continue
+                    
+                    item.is_seen= timezone.now()
+                    item.save()
+                paginator =  Pagination()
+                page = paginator.paginate_queryset(message, request)
+                sz= MessageSerializer(page  ,many=True)
+                data = {
+                    'room_id' : room.room_id,
+                    'message':paginator.get_paginated_response(sz.data)
+                }
+                return custom_response(200,"Get Message Successfully",data)
         return custom_response(200,"Room is not Valid",[])
     
