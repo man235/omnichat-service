@@ -15,7 +15,7 @@ def save_message_store_database(room, data):
         Attachment.objects.create(
             mid = message,
             type = data.get("attachments")[0]['type'],
-            url = data.get("attachments")[0]['payload']['url']
+            url = data.get("attachments")[0]['payloadUrl']
         )
     return
 

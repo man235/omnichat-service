@@ -25,6 +25,7 @@ async def subscribe_channels(topics):
         await nats_client.subscribe(topic, "worker", subscribe_handler)
 
 async def main():
+    logger.debug(f'data subscribe natsUrl ----------------- {settings.CHANNELS_SUBSCRIBE}')
     topics = settings.CHANNELS_SUBSCRIBE
     await asyncio.gather(
         subscribe_channels(topics),
