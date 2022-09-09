@@ -31,7 +31,6 @@ deploy-dev:
     - chmod og= $DEV_ID_RSA
     - apk update && apk add openssh-client
 
-    - ssh -v -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker compose pull && docker compose up -d"
-    -  ssh -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker compose run --rm django python manage.py migrate"
+    - ssh -v -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker pull $CI_REGISTRY_URL/$DEV_REGISTRY_NAME && docker compose up -d"
   only:
     - dev
