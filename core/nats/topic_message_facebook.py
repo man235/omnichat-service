@@ -25,7 +25,9 @@ async def subscribe_channels(topics):
     all_fanpage = FanPage.objects.all()
     for fanpage in all_fanpage:
         topic = topics+fanpage.page_id
+        logger.debug(f'Before Subscribe natsUrl --------------------------------------------------- ')
         await nats_client.subscribe(topic, "worker", subscribe_handler)
+        logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
 
 async def main():
     logger.debug(f'data subscribe natsUrl ----------------- {settings.CHANNELS_SUBSCRIBE}')
