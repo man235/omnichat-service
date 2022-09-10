@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 async def subscribe_handler(msg):
+    logger.debug(f'data subscribe natsUrl ----------------- {msg.data}')
     data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
-    logger.debug(f'data subscribe natsUrl ----------------- {data}')
     room = await check_room_facebook(data)
     if not room:
         return      # No Fanpage to subscribe
@@ -25,7 +25,7 @@ async def subscribe_channels(topics):
     all_fanpage = FanPage.objects.all()
     for fanpage in all_fanpage:
         topic = topics+fanpage.page_id
-        logger.debug(f'Before Subscribe natsUrl --------------------------------------------------- {nats_client} -------- {nats_client.is_connected}')
+        logger.debug(f'Before Subscribe natsUrl --------------------------------------------------- {topic} -------- {nats_client.is_connected}')
         await nats_client.subscribe(topic, "worker", subscribe_handler)
         logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
 
