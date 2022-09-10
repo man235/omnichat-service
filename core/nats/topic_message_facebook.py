@@ -2,10 +2,10 @@ import asyncio
 import json
 from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook
-from config.connect import nats_client
+# from config.connect import nats_client
 from sop_chat_service.app_connect.models import FanPage
-# from nats.aio.client import Client as NATS
-# nats_client = NATS()
+from nats.aio.client import Client as NATS
+nats_client = NATS()
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ async def subscribe_handler(msg):
     await save_message_store_database(room, data)
 
 async def subscribe_channels(topics):
-    # await nats_client.connect(servers=[settings.NATS_URL]):
+    await nats_client.connect(servers=[settings.NATS_URL])
     all_fanpage = FanPage.objects.all()
     for fanpage in all_fanpage:
         topic = topics+fanpage.page_id
