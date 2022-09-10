@@ -25,12 +25,12 @@ async def subscribe_channels(topics):
     all_fanpage = FanPage.objects.all()
     for fanpage in all_fanpage:
         topic = topics+fanpage.page_id
-        logger.debug(f'Before Subscribe natsUrl --------------------------------------------------- ')
+        logger.debug(f'Before Subscribe natsUrl --------------------------------------------------- {nats_client} -------- {nats_client.is_connected}')
         await nats_client.subscribe(topic, "worker", subscribe_handler)
         logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
 
 async def main():
-    logger.debug(f'data subscribe natsUrl ----------------- {settings.CHANNELS_SUBSCRIBE}')
+    logger.debug(f'data subscribe natsUrl ----------------- {nats_client} -------- ')
     # topics = settings.CHANNELS_SUBSCRIBE
     topics = "omniChat.message.receive."
     await asyncio.gather(
