@@ -13,6 +13,7 @@ build-dev:
   before_script:
     - mkdir -p $HOME/.docker
     - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
+    - docker login $CI_REGISTRY_URL
   script:
 #    - mv $DEV_ENV .env
 #    - cat .env
