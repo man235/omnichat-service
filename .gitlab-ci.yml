@@ -11,9 +11,8 @@ build-dev:
     - name: docker:18.09.7-dind
 
   before_script:
-  - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
-  - i=0; while [ "$i" -lt 12 ]; do docker info && break; sleep 5; i=$(( i + 1 )) ; done
-  - docker login $CI_REGISTRY_URL
+    - mkdir -p $HOME/.docker
+    - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
   script:
 #    - mv $DEV_ENV .env
 #    - cat .env
