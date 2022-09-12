@@ -9,6 +9,7 @@ from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
 from sop_chat_service.facebook.serializers.facebook_auth_serializers import FacebookAuthenticationSerializer, FacebookConnectPageSerializer, DeleteFanPageSerializer
 from sop_chat_service.facebook.utils import custom_response
 import logging
+import time
 logger = logging.getLogger(__name__)
 
 
@@ -199,7 +200,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                 if check_message:
                     continue    
                 else:
-                    new_message = Message.objects.create(room_id=room,fb_message_id=item['id'],is_sender=is_sender,text=item.get('message',None), sender_id=sender_id,recipient_id=recipient_id, created_at =item.get('created_time',None))
+                    new_message = Message.objects.create(room_id=room,fb_message_id=item['id'],is_sender=is_sender,text=item.get('message',None), sender_id=sender_id,recipient_id=recipient_id, created_at =item.get('created_time',None),timestamp=int(time.time()))
                     attachments = item.get('attachments',None)
                     if attachments:
                         for attachment in attachments['data']:

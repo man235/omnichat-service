@@ -1,3 +1,4 @@
+from statistics import mode
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from sop_chat_service.utils.storages import upload_image_to
@@ -42,7 +43,14 @@ class Room(models.Model):
         FACEBOOK = 'facebook'
         ZALO = 'zalo'
         GOOGLE = 'google'
-
+    class Status(models.TextChoices):
+        ALL='all'
+        PROCESSING='processing'
+        COMPLETED = 'completed'
+    class State(models.TextChoices):
+        UNREAD='unread'
+        NOT_ANSWER='not_answer'
+        REMIND='remind'
     page_id = models.ForeignKey(FanPage, related_name='fanPage_room', null=True, blank=True,
                                 on_delete=models.SET_NULL)
     external_id = models.CharField(max_length=255, null=True, blank=True)   # foreign key with user facebook
@@ -55,7 +63,9 @@ class Room(models.Model):
     completed_date = models.DateTimeField(null=True, blank=True)     # completed date of room
     conversation_id = models.CharField(max_length=255, null=True, blank=True)     # conversation id of room
     created_at = models.DateTimeField(auto_now_add=True)
-
+    status = models.CharField(max_length=30, default=Status.PROCESSING,
+                            choices=Status.choices)
+   
     @property
     def room_id(self):
         return f'{self.page_id.id}{self.external_id}'
@@ -114,6 +124,7 @@ class Message(models.Model):
     is_sender = models.BooleanField(null=True, default=False)
     remove_for_you = models.BooleanField(null=True, blank=True)     # message removed with me
     created_at = models.DateTimeField(auto_now_add=True)    # time create message
+    timestamp = models.FloatField(null=True,blank=True)
 
 
 class Attachment(models.Model):
