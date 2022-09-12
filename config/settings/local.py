@@ -80,6 +80,6 @@ REDIS_PASSWORD = '02011993'
 REDIS_USER = ''
 REDIS_DB = 0
 
-NATS_URL = "nats://172.27.228.190:4222"       # nats://172.27.228.190:4222
+NATS_URL = "nats://172.30.13.168:4222"       # nats://172.27.228.190:4222
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
 SITE_ID = 1
