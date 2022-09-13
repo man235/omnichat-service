@@ -138,8 +138,8 @@ LOGGING = {
 
 # Your stuff...
 # ------------------------------------------------------------------------------
-FACEBOOK_APP_ID = '459417807935454'
-FACEBOOK_APP_SECRET = '316f7035fded8674d79148a130518ed0'
+FACEBOOK_APP_ID = '5482298951821522'     # 459417807935454
+FACEBOOK_APP_SECRET = '14999c82309aff7a760b509c96c16b00'    # 316f7035fded8674d79148a130518ed0
 FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v14.0'
 URL_FACEBOOK_GRAPH_API_SEND_MESSAGE = 'https://graph.facebook.com/me/messages'
 
