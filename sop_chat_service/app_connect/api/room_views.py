@@ -83,6 +83,7 @@ class RoomViewSet(viewsets.ModelViewSet):
                 "data": list_data[_start:_end]
             }
             return custom_response(200,"ok",data_result)
+        return custom_response(200,"ok",ser_sort.data)
         #   filter by room message
         # if ser_sort.data.get('filter'):
         #     if ('type' in request.query_params and 'status' in request.query_params and
