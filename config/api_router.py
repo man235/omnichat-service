@@ -6,6 +6,7 @@ from sop_chat_service.facebook.api.facebook_auth_view import FacebookViewSet
 from sop_chat_service.app_connect.api.message_facebook_views import MessageFacebookViewSet
 from sop_chat_service.app_connect.api.label_views import LabelViewSet
 from sop_chat_service.app_connect.api.reminder_views import ReminderViewSet
+from sop_chat_service.live_chat.api.views import LiveChatViewSet
 from sop_chat_service.users.api.views import UserViewSet
 # from sop_chat_service.facebook.api.facebook_views import FacebookViewSet
 
@@ -22,5 +23,6 @@ router.register('facebook', FacebookViewSet)
 router.register('message', MessageFacebookViewSet)
 router.register('label', LabelViewSet)
 router.register('reminder', ReminderViewSet)
+router.register('live-chat',LiveChatViewSet)
 app_name = "api"
 urlpatterns = router.urls

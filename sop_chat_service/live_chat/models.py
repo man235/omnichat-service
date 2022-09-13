@@ -1,0 +1,48 @@
+from django.db import models
+
+# Create your models here.
+
+
+class LiveChat(models.Model):
+    class LocationChoice(models.TextChoices):
+        TOP_RIGHT = 'top_right'
+        TOP_LEFT = 'top_left'
+        BOTTOM_RIGHT = 'bottom_right'
+        BOTTOM_LEFT = 'bottom_left'
+    user_id = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    name_agent = models.CharField(max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    avatar = models.ImageField(null=True, blank=True)
+    name_agent_active = models.BooleanField(default=True)
+    is_popup = models.BooleanField(default=False)
+    color = models.CharField(max_length=10, null=True, blank=True)
+    icon = models.BooleanField(default=False)
+    size = models.JSONField(null=True, blank=True)
+    location = models.CharField(max_length=20, default=LocationChoice.TOP_RIGHT, choices=LocationChoice.choices)
+    start_btn = models.CharField(max_length=255, null=True, blank=True)
+    is_introduce_message = models.BooleanField(default=False)
+    introduce_message = models.CharField(max_length=255, null=True, blank=True)
+    is_start_message = models.BooleanField(default=False)
+    start_message = models.CharField(max_length=255, null=True, blank=True)
+    is_offline_message = models.BooleanField(default=False)
+    offline_message = models.CharField(max_length=255, null=True, blank=True)
+    is_registerinfor = models.BooleanField(default=False)
+    script = models.CharField(max_length=1500, null=True, blank=True)
+
+    def __str__(self):
+        return str(self.id)+" " + self.name
+
+
+class LiveChatRegisterInfo(models.Model):
+    live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE,
+                                     related_name='live_chat_id', null=True, blank=True)
+    type = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    value = models.JSONField(null=True, blank=True)
+    required = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
