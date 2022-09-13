@@ -6,7 +6,7 @@ from sop_chat_service.facebook.utils import custom_response
 from ..utils import Pagination
 from ...app_connect.models import Attachment, Message, Room
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
-from sop_chat_service.live_chat.api.serializer import GetMessageLiveChatSerializer, LiveChatSerializer, MessageLiveChatSerializer, RoomSerializer
+from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializers, GetMessageLiveChatSerializer, LiveChatSerializer, MessageLiveChatSerializer, RoomSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -108,6 +108,18 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         except Exception:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+    @action(detail=False,methods=['POST'],url_path='start')
+    def start(self,request,*args, **kwargs):
+        x_cookie = request.headers.get('X-Cookie')
+
+        data = request.data
+        room = Room.objects.create(type='livechat',external_id=x_cookie,name=x_cookie)
+        sz = CreateUserLiveChatSerializers(data=data,many=True)
+        sz.is_valid(raise_exception=True)
+        sz.save(room_id=room)
+        return custom_response(200,"ok",[])
+        
     @action(detail=False, methods=["GET"], url_path="room", pagination_class=Pagination)
     def get_message(self, request, *args):
         room = request.query_params.get('room')

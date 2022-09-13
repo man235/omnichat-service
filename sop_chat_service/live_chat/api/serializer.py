@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 from ...app_connect.models import Attachment, Message, Room
-from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
+from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo, UserLiveChat
 
 
 class LiveChatSerializer(serializers.ModelSerializer):
@@ -79,3 +79,9 @@ class RoomSerializer(serializers.ModelSerializer):
         message = Message.objects.filter(room_id=obj).order_by('-id').first()
         sz = GetMessageLiveChatSerializer(message)
         return sz.data
+class CreateUserLiveChatSerializers(serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+    value = serializers.CharField(required=False)
+    class Meta:
+        model = UserLiveChat
+        fields =[ 'title','value']

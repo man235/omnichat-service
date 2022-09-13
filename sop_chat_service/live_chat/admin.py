@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
+from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo, UserLiveChat
 
 # Register your models here.
 
@@ -13,3 +13,6 @@ class LiveChatAdmin(admin.ModelAdmin):
 @admin.register(LiveChatRegisterInfo)
 class RegisterInfoAdmin(admin.ModelAdmin):
     list_display = ['id', 'live_chat_id', 'type', 'name', 'value', 'required', 'is_active']
+@admin.register(UserLiveChat)
+class UserLiveChatAdmin(admin.ModelAdmin):
+    list_display = ['id','room_id','title','value']

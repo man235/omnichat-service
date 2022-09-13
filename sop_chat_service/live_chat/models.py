@@ -1,5 +1,7 @@
 from django.db import models
 
+from sop_chat_service.app_connect.models import Room
+
 # Create your models here.
 
 
@@ -46,3 +48,8 @@ class LiveChatRegisterInfo(models.Model):
     def __str__(self):
         return self.name
 
+class UserLiveChat(models.Model):
+    room_id = models.ForeignKey(Room, related_name='user_live_chat_room', null=True, blank=True,
+                                on_delete=models.SET_NULL)   
+    title = models.CharField(null=True,blank=True,max_length=255)
+    value= models.CharField(null=True,blank=True,max_length=500)
