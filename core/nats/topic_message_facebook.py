@@ -30,9 +30,7 @@ async def subscribe_channels(topics):
             except Exception as e:
                 logger.debug(f'Exception subscribe ----------------- {e}')
 
-
         await nats_client.subscribe(topic, "worker", cb=subscribe_handler)
-        await nats_client.publish(topic, b'Test Subscribe Topic Receive Data FB!')
         logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
 
 async def main():
