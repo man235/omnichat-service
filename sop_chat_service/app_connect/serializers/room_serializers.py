@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, UserApp
+from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, UserApp, Label
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -25,6 +25,12 @@ class GetMessageSerializer(serializers.ModelSerializer):
         sz = AttachmentSerializer(attachments, many=False)
         return sz.data
 
+
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Label
+        fields = ["name", "color"]
+
 class LastMessageSerializer(serializers.ModelSerializer):
     type_attachments = serializers.SerializerMethodField(source='get_type_attachments', read_only=True)
 
@@ -43,11 +49,12 @@ class RoomMessageSerializer(serializers.ModelSerializer):
     unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
     user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
     fanpage = serializers.SerializerMethodField(source='get_fanpage', read_only=True)
+    label = serializers.SerializerMethodField(source='get_label', read_only=True)
 
     class Meta:
         model = Room
         fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
-                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage']
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
 
     def get_last_message(self, obj):
         message = Message.objects.filter(room_id=obj).order_by('-id').first()
@@ -67,6 +74,11 @@ class RoomMessageSerializer(serializers.ModelSerializer):
         fanpage_info = FanPage.objects.filter(id=obj.page_id.id).first()
         sz_fanpage_info = FanpageInfoSerializer(fanpage_info)
         return sz_fanpage_info.data
+
+    def get_label(self, obj):
+        message = Label.objects.filter(room_id=obj)
+        sz = LabelSerializer(message, many=True)
+        return sz.data
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
