@@ -2,12 +2,15 @@ import json
 from django.conf import settings
 from nats.aio.client import Client as NATS
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+import logging
+logger = logging.getLogger(__name__)
 
 
 nats_client = NATS()
 class FacebookChatConsumer(AsyncJsonWebsocketConsumer):
     async def subscribe_handler(self, msg):
         # data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
+        logger.debug(f'data subscribe natsUrl ----------------- {msg.data.decode("utf-8")}')
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -40,6 +43,7 @@ class FacebookChatConsumer(AsyncJsonWebsocketConsumer):
         await nats_client.close()
 
     async def receive(self, text_data):
+        logger.debug(f'receive data websocket ----------------- ===============')
         pass
 
     async def chat_message(self, event):

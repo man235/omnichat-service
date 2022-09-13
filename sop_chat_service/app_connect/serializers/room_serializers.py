@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Attachment, Message, Reminder, Room, UserApp
+from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, UserApp
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -32,14 +32,22 @@ class LastMessageSerializer(serializers.ModelSerializer):
         model = Message
 
 
+class FanpageInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FanPage
+        fields = ['name', 'avatar_url']
+
+
 class RoomMessageSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
     unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
+    user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
+    fanpage = serializers.SerializerMethodField(source='get_fanpage', read_only=True)
 
     class Meta:
         model = Room
         fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
-                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id']
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage']
 
     def get_last_message(self, obj):
         message = Message.objects.filter(room_id=obj).order_by('-id').first()
@@ -49,6 +57,16 @@ class RoomMessageSerializer(serializers.ModelSerializer):
     def get_unseen_message_count(self, obj):
         count = Message.objects.filter(room_id=obj, is_seen__isnull=False).count()
         return count
+    
+    def get_user_info(self, obj):
+        user_info = UserApp.objects.filter(external_id=obj.external_id).first()
+        sz_user_info = UserInfoSerializer(user_info)
+        return sz_user_info.data
+    
+    def get_fanpage(self, obj):
+        fanpage_info = FanPage.objects.filter(id=obj.page_id.id).first()
+        sz_fanpage_info = FanpageInfoSerializer(fanpage_info)
+        return sz_fanpage_info.data
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
