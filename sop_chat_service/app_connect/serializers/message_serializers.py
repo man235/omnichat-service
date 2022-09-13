@@ -35,5 +35,5 @@ class MessageSerializer(serializers.ModelSerializer):
         return sz.data
     class Meta: 
         model= Message
-        fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id','text','message_reply','sender_name','is_sender','created_at']
+        fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id','text','message_reply','sender_name','is_sender','created_at', 'is_seen']
         

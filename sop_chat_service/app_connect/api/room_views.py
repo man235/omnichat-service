@@ -6,14 +6,14 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     RoomSerializer,
     SearchMessageSerializer,
     ResponseSearchMessageSerializer,
-    SortMessageSerializer
+    SortMessageSerializer,
+    UserInfoSerializer
 )
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
 from sop_chat_service.app_connect.models import Room, Message, UserApp
 from sop_chat_service.facebook.utils import custom_response
 from rest_framework.decorators import action
-from django.utils import timezone
 from sop_chat_service.facebook.utils import custom_response
 from django.db.models import Q
 from sop_chat_service.utils.pagination import Pagination
@@ -102,16 +102,11 @@ class RoomViewSet(viewsets.ModelViewSet):
         room_all = Room.objects.all()
         for room in room_all:
             if room.room_id == pk:
-                message = Message.objects.filter(room_id = room).order_by("-created_at")
-                for item in message:
-                    if item.is_seen:
-                        continue
-                    
-                    item.is_seen= timezone.now()
-                    item.save()
+                Message.objects.filter(room_id=room, is_seen__isnull=True, is_sender=False).update(is_seen=timezone.now())
+                message = Message.objects.filter(room_id=room).order_by("-created_at")
                 paginator =  Pagination()
                 page = paginator.paginate_queryset(message, request)
-                sz= MessageSerializer(page  ,many=True)
+                sz= MessageSerializer(page, many=True)
                 data = {
                     'room_id' : room.room_id,
                     'message':paginator.get_paginated_response(sz.data)
@@ -119,3 +114,12 @@ class RoomViewSet(viewsets.ModelViewSet):
                 return custom_response(200,"Get Message Successfully",data)
         return custom_response(200,"Room is not Valid",[])
     
+    @action(detail=True, methods=["POST"], url_path="info")
+    def search_for_room(self, request, pk=None, *args, **kwargs):
+        room_all = Room.objects.all()
+        for room in room_all:
+            if room.room_id == pk:
+                qs = UserApp.objects.filter(external_id=room.external_id).first()
+                sz = UserInfoSerializer(qs,many=False)
+                return custom_response(200,"User Info",sz.data)
+        return custom_response(200,"User Info",[])
