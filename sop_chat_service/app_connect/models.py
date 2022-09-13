@@ -63,12 +63,13 @@ class Room(models.Model):
     completed_date = models.DateTimeField(null=True, blank=True)     # completed date of room
     conversation_id = models.CharField(max_length=255, null=True, blank=True)     # conversation id of room
     created_at = models.DateTimeField(auto_now_add=True)
+    room_id = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=30, default=Status.PROCESSING,
                             choices=Status.choices)
    
-    @property
-    def room_id(self):
-        return f'{self.page_id.id}{self.external_id}'
+    # @property
+    # def room_id(self):
+    #     return f'{self.page_id.id}{self.external_id}'
     def __str__(self):
         return str(self.id) + '-' + self.name
 

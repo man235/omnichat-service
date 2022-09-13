@@ -8,7 +8,8 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     SearchMessageSerializer,
     ResponseSearchMessageSerializer,
     SortMessageSerializer,
-    UserInfoSerializer
+    UserInfoSerializer,
+    CountAttachmentRoomSerializer
 )
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
@@ -145,28 +146,33 @@ class RoomViewSet(viewsets.ModelViewSet):
         return custom_response(200,"Completed Room Successfully",[])
    
     def retrieve(self, request, pk=None):
-        # room = Room.objects.filter(id =pk).first()
-        room_all = Room.objects.all()
-        for room in room_all:
-            if room.room_id == pk:
-                Message.objects.filter(room_id=room, is_seen__isnull=True, is_sender=False).update(is_seen=timezone.now())
-                message = Message.objects.filter(room_id=room).order_by("-created_at")
-                paginator =  Pagination()
-                page = paginator.paginate_queryset(message, request)
-                sz= MessageSerializer(page, many=True)
-                data = {
-                    'room_id' : room.room_id,
-                    'message':paginator.get_paginated_response(sz.data)
-                }
-                return custom_response(200,"Get Message Successfully",data)
-        return custom_response(200,"Room is not Valid",[])
+        room = Room.objects.filter(room_id=pk).first()
+        if not room:
+            return custom_response(400,"Invalid room",[])    
+        Message.objects.filter(room_id=room, is_seen__isnull=True, is_sender=False).update(is_seen=timezone.now())
+        message = Message.objects.filter(room_id=room).order_by("-created_at")
+        paginator = Pagination()
+        page = paginator.paginate_queryset(message, request)
+        sz= MessageSerializer(page, many=True)
+        data = {
+            'room_id' : room.room_id,
+            'message':paginator.get_paginated_response(sz.data)
+        }
+        return custom_response(200,"Get Message Successfully",data)
     
-    @action(detail=True, methods=["POST"], url_path="info")
-    def search_for_room(self, request, pk=None, *args, **kwargs):
-        room_all = Room.objects.all()
-        for room in room_all:
-            if room.room_id == pk:
-                qs = UserApp.objects.filter(external_id=room.external_id).first()
-                sz = UserInfoSerializer(qs,many=False)
-                return custom_response(200,"User Info",sz.data)
-        return custom_response(200,"User Info",[])
+    @action(detail=True, methods=["GET"], url_path="info")
+    def info_user_room(self, request, pk=None, *args, **kwargs):
+        room = Room.objects.filter(room_id=pk).first()
+        if not room:
+            return custom_response(400,"Invalid room",[])
+        qs = UserApp.objects.filter(external_id=room.external_id).first()
+        sz = UserInfoSerializer(qs,many=False)
+        return custom_response(200,"User Info",sz.data)
+
+    @action(detail=True, methods=["GET"], url_path="count-attachment")
+    def count_attachment_room(self, request, room_id=None, *args, **kwargs):
+        room = Room.objects.filter(room_id=room_id).first()
+        if not room:
+            return custom_response(400,"Invalid room",[])
+        sz = CountAttachmentRoomSerializer(room, many=False)
+        return custom_response(200,"User Info",sz.data)

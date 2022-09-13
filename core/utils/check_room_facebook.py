@@ -34,7 +34,8 @@ def check_room_facebook(data):
             approved_date = timezone.now(),
             type = "facebook",
             completed_date = None,
-            conversation_id = ""
+            conversation_id = "",
+            room_id = f'{check_fanpage.id}{data.get("senderId")}',
         )
         new_room.save()
         return new_room
