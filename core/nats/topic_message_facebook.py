@@ -2,26 +2,41 @@ import asyncio
 import json
 from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook
+# from config.connect import nats_client
+from sop_chat_service.app_connect.models import FanPage
+from nats.aio.client import Client as NATS
+nats_client = NATS()
+import logging
+logger = logging.getLogger(__name__)
 
-from config.connect import nats_client
-
-async def subscribe_handler(msg):
-    data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
-    room = await check_room_facebook(data)
-    if not room:
-        return      # No Fanpage to subscribe
-    new_topic_publish = f'message_{room.room_id}'
-    await nats_client.publish(new_topic_publish, bytes(msg.data))
-    await save_message_store_database(data)
 
 async def subscribe_channels(topics):
-    # nc = await nats.connect(settings.NATS_URL)
-    # await nc.connect(servers=[settings.NATS_URL])
-    for topic in topics:
-        await nats_client.subscribe(topic, "message", subscribe_handler)
+    await nats_client.connect(servers=[settings.NATS_URL])
+    all_fanpage = FanPage.objects.all()
+    for fanpage in all_fanpage:
+        topic = topics+fanpage.page_id
+        logger.debug(f'Before Subscribe natsUrl --------------------------------------------------- {topic} -------- {nats_client.is_connected}')
+        
+        async def subscribe_handler(msg):
+            try:
+                logger.debug(f'data subscribe natsUrl ----------------- {msg.data}')
+                data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
+                room = await check_room_facebook(data)
+                if not room:
+                    return      # No Fanpage to subscribe
+                new_topic_publish = f'message_{room.room_id}'
+                await nats_client.publish(new_topic_publish, bytes(msg.data))
+                await save_message_store_database(room, data)
+            except Exception as e:
+                logger.debug(f'Exception subscribe ----------------- {e}')
+
+        await nats_client.subscribe(topic, "worker", cb=subscribe_handler)
+        logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
 
 async def main():
-    topics = settings.CHANNELS_SUBSCRIBE
+    logger.debug(f'data subscribe natsUrl ----------------- {nats_client} -------- ')
+    # topics = settings.CHANNELS_SUBSCRIBE
+    topics = "omniChat.message.receive."
     await asyncio.gather(
         subscribe_channels(topics),
     )

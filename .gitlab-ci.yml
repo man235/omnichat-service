@@ -11,9 +11,8 @@ build-dev:
     - name: docker:18.09.7-dind
 
   before_script:
-  - docker logout $CI_REGISTRY_URL
-  - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
-  - docker login $CI_REGISTRY_URL
+    - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
+  #  - docker login $CI_REGISTRY_URL
   script:
 #    - mv $DEV_ENV .env
 #    - cat .env
@@ -31,6 +30,6 @@ deploy-dev:
     - chmod og= $DEV_ID_RSA
     - apk update && apk add openssh-client
 
-    - ssh -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker compose pull && docker compose up -d && docker compose run --rm django python manage.py migrate"
+    - ssh -v -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker pull $CI_REGISTRY_URL/$DEV_REGISTRY_NAME && docker compose up -d"
   only:
     - dev

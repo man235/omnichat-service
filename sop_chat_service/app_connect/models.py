@@ -20,17 +20,17 @@ class FanPage(models.Model):
     last_subscribe = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return str(self.id) + '-' + self.name
+        return str(self.id) + '-' + self.name+'-'+self.access_token_page
 
 
-# class UserApp(models.Model):
-#     user_id = models.CharField(max_length=255, null=True, blank=True)
-#     external_id = models.CharField(max_length=255, null=True, blank=True)   # foreign key with user app
-#     name = models.CharField(max_length=255, null=True, blank=True)
-#     avatar = models.ImageField(null=True, blank=True)
-#     email = models.CharField(max_length=255, null=True, blank=True)
-#     phone = models.CharField(max_length=13, null=True, blank=True)
-#     gender = models.CharField(max_length=20, null=True, blank=True)
+class UserApp(models.Model):
+    # user_id = models.CharField(max_length=255, null=True, blank=True)
+    external_id = models.CharField(max_length=255, null=True, blank=True)   # foreign key with user app
+    name = models.CharField(max_length=255, null=True, blank=True)
+    avatar = models.URLField(max_length=10000,null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
+    phone = models.CharField(max_length=13, null=True, blank=True)
+    gender = models.CharField(max_length=20, null=True, blank=True)
 
 
 class Room(models.Model):
@@ -59,6 +59,9 @@ class Room(models.Model):
     @property
     def room_id(self):
         return f'{self.page_id.id}{self.external_id}'
+    def __str__(self):
+        return str(self.id) + '-' + self.name
+
 
 
 class Reminder(models.Model):

@@ -68,7 +68,8 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             attachments,
             True
         )
+        print(data_mid_json, " -------------------------------------------------------------------- ")
         new_topic_publish = f'message_{room.room_id}'
         asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, data_mid.encode('utf-8')))
-        send_and_save_message_store_database(data_mid_json)
+        send_and_save_message_store_database(room, data_mid_json)
         return Response(True, status=status.HTTP_200_OK)

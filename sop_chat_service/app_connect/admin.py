@@ -1,5 +1,5 @@
 from django.contrib import admin
-from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Room, Label, Reminder
+from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Room, Label, Reminder, UserApp
 
 
 # Register your models here.
@@ -19,8 +19,16 @@ class RoomAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ["id", "room_id", "text", "sender_id", "recipient_id", "created_at"]
+    list_display = ["id", "room_id", "text", "sender_id", "recipient_id", "created_at","is_seen"]
     search_fields = ["text", "id"]
+    actions = ['check_is_seen']
+    def check_is_seen(self, request, queryset):
+        print(0)
+        for qs in queryset:
+            if qs.is_seen:
+                qs.is_seen =None
+                qs.save()
+    
 
 
 @admin.register(Attachment)
@@ -35,3 +43,8 @@ class LabelAdmin(admin.ModelAdmin):
 @admin.register(Reminder)
 class ReminderAdmin(admin.ModelAdmin):
     list_display = ["id", "unit", "room_id"]
+
+
+@admin.register(UserApp)
+class UserAppAdmin(admin.ModelAdmin):
+    list_display = ["id", "external_id", "name", "avatar",  "email", "phone"]
