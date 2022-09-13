@@ -2,13 +2,10 @@ from rest_framework import serializers
 from sop_chat_service.app_connect.models import Attachment, Message, Room
 
 class AttachmentSerializer(serializers.ModelSerializer):
-    # url = serializers.SerializerMethodField(source='get_url', read_only=True)
     class Meta:
         model = Attachment
         fields = ['mid', 'type', 'url','attachment_id']
 
-    # def get_url(self, obj):
-    #     return obj.file.url
 
 class MessageSerializer(serializers.ModelSerializer):
     message_reply = serializers.SerializerMethodField(source='get_message_reply',read_only=True)
@@ -35,5 +32,6 @@ class MessageSerializer(serializers.ModelSerializer):
         return sz.data
     class Meta: 
         model= Message
-        fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id','text','message_reply','sender_name','is_sender','created_at', 'is_seen']
+        fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id',
+            'text','message_reply','sender_name','is_sender','created_at', 'is_seen']
         

@@ -31,12 +31,6 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
         fields = ["name", "color"]
 
-class LastMessageSerializer(serializers.ModelSerializer):
-    type_attachments = serializers.SerializerMethodField(source='get_type_attachments', read_only=True)
-
-    class Meta:
-        model = Message
-
 
 class FanpageInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -103,3 +97,47 @@ class SearchMessageSerializer(serializers.Serializer):
 class SortMessageSerializer(serializers.Serializer):
     sort = serializers.CharField(required=False)
     filter = serializers.DictField(required=False)
+
+
+class GetCountAttachmentMessageSerializer(serializers.ModelSerializer):
+    attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender', 'created_at']
+
+    def get_attachments(self, obj):
+        attachments = Attachment.objects.filter(mid=obj.id).first()
+        sz = AttachmentSerializer(attachments, many=False)
+        return sz.data
+
+
+class CountAttachmentRoomSerializer(serializers.ModelSerializer):
+    message_attachment = serializers.SerializerMethodField(source='get_message_attachment', read_only=True)
+
+    class Meta:
+        model = Room
+        fields = ['external_id', 'name', 'type', 'note','message_attachment']
+
+    def get_message_attachment(self, obj):
+        message_attachment = Message.objects.filter(room_id=obj)
+        file_data = []
+        image_data = []
+        for message in message_attachment:
+            attachment = Attachment.objects.filter(mid=message.id).first()
+            sz_attachment = AttachmentSerializer(attachment, many=False)
+            if 'image' in attachment.type:
+                image_data.append(sz_attachment.data)
+            else:
+                file_data.append(sz_attachment.data)
+        data = {
+            "file_data": {
+                "count": len(file_data),
+                "data": file_data
+            },
+            "image_data": {
+                "count": len(image_data),
+                "data": image_data
+            }
+        }
+        return data
