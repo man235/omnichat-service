@@ -9,11 +9,12 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     ResponseSearchMessageSerializer,
     SortMessageSerializer,
     UserInfoSerializer,
-    CountAttachmentRoomSerializer
+    CountAttachmentRoomSerializer,
+    LabelSerializer
 )
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
-from sop_chat_service.app_connect.models import Room, Message, UserApp
+from sop_chat_service.app_connect.models import Room, Message, UserApp, Label
 from sop_chat_service.facebook.utils import custom_response
 from rest_framework.decorators import action
 from sop_chat_service.facebook.utils import custom_response
@@ -131,14 +132,20 @@ class RoomViewSet(viewsets.ModelViewSet):
         }
         return custom_response(200,"Get Message Successfully",data)
     
-    @action(detail=True, methods=["GET"], url_path="info")
+    @action(detail=True, methods=["GET"], url_path="customer-info")
     def info_user_room(self, request, pk=None, *args, **kwargs):
         room = Room.objects.filter(room_id=pk).first()
         if not room:
             return custom_response(400,"Invalid room",[])
-        qs = UserApp.objects.filter(external_id=room.external_id).first()
-        sz = UserInfoSerializer(qs,many=False)
-        return custom_response(200,"User Info",sz.data)
+        qs_customer = UserApp.objects.filter(external_id=room.external_id).first()
+        sz_customer = UserInfoSerializer(qs_customer,many=False)
+        qs_label = Label.objects.filter(room_id=room)
+        sz_label = LabelSerializer(qs_label,many=True)
+        data = {
+            "customer_info": sz_customer.data,
+            "label": sz_label.data
+        }
+        return custom_response(200,"User Info",data)
 
     @action(detail=True, methods=["GET"], url_path="count-attachment")
     def count_attachment_room(self, request, room_id=None, *args, **kwargs):
@@ -146,12 +153,27 @@ class RoomViewSet(viewsets.ModelViewSet):
         if not room:
             return custom_response(400,"Invalid room",[])
         sz = CountAttachmentRoomSerializer(room, many=False)
-        return custom_response(200,"User Info",sz.data)
+        return custom_response(200,"Count Attachment",sz.data)
 
-    # @action(detail=True, methods=["GET"], url_path="")
-    # def count_attachment_room(self, request, room_id=None, *args, **kwargs):
-    #     room = Room.objects.filter(room_id=room_id).first()
-    #     if not room:
-    #         return custom_response(400,"Invalid room",[])
-    #     sz = CountAttachmentRoomSerializer(room, many=False)
-    #     return custom_response(200,"User Info",sz.data)
+    @action(detail=False, methods=["GET"], url_path="channel")
+    def count_attachment_room(self, request, *args, **kwargs):
+        all_room = Room.objects.all()
+        facebook = 0
+        live_chat = 0
+        zalo = 0
+        for room in all_room:
+            if room.type.lower() == 'facebook':
+                count_message_unseen = Message.objects.filter(room_id=room, is_seen__isnull=True).count()
+                facebook += count_message_unseen
+            elif room.type.lower() == 'zalo':
+                count_message_unseen = Message.objects.filter(room_id=room, is_seen__isnull=True).count()
+                zalo += count_message_unseen
+            elif room.type.lower() == 'livechat':
+                count_message_unseen = Message.objects.filter(room_id=room, is_seen__isnull=True).count()
+                live_chat += count_message_unseen
+        data = {
+            "facebook": facebook,
+            "zalo": zalo,
+            "live_chat": live_chat,
+        }
+        return custom_response(200,"Count Seen Message Channel",data)

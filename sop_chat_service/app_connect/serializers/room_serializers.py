@@ -78,7 +78,7 @@ class RoomMessageSerializer(serializers.ModelSerializer):
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserApp
-        fields = ['id', 'name', 'email', 'phone', 'avatar', 'gender']
+        fields = ['id','external_id', 'name', 'email', 'phone', 'avatar', 'gender']
 
 class ResponseSearchMessageSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
