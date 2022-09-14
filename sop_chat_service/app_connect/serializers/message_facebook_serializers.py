@@ -38,7 +38,7 @@ class MessageFacebookSerializer(serializers.Serializer):
                 types = 'file'
             else:
                 types = content_type
-            files = [
+            files_data = [
                 ('filedata', (file.name, file, file.content_type))
             ]
             payload = {
@@ -47,6 +47,6 @@ class MessageFacebookSerializer(serializers.Serializer):
             }
             data = {
                 "payload": payload,
-                "files": files
+                "files": files_data
             }
             return room, data, True

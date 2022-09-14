@@ -54,7 +54,7 @@ def get_message_from_mid(access_token, mid):
     try:
         response = requests.get(f'{graph_api}/{mid}/', params=query_field)
         if response.status_code == 200:
-            return json.loads(response.text)
+            return response.json()
         else:
             return None
     except Exception as e:
