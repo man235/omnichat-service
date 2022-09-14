@@ -56,7 +56,7 @@ class RoomMessageSerializer(serializers.ModelSerializer):
         return sz.data
 
     def get_unseen_message_count(self, obj):
-        count = Message.objects.filter(room_id=obj, is_seen__isnull=False).count()
+        count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
         return count
     
     def get_user_info(self, obj):

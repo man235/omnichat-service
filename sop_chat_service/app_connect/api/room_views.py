@@ -64,11 +64,8 @@ class RoomViewSet(viewsets.ModelViewSet):
         sz = RoomMessageSerializer(qs, many=True)
         list_data = []
         list_data=list(unique_everseen(sz.data))
-        print(unique_everseen(sz.data))
-        print(len(list_data))
         
         if list_data:
-            # data['redis-cache-device-temperature-report'].sort(key=lambda x: x['reality_state'], reverse=True)
             limit_req = request.data.get('limit')
             offset_req = request.data.get('offset')
             if not limit_req or limit_req >= 0:
@@ -84,33 +81,6 @@ class RoomViewSet(viewsets.ModelViewSet):
             }
             return custom_response(200,"ok",data_result)
         return custom_response(200,"ok",ser_sort.data)
-        #   filter by room message
-        # if ser_sort.data.get('filter'):
-        #     if ('type' in request.query_params and 'status' in request.query_params and
-        #         'state' in request.query_params and 'phone' in request.query_params and 'label' in request.query_params):
-        #         type_app = request.query_params['type']
-        #         status = request.query_params['status']
-        #         state = request.query_params['state']
-        #         phone = request.query_params['phone']
-        #         label = request.query_params['label']
-                
-        #         if filter.lower() == 'processing':
-        #             qs = qs.filter(type=type_app, approved_date__isnull=True,)
-        #         elif filter.lower() == 'done':
-        #             qs = qs.filter(type=request.query_params['type'],
-        #                             approved_date__isnull=False, completed_date__isnull=True)
-        #         elif filter.lower() == 'all':
-        #             qs = qs.filter(type=type_app, )
-        #     if 'status' in request.query_params:
-        #         filter = request.query_params['status']
-        #         if filter.lower() == 'waiting':
-        #             qs = qs.filter(type=request.query_params['type'], approved_date__isnull=True)
-        #         elif filter.lower() == 'processing':
-        #             qs = qs.filter(type=request.query_params['type'],
-        #                             approved_date__isnull=False, completed_date__isnull=True)
-        #     elif 'name' in request.query_params:
-        #         qs = qs.filter(name__icontains=request.query_params['name'])
-        # return custom_response(200, "Get List Room Successfully", sz.data)
     
     @action(detail=False, methods=["POST"], url_path="search")
     def search_for_room(self, request, pk=None, *args, **kwargs):
@@ -177,3 +147,11 @@ class RoomViewSet(viewsets.ModelViewSet):
             return custom_response(400,"Invalid room",[])
         sz = CountAttachmentRoomSerializer(room, many=False)
         return custom_response(200,"User Info",sz.data)
+
+    # @action(detail=True, methods=["GET"], url_path="")
+    # def count_attachment_room(self, request, room_id=None, *args, **kwargs):
+    #     room = Room.objects.filter(room_id=room_id).first()
+    #     if not room:
+    #         return custom_response(400,"Invalid room",[])
+    #     sz = CountAttachmentRoomSerializer(room, many=False)
+    #     return custom_response(200,"User Info",sz.data)
