@@ -1,5 +1,7 @@
 from sop_chat_service.app_connect.models import Message, Attachment
 from asgiref.sync import sync_to_async
+from django.utils import timezone
+
 
 @sync_to_async
 def save_message_store_database(room, data):
@@ -27,7 +29,8 @@ def send_and_save_message_store_database(room, data: dict):
         sender_id = data.get("senderId"),
         recipient_id = data.get("recipientId"),
         text = data.get("text"),
-        is_sender= True
+        is_sender= True,
+        is_seen = timezone.now()
     )
     message.save()
     if data.get("attachments"):
