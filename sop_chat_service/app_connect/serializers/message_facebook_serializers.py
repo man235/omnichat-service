@@ -13,7 +13,7 @@ class MessageFacebookSerializer(serializers.Serializer):
         if str(attrs.get("is_text")).lower() == "true":
             if not attrs.get("message_text"):
                 raise serializers.ValidationError({"message_text": "message_text not null"})
-            room = Room.objects.get(id=attrs.get("room_id"))
+            room = Room.objects.get(room_id=attrs.get("room_id"))
             data = {
                 "messaging_type": "MESSAGE_TAG",
                 "recipient": {
@@ -29,7 +29,7 @@ class MessageFacebookSerializer(serializers.Serializer):
         if str(attrs.get("is_text")).lower() == "false":
             # if not attrs.get("attachment_type"):
             #     raise serializers.ValidationError({"attachment_type": "attachment_type not null"})
-            room = Room.objects.get(id=attrs.get("room_id"))
+            room = Room.objects.get(room_id=attrs.get("room_id"))
             recipient = str({"id": attrs.get("recipient_id")})
             file = request.FILES['file']
             content_type = file.content_type.split('/')[0]

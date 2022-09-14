@@ -1,7 +1,7 @@
 import asyncio
 import json
 from django.conf import settings
-from core.utils import save_message_store_database, check_room_facebook
+from core.utils import save_message_store_database, check_room_facebook, format_message_data_for_websocket
 # from config.connect import nats_client
 from sop_chat_service.app_connect.models import FanPage
 from nats.aio.client import Client as NATS
@@ -12,11 +12,6 @@ logger = logging.getLogger(__name__)
 
 async def subscribe_channels(topics):
     await nats_client.connect(servers=[settings.NATS_URL])
-    # all_fanpage = FanPage.objects.all()
-    # for fanpage in all_fanpage:
-    #     topic = topics+fanpage.page_id
-    #     logger.debug(f'Before Subscribe natsUrl --------------------------------------------------- {topic} -------- {nats_client.is_connected}')
-        
     async def subscribe_handler(msg):
         try:
             logger.debug(f'data subscribe natsUrl ----------------- {msg.data}')
@@ -24,13 +19,13 @@ async def subscribe_channels(topics):
             room = await check_room_facebook(data)
             if not room:
                 return      # No Fanpage to subscribe
+            data_message = format_message_data_for_websocket(data)
             new_topic_publish = f'message_{room.room_id}'
-            await nats_client.publish(new_topic_publish, bytes(msg.data))
+            await nats_client.publish(new_topic_publish, data_message.encode())
             await save_message_store_database(room, data)
         except Exception as e:
             logger.debug(f'Exception subscribe ----------------- {e}')
 
-        # await nats_client.subscribe(topics, "worker", cb=subscribe_handler)
     for topic in topics:
         await nats_client.subscribe(topic, "worker", subscribe_handler)
     logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
