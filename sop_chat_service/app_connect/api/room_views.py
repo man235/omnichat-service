@@ -40,7 +40,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
-        new_list = sorted(sz.data, key=lambda d: d['last_message']['created_at'])       # old -> new message in room
+        new_list = sorted(sz.data, key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
         #   sort by room message
         if ser_sort.data.get('sort'):
             if ser_sort.data.get('sort').lower() == "new":
