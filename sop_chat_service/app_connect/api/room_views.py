@@ -81,7 +81,7 @@ class RoomViewSet(viewsets.ModelViewSet):
                 "data": list_data[_start:_end]
             }
             return custom_response(200,"ok",data_result)
-        return custom_response(200,"ok",ser_sort.data)
+        return custom_response(200,"ok",sz.data)
     
     @action(detail=False, methods=["POST"], url_path="search")
     def search_for_room(self, request, pk=None, *args, **kwargs):
