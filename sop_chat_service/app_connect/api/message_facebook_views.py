@@ -44,6 +44,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 "url": message_response.get('attachments').get('data')[0]['image_data']['url']
             }]
         data_mid_json = {
+            "mid": message_response['id'],
             "attachments": attachments,
             "text": message_response['message'],
             "created_time": message_response['created_time'],

@@ -26,7 +26,7 @@ def send_and_save_message_store_database(room, data: dict):
         fb_message_id = data.get("mid"),
         sender_id = data.get("senderId"),
         recipient_id = data.get("recipientId"),
-        text = data.get("message"),
+        text = data.get("text"),
         is_sender= True
     )
     message.save()
