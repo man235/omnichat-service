@@ -5,9 +5,9 @@ import json
 def format_message_data_for_websocket(data):
     data = {
         "attachments": data.get("attachments"),
-        "created_at": timezone.now(),
+        "created_at": str(timezone.now()),
         "is_seen": None,
-        "is_sender": False,
+        "is_sender": True if data.get("is_sender") == True else False,
         "message_reply": None,
         "reaction": None,
         "recipient_id": data.get("recipientId"),
