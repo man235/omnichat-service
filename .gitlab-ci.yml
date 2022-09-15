@@ -33,3 +33,29 @@ deploy-dev:
     - ssh -v -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker pull $CI_REGISTRY_URL/$DEV_REGISTRY_NAME && docker compose up -d"
   only:
     - dev
+
+build-stg:
+  stage: build
+  only:
+    - stg
+  image: docker:18.09.7-dind
+  services:
+    - name: docker:18.09.7-dind
+
+  before_script:
+    - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
+  script:
+    - docker build --tag $CI_REGISTRY_URL/$STG_REGISTRY_NAME:$CI_COMMIT_SHA --tag $CI_REGISTRY_URL/$STG_REGISTRY_NAME:latest -f compose/production/django/Dockerfile .
+    - docker push $CI_REGISTRY_URL/$STG_REGISTRY_NAME:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_URL/$STG_REGISTRY_NAME:latest
+
+deploy-stg:
+  image: alpine
+  stage: deploy
+  script:
+    - chmod og= $STG_ID_RSA
+    - apk update && apk add openssh-client
+
+    - ssh -v -i $STG_ID_RSA -o StrictHostKeyChecking=no $STG_SERVER_USER@$STG_SERVER_IP "cd /opt/sop && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_omnichat"
+  only:
+    - stg
