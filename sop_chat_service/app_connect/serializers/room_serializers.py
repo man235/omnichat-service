@@ -21,8 +21,8 @@ class GetMessageSerializer(serializers.ModelSerializer):
         fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender', 'created_at']
 
     def get_attachments(self, obj):
-        attachments = Attachment.objects.filter(mid=obj.id).first()
-        sz = AttachmentSerializer(attachments, many=False)
+        attachments = Attachment.objects.filter(mid=obj.id)
+        sz = AttachmentSerializer(attachments, many=True)
         return sz.data
 
 
