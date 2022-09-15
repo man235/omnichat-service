@@ -11,7 +11,7 @@ class RoomSerializer(serializers.ModelSerializer):
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
-        fields = ['mid', 'type', 'url']
+        fields = ['id', 'mid', 'type', 'url']
 
 class GetMessageSerializer(serializers.ModelSerializer):
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
@@ -126,10 +126,11 @@ class CountAttachmentRoomSerializer(serializers.ModelSerializer):
         for message in message_attachment:
             attachment = Attachment.objects.filter(mid=message.id).first()
             sz_attachment = AttachmentSerializer(attachment, many=False)
-            if 'image' in attachment.type:
-                image_data.append(sz_attachment.data)
-            else:
-                file_data.append(sz_attachment.data)
+            if attachment:
+                if 'image' in attachment.type:
+                    image_data.append(sz_attachment.data)
+                else:
+                    file_data.append(sz_attachment.data)
         data = {
             "file_data": {
                 "count": len(file_data),

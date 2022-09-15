@@ -355,7 +355,7 @@ CHANNEL_LAYERS = {
     }
 }
 
-USE_TZ = True
+USE_TZ = False
 CORS_ALLOWED_ORIGINS = [
     'https://portal.minhhv11.xyz',
     'http://portal.minhhv11.xyz',
