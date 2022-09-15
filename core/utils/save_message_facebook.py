@@ -39,6 +39,7 @@ def send_and_save_message_store_database(room, data: dict):
             mid = message,
             type = data.get("attachments")[0]['type'],
             url = data.get("attachments")[0]['url'],
-            attachment_id = data.get("attachments")[0]['id']
+            attachment_id = data.get("attachments")[0]['id'],
+            name = data.get("attachments")[0]['name']
         )
     return
