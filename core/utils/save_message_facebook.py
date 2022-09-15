@@ -14,11 +14,12 @@ def save_message_store_database(room, data):
     )
     message.save()
     if data.get("attachments"):
-        Attachment.objects.create(
-            mid = message,
-            type = data.get("attachments")[0]['type'],
-            url = data.get("attachments")[0]['payloadUrl']
-        )
+        for attachment in data.get("attachments"):
+            Attachment.objects.create(
+                mid = message,
+                type = attachment['type'],
+                url = attachment['payloadUrl']
+            )
     return
 
 
