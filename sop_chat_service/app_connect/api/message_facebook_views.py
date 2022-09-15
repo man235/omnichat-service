@@ -41,7 +41,10 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 "id": message_response.get('attachments').get('data')[0]['id'],
                 "type": message_response.get('attachments').get('data')[0]['mime_type'],
                 "name": message_response.get('attachments').get('data')[0]['name'],
-                "url": message_response.get('attachments').get('data')[0]['image_data']['url']
+                "url": (message_response.get('attachments').get('data')[0]['image_data']['url'] if 
+                            message_response.get('attachments').get('data')[0]['image_data']['url'] else
+                            message_response.get('attachments').get('data')[0]['file_url']
+                        )
             }]
         data_mid_json = {
             "mid": message_response['id'],
