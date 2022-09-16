@@ -2,8 +2,6 @@ import asyncio
 import json
 from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook, format_message_data_for_websocket
-# from config.connect import nats_client
-from sop_chat_service.app_connect.models import FanPage
 from nats.aio.client import Client as NATS
 nats_client = NATS()
 import logging

@@ -136,3 +136,4 @@ class Attachment(models.Model):
     type = models.CharField(max_length=255, null=True, blank=True)      # type of attachment
     url = models.CharField(max_length=500, null=True, blank=True)      # url of attachment
     name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
+    size = models.IntegerField(null=True, blank=True)
