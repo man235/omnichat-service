@@ -38,6 +38,7 @@ class Room(models.Model):
     class TypeRoomChoice(models.TextChoices):
         FACEBOOK = 'facebook'
         ZALO = 'zalo'
+        LIVE_CHAT= 'live chat'
 
     class ApproachCustomerChoice(models.TextChoices):
         FACEBOOK = 'facebook'

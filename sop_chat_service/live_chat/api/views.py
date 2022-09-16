@@ -10,7 +10,7 @@ from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializ
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-import jwt
+import time
 
 
 
@@ -73,12 +73,12 @@ class LiveChatViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["POST"], url_path="message/send")
     def send_message(self, request, *args):
+        x_cookie = request.headers.get('X-Cookie')
+
         try:
             sz = MessageLiveChatSerializer(data=request.data)
             sz.is_valid(raise_exception=True)
-
-
-            room = Room.objects.filter(type='Live Chat').order_by('-id').first()
+            room = Room.objects.filter(type='Live Chat',external_id=x_cookie).order_by('-id').first()
             current_room = room
             if room:
                 message = Message.objects.filter(room_id=room, is_sender=True).order_by('-created_at').first()
@@ -90,20 +90,16 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     if delta/3600 > 24:
                         new_room = Room.objects.create( type='Live Chat')
                         current_room = new_room
-                    else:
-                        current_room = room
             else:
-                new_room = Room.objects.create( type='Live Chat')
+                new_room = Room.objects.create(type='Live Chat',external_id=x_cookie)
                 current_room = new_room
 
             new_message = Message.objects.create(room_id=current_room, is_sender=True, sender_id=sz.validated_data.get(
-                'sender_id'), recipient_id=sz.validated_data.get('recipient_id'), text=sz.validated_data.get('text'), created_at=datetime.now())
+                'sender_id'), recipient_id=sz.validated_data.get('recipient_id'), text=sz.validated_data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
             attachments = request.FILES.getlist('attachments')
             for attachment in attachments:
-
                 new_attachment = Attachment.objects.create(
                     file=attachment, type=attachment.content_type, mid=new_message)
-
             return Response(status=status.HTTP_200_OK)
         except Exception:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -120,40 +116,4 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         sz.save(room_id=room)
         return custom_response(200,"ok",[])
         
-    @action(detail=False, methods=["GET"], url_path="room", pagination_class=Pagination)
-    def get_message(self, request, *args):
-        room = request.query_params.get('room')
-        qs = Message.objects.filter(room_id=room).order_by('-created_at')
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(qs, request)
-        sz = GetMessageLiveChatSerializer(page, many=True)
-        return paginator.get_paginated_response(sz.data)
 
-    @action(detail=False, methods=["GET"], url_path="room")
-    def get_room(self, request, *args, **kwargs):
-        qs = Room.objects.filter(type='Live Chat', room_message__is_sender=False).order_by('-id')
-        sz = RoomSerializer(qs, many=True)
-        return Response(sz.data, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=["POST"], url_path="room/")
-    def create_room(self, request, *args):
-        try:
-            data = request.headers.get('X-Cookie')
-            room = Room.objects.create(user_id=1,   type='Live Chat')
-            message = {
-                "message": "Create room success"
-            }
-            return Response(data=message, status=status.HTTP_200_OK)
-        except Exception:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class RoomViewSet(viewsets.ModelViewSet):
-    queryset = Room.objects.all()
-    serializer_class = RoomSerializer
-    permission_classes = (permissions.AllowAny, )
-
-    def list(self, request, *args, **kwargs):
-        qs = Room.objects.filter(room_message__is_sender=False).order_by('-created_at')
-        sz = RoomSerializer(qs, many=True)
-        return Response(sz.data, status=status.HTTP_200_OK)
