@@ -62,6 +62,8 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         if request.data:
             if data['live_chat']:
                 update = LiveChatSerializer(live_chat, data['live_chat'], partial=True)
+                update.is_valid(raise_exception=True)
+                update.save()
                 if data['registerinfor']:
                     LiveChatRegisterInfo.objects.filter(live_chat_id=live_chat).all().delete()
                     for item in data.get('registerinfor', None):
