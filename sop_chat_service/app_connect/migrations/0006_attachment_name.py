@@ -15,4 +15,9 @@ class Migration(migrations.Migration):
             name='name',
             field=models.CharField(blank=True, max_length=500, null=True),
         ),
+        migrations.AlterField(
+            model_name='room',
+            name='type',
+            field=models.CharField(choices=[('facebook', 'Facebook'), ('zalo', 'Zalo'), ('live chat', 'Live Chat')], default='facebook', max_length=30),
+        ),
     ]

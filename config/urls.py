@@ -7,8 +7,9 @@ from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
+import os
 
-urlpatterns = [
+urlpattern = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
@@ -22,10 +23,10 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if settings.DEBUG:
     # Static file serving when using Gunicorn + Uvicorn for local web socket development
-    urlpatterns += staticfiles_urlpatterns()
+    urlpattern += staticfiles_urlpatterns()
 
 # API URLS
-urlpatterns += [
+urlpattern += [
     # API base url
     path("api/", include("config.api_router")),
     # DRF auth token
@@ -43,7 +44,7 @@ urlpatterns += [
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit
     # these url in browser to see how these error pages look like.
-    urlpatterns += [
+    urlpattern += [
         path(
             "400/",
             default_views.bad_request,
@@ -64,4 +65,7 @@ if settings.DEBUG:
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
 
-        urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+        urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpattern
+
+if os.environ.get("SOP_DISABLE_CHAT_API") and os.environ.get("SOP_DISABLE_CHAT_API").lower() == "true":
+    urlpatterns = []
