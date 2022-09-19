@@ -22,7 +22,7 @@ def save_message_store_database(room, data):
             Attachment.objects.create(
                 mid = message,
                 type = attachment['type'],
-                url = attachment['payloadUrl'],
+                url = attachment['url'],
                 name = attachment['name'],
                 size = attachment['size']
             )
