@@ -37,9 +37,9 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     update_config.save()
                     if data_config:
                         LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
-                        if data.get('registerinfor', None):
-                            print(data.get('registerinfor', None))
-                            for item in data.get('registerinfor', None):
+                        if data.get('registerinfo', None):
+                            print(data.get('registerinfo', None))
+                            for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                     message= 'Update success'
                     
@@ -48,9 +48,9 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 if data:
                     data_config = data.get('live_chat', None)
                     if data_config:
-                        if data.get('registerinfor', None):
+                        if data.get('registerinfo', None):
                             live_chat = LiveChat.objects.create(**data_config)
-                            for item in data.get('registerinfor', None):
+                            for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
                     message= 'Create success'
                 return custom_response(201,message,[])
@@ -65,9 +65,9 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 update = LiveChatSerializer(live_chat, data['live_chat'], partial=True)
                 update.is_valid(raise_exception=True)
                 update.save()
-                if data.get('registerinfor', None):
+                if data.get('registerinfo', None):
                     LiveChatRegisterInfo.objects.filter(live_chat_id=live_chat).all().delete()
-                    for item in data.get('registerinfor', None):
+                    for item in data.get('registerinfo', None):
                         LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
                     message= 'Update success'
                 
