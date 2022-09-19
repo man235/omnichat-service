@@ -37,9 +37,9 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     update_config.save()
                     if data_config:
                         LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
-                        for item in data.get('registerinfor', None):
-                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
-                    
+                        if data.get('registerinfor', None):
+                            for item in data.get('registerinfor', None):
+                                LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                     message= 'Update success'
                     
                 return custom_response(200,message,[])
@@ -48,9 +48,9 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     data_config = data.get('live_chat', None)
                     if data_config:
                         live_chat = LiveChat.objects.create(**data_config)
-                        for item in data.get('registerinfor', None):
-                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
-                    
+                        if data.get('registerinfor', None):
+                            for item in data.get('registerinfor', None):
+                                LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
                     message= 'Create success'
                 return custom_response(201,message,[])
         except Exception:
@@ -118,4 +118,15 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         sz.save(room_id=room)
         return custom_response(200,"ok",[])
         
+    @action(detail=False, methods=["GET"], url_path="active")
+    def active(self,request,*args, **kwargs):
+        id = request.data.get("id",None)
+        active = request.data("active",None)
+        
+        live_chat = LiveChat.objects.filter(id = id).first()
+        if active:
+            live_chat.is_active = True
+        else:
+            live_chat.is_active =False
+        return custom_response(200,"Active Live Chat Successfully",[])
 
