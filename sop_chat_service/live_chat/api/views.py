@@ -38,7 +38,6 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     if data_config:
                         LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
                         if data.get('registerinfo', None):
-                            print(data.get('registerinfo', None))
                             for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                     message= 'Update success'
