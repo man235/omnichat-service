@@ -38,6 +38,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     if data_config:
                         LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
                         if data.get('registerinfor', None):
+                            print(data.get('registerinfor', None))
                             for item in data.get('registerinfor', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                     message= 'Update success'
@@ -47,8 +48,8 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 if data:
                     data_config = data.get('live_chat', None)
                     if data_config:
-                        live_chat = LiveChat.objects.create(**data_config)
                         if data.get('registerinfor', None):
+                            live_chat = LiveChat.objects.create(**data_config)
                             for item in data.get('registerinfor', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
                     message= 'Create success'
@@ -64,7 +65,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 update = LiveChatSerializer(live_chat, data['live_chat'], partial=True)
                 update.is_valid(raise_exception=True)
                 update.save()
-                if data['registerinfor']:
+                if data.get('registerinfor', None):
                     LiveChatRegisterInfo.objects.filter(live_chat_id=live_chat).all().delete()
                     for item in data.get('registerinfor', None):
                         LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
