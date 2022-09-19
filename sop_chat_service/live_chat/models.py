@@ -20,6 +20,7 @@ class LiveChat(models.Model):
     is_popup = models.BooleanField(default=False)
     color = models.CharField(max_length=10, null=True, blank=True)
     icon = models.BooleanField(default=False)
+    icon_content= models.CharField(max_length=255, null=True, blank=True)
     size = models.JSONField(null=True, blank=True)
     location = models.CharField(max_length=20, default=LocationChoice.TOP_RIGHT, choices=LocationChoice.choices)
     start_btn = models.CharField(max_length=255, null=True, blank=True)
