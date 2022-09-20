@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 async def subscribe_channels(topics):
     await nats_client.connect(servers=[settings.NATS_URL])
+    logger.debug(f' natsUrl ----------------- {settings.NATS_URL} -------- ')
+
     async def subscribe_handler(msg):
         try:
             logger.debug(f'data subscribe natsUrl ----------------- {msg.data}')
