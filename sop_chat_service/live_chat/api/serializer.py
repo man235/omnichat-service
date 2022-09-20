@@ -18,10 +18,10 @@ class LiveChatSerializer(serializers.ModelSerializer):
         return sz.data
 
 
-class CreateLiveChatSerializer(serializers.ModelSerializer):
+class UpdateAvatarLiveChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = LiveChat
-        fields = '__all__'
+        fields = ["avatar"]
 
 
 class RegisterInfoSerializer(serializers.ModelSerializer):

@@ -14,6 +14,7 @@ class LiveChat(models.Model):
     user_id = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     name_agent = models.CharField(max_length=255, null=True, blank=True)
+    is_show_avatar = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     avatar = models.ImageField(null=True, blank=True)
     name_agent_active = models.BooleanField(default=True)
@@ -34,7 +35,7 @@ class LiveChat(models.Model):
     script = models.CharField(max_length=1500, null=True, blank=True)
 
     def __str__(self):
-        return str(self.id)+" " + self.name
+        return str(self.id)
 
 
 class LiveChatRegisterInfo(models.Model):
