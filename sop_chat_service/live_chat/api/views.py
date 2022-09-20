@@ -6,7 +6,7 @@ from sop_chat_service.facebook.utils import custom_response
 from ..utils import Pagination
 from ...app_connect.models import Attachment, Message, Room
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
-from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializers, GetMessageLiveChatSerializer, LiveChatSerializer, MessageLiveChatSerializer, RoomSerializer
+from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializers, GetMessageLiveChatSerializer, LiveChatSerializer, MessageLiveChatSerializer, RoomSerializer, UpdateAvatarLiveChatSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -42,17 +42,17 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                     message= 'Update success'
                     
-                return custom_response(200,message,[])
+                    return custom_response(200,message,config.id)
             else:
                 if data:
                     data_config = data.get('live_chat', None)
                     if data_config:
+                        live_chat = LiveChat.objects.create(**data_config)
                         if data.get('registerinfo', None):
-                            live_chat = LiveChat.objects.create(**data_config)
                             for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
-                    message= 'Create success'
-                return custom_response(201,message,[])
+                        message= 'Create success'
+                        return custom_response(201,message,live_chat.id)
         except Exception:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -60,16 +60,12 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         live_chat = self.get_object()
         data = request.data
         if request.data:
-            if data['live_chat']:
-                update = LiveChatSerializer(live_chat, data['live_chat'], partial=True)
+            if data['avatar']:
+                update = UpdateAvatarLiveChatSerializer(live_chat,data=request.data)
                 update.is_valid(raise_exception=True)
                 update.save()
-                if data.get('registerinfo', None):
-                    LiveChatRegisterInfo.objects.filter(live_chat_id=live_chat).all().delete()
-                    for item in data.get('registerinfo', None):
-                        LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
-                    message= 'Update success'
-                
+              
+                message= 'Update success'
             return custom_response(200,message,[])
         return Response(200, status=status.HTTP_200_OK)
 
