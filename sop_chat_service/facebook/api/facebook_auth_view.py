@@ -48,7 +48,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                         id = item['id']
                         if page is None:
                             FanPage.objects.create(
-                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],  avatar_url=f'{graph_api}/{id}/picture',is_active=True,last_subscribe=timezone.now() )
+                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],  avatar_url=f'{graph_api}/{id}/picture',last_subscribe=timezone.now() )
                         else:
                             pass
 

@@ -11,7 +11,7 @@ class RoomSerializer(serializers.ModelSerializer):
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
-        fields = ['id', 'mid', 'type', 'url']
+        fields = ['id', 'mid', 'type', 'url', 'name']
 
 class GetMessageSerializer(serializers.ModelSerializer):
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)

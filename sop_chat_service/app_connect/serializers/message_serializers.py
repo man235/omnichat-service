@@ -1,10 +1,6 @@
 from rest_framework import serializers
 from sop_chat_service.app_connect.models import Attachment, Message, Room
-
-class AttachmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Attachment
-        fields = ['mid', 'type', 'url','attachment_id']
+from sop_chat_service.app_connect.serializers.room_serializers import AttachmentSerializer
 
 
 class MessageSerializer(serializers.ModelSerializer):

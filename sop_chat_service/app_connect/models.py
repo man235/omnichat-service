@@ -38,6 +38,7 @@ class Room(models.Model):
     class TypeRoomChoice(models.TextChoices):
         FACEBOOK = 'facebook'
         ZALO = 'zalo'
+        LIVE_CHAT= 'live chat'
 
     class ApproachCustomerChoice(models.TextChoices):
         FACEBOOK = 'facebook'
@@ -129,10 +130,11 @@ class Message(models.Model):
 
 
 class Attachment(models.Model):
-
     mid = models.ForeignKey(Message, related_name='message_id', null=True, blank=True,
                             on_delete=models.SET_NULL)     # foreign key with message
     attachment_id = models.CharField(max_length=255, null=True, blank=True)      # id of attachment
     file = models.FileField(blank=True, null=True, upload_to=upload_image_to)
     type = models.CharField(max_length=255, null=True, blank=True)      # type of attachment
     url = models.CharField(max_length=500, null=True, blank=True)      # url of attachment
+    name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
+    size = models.IntegerField(null=True, blank=True)

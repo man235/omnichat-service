@@ -10,14 +10,15 @@ class MessageFacebookSerializer(serializers.Serializer):
     is_text = serializers.BooleanField(required=True)
 
     def validate(self, request, attrs):
+        room = Room.objects.get(room_id=attrs.get("room_id"))
+        recipient_id = attrs.get("recipient_id")
         if str(attrs.get("is_text")).lower() == "true":
             if not attrs.get("message_text"):
                 raise serializers.ValidationError({"message_text": "message_text not null"})
-            room = Room.objects.get(room_id=attrs.get("room_id"))
             data = {
                 "messaging_type": "MESSAGE_TAG",
                 "recipient": {
-                    "id": attrs.get("recipient_id")
+                    "id": recipient_id
                 },
                 "tag": "NON_PROMOTIONAL_SUBSCRIPTION",
                 "message": {
@@ -27,20 +28,19 @@ class MessageFacebookSerializer(serializers.Serializer):
             return room, data, False
 
         if str(attrs.get("is_text")).lower() == "false":
-            # if not attrs.get("attachment_type"):
-            #     raise serializers.ValidationError({"attachment_type": "attachment_type not null"})
-            room = Room.objects.get(room_id=attrs.get("room_id"))
-            recipient = str({"id": attrs.get("recipient_id")})
-            file = request.FILES['file']
-            content_type = file.content_type.split('/')[0]
-            types = ''
-            if content_type == "application":
-                types = 'file'
-            else:
-                types = content_type
-            files_data = [
-                ('filedata', (file.name, file, file.content_type))
-            ]
+            # room = Room.objects.get(room_id=attrs.get("room_id"))
+            recipient = str({"id": recipient_id})
+            files = request.FILES.getlist('file')
+            files_data = []
+            for file in files:
+                content_type = file.content_type.split('/')[0]
+                types = ''
+                if content_type == "application":
+                    types = 'file'
+                else:
+                    types = content_type
+                file_data = [('filedata', (file.name, file, file.content_type))]
+                files_data.append(file_data)
             payload = {
                 'recipient': recipient,
                 'message': "{" + '"attachment"' + " : "+"{" + '"type"' + ":"+f'"{types}"'+"," + '"payload"'+":" + "{"+'"is_reusable"'+":"+"true}}}"

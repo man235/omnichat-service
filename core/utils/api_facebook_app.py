@@ -25,20 +25,20 @@ def api_send_message_text_facebook(access_token, data):
     try:
         response = requests.post(url, headers= headers, data=json.dumps(data))
         if response.status_code == 200:
-            return json.loads(response.text)
+            return response.json()
         else:
             return None
     except Exception as e:
         return None
 
 
-def api_send_message_file_facebook(access_token, data):
+def api_send_message_file_facebook(access_token, data, file):
     url =f'{settings.URL_FACEBOOK_GRAPH_API_SEND_MESSAGE}?access_token={access_token}'
     headers = {}
     try:
-        response = requests.post(url, headers= headers, data=data['payload'], files=data['files'])
+        response = requests.post(url, headers= headers, data=data['payload'], files=file)
         if response.status_code == 200:
-            return json.loads(response.text)
+            return response.json()
         else:
             return None
     except Exception as e:

@@ -87,6 +87,8 @@ LOCAL_APPS = [
     "sop_chat_service.users",
     "sop_chat_service.facebook",
     "sop_chat_service.app_connect",
+    "sop_chat_service.live_chat"
+
 
     # Your stuff: custom apps go here
 ]
