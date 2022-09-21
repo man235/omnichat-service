@@ -143,6 +143,13 @@ FACEBOOK_APP_SECRET = '14999c82309aff7a760b509c96c16b00'    # 316f7035fded8674d7
 FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v14.0'
 URL_FACEBOOK_GRAPH_API_SEND_MESSAGE = 'https://graph.facebook.com/me/messages'
 
+ZALO_APP_ID = '3466482602223067001'
+ZALO_APP_SECRET_KEY = '7nR6o31OKB344S58xG76'
+ZALO_OA_OAUTH_API = 'https://oauth.zaloapp.com/v4/oa'
+ZALO_OA_OPEN_API = 'https://openapi.zalo.me/v2.0/oa'
+OA_ACCESS_EXPIRED_IN = 90000      # 25h
+OA_REFRESH_EXPIRED_IN = 7889238    # 3m
+
 CHANNELS_SUBSCRIBE = ["omniChat.message.receive.*"]
 WEBSOCKET_URL_CONNECTION = '' # wss://domain/
 
