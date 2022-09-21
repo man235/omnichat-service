@@ -18,9 +18,13 @@ build-dev:
 #    - cat .env
     - docker build --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:latest --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:celerybeat --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:celeryworker  --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:flower -f compose/production/django/Dockerfile .
 
+    
+    
     - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:latest
-
+    - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:celerybeat
+    - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:celeryworker
+    - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:flower
 
 deploy-dev:
   image: alpine
