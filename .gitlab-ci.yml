@@ -56,6 +56,6 @@ deploy-stg:
     - chmod og= $STG_ID_RSA
     - apk update && apk add openssh-client
 
-    - ssh -v -i $STG_ID_RSA -o StrictHostKeyChecking=no $STG_SERVER_USER@$STG_SERVER_IP "cd /opt/sop && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_omnichat"
+    - ssh -i $STG_ID_RSA -o StrictHostKeyChecking=no $STG_SERVER_USER@$STG_SERVER_IP "cd /opt/sop && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_omnichat && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_chatwss"
   only:
     - stg
