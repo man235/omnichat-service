@@ -20,7 +20,7 @@ def format_message_data_for_websocket(data):
     return data_res
 
 
-def format_data_from_facebook(room, message_response):
+def format_data_from_facebook(room, message_response, data_msg):
     attachments = []
     data_attachment = message_response.get('attachments')
     if data_attachment:
@@ -30,11 +30,7 @@ def format_data_from_facebook(room, message_response):
             "id": attachment_data[0]['id'],
             "type": attachment_data[0]['mime_type'],
             "name": attachment_data[0]['name'],
-            "url": (
-                attachment_data[0]['image_data']['url'] if 
-                attachment_data[0].get('image_data') else
-                attachment_data[0].get('file_url')
-            ),
+            "url": data_msg.get('attachments')[0]['url'] if data_msg.get('attachments') else None,
             "size": attachment_data[0].get('size'),
             "video_url": attachment_data[0]['video_data']['url'] if attachment_data[0].get('video_data') else None
         }

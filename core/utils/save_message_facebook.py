@@ -6,9 +6,9 @@ from django.utils import timezone
 
 
 @sync_to_async
-def save_message_store_database(room, data):
-    data_res = get_message_from_mid(room.page_id.access_token_page, data.get("mid"))
-    data = format_data_from_facebook(room, data_res)
+def save_message_store_database(room, data_msg):
+    data_res = get_message_from_mid(room.page_id.access_token_page, data_msg.get("mid"))
+    data = format_data_from_facebook(room, data_res, data_msg)
     message = Message(
         room_id = room,
         fb_message_id = data.get("mid"),
