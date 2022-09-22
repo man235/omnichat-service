@@ -21,10 +21,10 @@ def save_message_store_database(room, data):
         for attachment in data.get("attachments"):
             Attachment.objects.create(
                 mid = message,
-                type = attachment['type'],
-                url = attachment['url'],
-                name = attachment['name'],
-                size = attachment['size']
+                type = attachment.get('type'),
+                url = attachment.get('url') if attachment.get('url') else attachment.get('video_url'),
+                name = attachment.get('name'),
+                size = attachment.get('size')
             )
     return
 
