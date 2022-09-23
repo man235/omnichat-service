@@ -31,7 +31,7 @@ async def subscribe_channels(topics):
     logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
 
 async def main():
-    logger.debug(f'data subscribe natsUrl ----------------- {nats_client} -------- ')
+    logger.debug(f'data subscribe natsUrl ----------------- {nats_client} -------- {settings.NATS_URL}')
     topics = settings.CHANNELS_SUBSCRIBE
     # topics = "omniChat.message.receive.*"
     await asyncio.gather(

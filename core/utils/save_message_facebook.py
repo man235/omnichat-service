@@ -1,6 +1,6 @@
 from sop_chat_service.app_connect.models import Message, Attachment
 from core.utils.api_facebook_app import get_message_from_mid
-from core.utils.format_message_for_websocket import format_data_from_facebook
+from core.utils.format_message_for_websocket import format_data_from_facebook_nats_subscribe
 from asgiref.sync import sync_to_async
 from django.utils import timezone
 
@@ -8,7 +8,7 @@ from django.utils import timezone
 @sync_to_async
 def save_message_store_database(room, data_msg):
     data_res = get_message_from_mid(room.page_id.access_token_page, data_msg.get("mid"))
-    data = format_data_from_facebook(room, data_res, data_msg)
+    data = format_data_from_facebook_nats_subscribe(room, data_res, data_msg)
     message = Message(
         room_id = room,
         fb_message_id = data.get("mid"),

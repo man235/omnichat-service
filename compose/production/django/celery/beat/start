@@ -4,5 +4,6 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+export SOP_DISABLE_SUBSCRIBE_NAT_IN_CELERYBEAT=true
 
 exec celery -A config.celery_app beat -l INFO
