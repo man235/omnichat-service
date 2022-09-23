@@ -30,7 +30,7 @@ def format_data_from_facebook_nats_subscribe(room, message_response, data_msg):
             "id": attachment_data[0]['id'],
             "type": attachment_data[0]['mime_type'],
             "name": attachment_data[0]['name'],
-            "url": data_msg.get('attachments')[0]['url'] if data_msg.get('attachments') else None,
+            "url": data_msg.get('attachments')[0]['payloadUrl'] if data_msg.get('attachments') else None,
             "size": attachment_data[0].get('size'),
             "video_url": attachment_data[0]['video_data']['url'] if attachment_data[0].get('video_data') else None
         }

@@ -34,8 +34,8 @@ def send_and_save_message_store_database(room, data: dict):
     message = Message(
         room_id = room,
         fb_message_id = data.get("mid"),
-        sender_id = data.get("senderId"),
-        recipient_id = data.get("recipientId"),
+        sender_id = data.get("sender_id"),
+        recipient_id = data.get("recipient_id"),
         text = data.get("text"),
         is_sender= True,
         is_seen = timezone.now()
