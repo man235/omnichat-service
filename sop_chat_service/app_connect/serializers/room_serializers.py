@@ -127,7 +127,7 @@ class CountAttachmentRoomSerializer(serializers.ModelSerializer):
             attachment = Attachment.objects.filter(mid=message.id).first()
             sz_attachment = AttachmentSerializer(attachment, many=False)
             if attachment:
-                if 'image' in attachment.type:
+                if 'image' in attachment.type or 'video' in attachment.type:
                     image_data.append(sz_attachment.data)
                 else:
                     file_data.append(sz_attachment.data)
