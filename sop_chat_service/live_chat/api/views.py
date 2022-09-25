@@ -52,7 +52,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                             for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
                         message= 'Create success'
-                        return custom_response(201,message,live_chat.id)
+                        return custom_response(200,message,live_chat.id)
         except Exception:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
