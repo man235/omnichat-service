@@ -13,12 +13,13 @@ class FanPage(models.Model):
     page_id = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     access_token_page = models.CharField(max_length=255, null=True, blank=True)
+    refresh_token_page = models.CharField(max_length=255, null=True, blank=True)
     avatar_url = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(null=True, default=False)
     app_secret_key = models.CharField(max_length=255, null=True, blank=True)
     created_by = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    last_subscribe = models.DateTimeField(null=True, blank=True)
+    last_subscribe = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return str(self.id) + '-' + self.name+'-'+self.access_token_page

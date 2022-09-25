@@ -3,6 +3,7 @@
 set -o errexit
 set -o nounset
 
+export SOP_DISABLE_SUBSCRIBE_NAT_IN_CELERYBEAT=true
 
 rm -f './celerybeat.pid'
 celery -A config.celery_app beat -l INFO
