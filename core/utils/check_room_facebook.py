@@ -24,7 +24,7 @@ def check_room_facebook(data):
             gender = res_user_app.get('gender')
         )
     
-    check_room = Room.objects.filter(page_id=check_fanpage.id, external_id=data['senderId']).first()
+    check_room = Room.objects.filter(page_id=check_fanpage.id, external_id=data['senderId'],user_id=check_fanpage.user_id).first()
     if not check_room or check_room.completed_date:
         new_room = Room(
             page_id = check_fanpage,
@@ -36,6 +36,7 @@ def check_room_facebook(data):
             completed_date = None,
             conversation_id = "",
             room_id = f'{check_fanpage.id}{data.get("senderId")}',
+            user_id=check_fanpage.user_id,
         )
         new_room.save()
         return new_room
