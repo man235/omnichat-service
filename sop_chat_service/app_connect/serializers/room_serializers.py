@@ -65,6 +65,8 @@ class RoomMessageSerializer(serializers.ModelSerializer):
         return sz_user_info.data
     
     def get_fanpage(self, obj):
+        if not obj.page_id:
+            return None
         fanpage_info = FanPage.objects.filter(id=obj.page_id.id).first()
         sz_fanpage_info = FanpageInfoSerializer(fanpage_info)
         return sz_fanpage_info.data
