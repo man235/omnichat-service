@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Room, FanPage
+from sop_chat_service.app_connect.models import Room
+from sop_chat_service.utils.request_headers import get_user_from_header
 
 
 class MessageFacebookSerializer(serializers.Serializer):
@@ -10,7 +11,10 @@ class MessageFacebookSerializer(serializers.Serializer):
     is_text = serializers.BooleanField(required=True)
 
     def validate(self, request, attrs):
-        room = Room.objects.get(room_id=attrs.get("room_id"))
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.filter(room_id=attrs.get("room_id"), user_id=user_header).first()
+        if not room:
+            raise serializers.ValidationError({"room": "Room Invalid"})
         recipient_id = attrs.get("recipient_id")
         if str(attrs.get("is_text")).lower() == "true":
             if not attrs.get("message_text"):

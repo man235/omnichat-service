@@ -22,11 +22,11 @@ from sop_chat_service.utils.pagination import Pagination
 from sop_chat_service.utils.filter import filter_room
 from iteration_utilities import unique_everseen
 from sop_chat_service.utils.pagination_data import pagination_list_data
+from sop_chat_service.utils.request_headers import get_user_from_header
 
 
 class RoomViewSet(viewsets.ModelViewSet):
     pagination_class=Pagination
-
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
     permission_classes = (permissions.AllowAny, )
@@ -38,7 +38,8 @@ class RoomViewSet(viewsets.ModelViewSet):
         pass
 
     def list(self, request, *args, **kwargs):
-        qs = Room.objects.filter(completed_date__isnull=True).order_by("-room_message__created_at")
+        user_header = get_user_from_header(request.headers)
+        qs = Room.objects.filter(completed_date__isnull=True, user_id=user_header, page_id__isnull=False).order_by("-room_message__created_at")
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
@@ -71,11 +72,12 @@ class RoomViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=["POST"], url_path="search")
     def search_for_room(self, request, pk=None, *args, **kwargs):
+        user_header = get_user_from_header(request.headers)
         sz = SearchMessageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
         data = {}
         if sz.data.get('search'):
-            qs_contact = Room.objects.filter(name__icontains=sz.data.get('search'))
+            qs_contact = Room.objects.filter(name__icontains=sz.data.get('search'), user_id=user_header)
             serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
             data['contact'] = serializer_contact.data
             qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search')).distinct()
@@ -98,7 +100,8 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["POST"], url_path="complete")
     def complete_room(self, request, pk=None, *args, **kwargs):
-        room = Room.objects.get(room_id=pk)
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.get(room_id=pk, user_id=user_header)
         if not room:
             return custom_response(400,"Invalid room",[])  
         room.completed_date =timezone.now()
@@ -106,7 +109,8 @@ class RoomViewSet(viewsets.ModelViewSet):
         return custom_response(200,"Completed Room Successfully",[])
 
     def retrieve(self, request, pk=None):
-        room = Room.objects.filter(room_id=pk).first()
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.filter(room_id=pk, user_id=user_header).first()
         if not room:
             return custom_response(400,"Invalid room",[])    
         Message.objects.filter(room_id=room, is_seen__isnull=True, is_sender=False).update(is_seen=timezone.now())
@@ -122,7 +126,8 @@ class RoomViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=["GET"], url_path="customer-info")
     def info_user_room(self, request, pk=None, *args, **kwargs):
-        room = Room.objects.filter(room_id=pk).first()
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.filter(room_id=pk,user_id=user_header).first()
         if not room:
             return custom_response(400,"Invalid room",[])
         qs_customer = UserApp.objects.filter(external_id=room.external_id).first()
@@ -137,7 +142,8 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["GET"], url_path="count-attachment")
     def count_attachment_room(self, request, pk=None, *args, **kwargs):
-        room = Room.objects.filter(room_id=pk).first()
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.filter(room_id=pk, user_id=user_header).first()
         if not room:
             return custom_response(400,"Invalid room",[])
         sz = CountAttachmentRoomSerializer(room, many=False)
@@ -145,7 +151,8 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["GET"], url_path="channel")
     def count_unseen_message_room(self, request, *args, **kwargs):
-        all_room = Room.objects.all()
+        user_header = get_user_from_header(request.headers)
+        all_room = Room.objects.filter(user_id=user_header)
         facebook = 0
         live_chat = 0
         zalo = 0
