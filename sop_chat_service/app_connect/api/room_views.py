@@ -38,7 +38,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         pass
 
     def list(self, request, *args, **kwargs):
-        qs = Room.objects.filter(completed_date__isnull=True).order_by("-room_message__created_at")
+        qs = Room.objects.filter(completed_date__isnull=True, page_id__isnull=False).order_by("-room_message__created_at")
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
