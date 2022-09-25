@@ -8,6 +8,7 @@ from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Ro
 from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
 from sop_chat_service.facebook.serializers.facebook_auth_serializers import FacebookAuthenticationSerializer, FacebookConnectPageSerializer, DeleteFanPageSerializer
 from sop_chat_service.facebook.utils import custom_response
+from sop_chat_service.utils.request_headers import get_user_from_header
 import logging
 import time
 logger = logging.getLogger(__name__)
@@ -20,13 +21,15 @@ class FacebookViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.debug(f'headers ----------------- {request.headers}')
-        pages = FanPage.objects.all().exclude(last_subscribe=None)
+        user_header = get_user_from_header(request.headers)
+        pages = FanPage.objects.filter(user_id=user_header).exclude(last_subscribe=None)
         sz = FanPageSerializer(pages, many=True)
         return custom_response(200, "Get list page successfully", sz.data)
 
     @action(detail=False, methods=["POST"], url_path="list-page")
     def get_page(self, request, *args):
         logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         sz = self.get_serializer(data=request.data)
         sz.is_valid(raise_exception=True)
         graph_api = settings.FACEBOOK_GRAPH_API
@@ -44,11 +47,14 @@ class FacebookViewSet(viewsets.ModelViewSet):
                 if page_response.status_code == 200:
                     data = page_response.json()
                     for item in data['data']:
-                        page = FanPage.objects.filter(page_id=item['id']).first()
+                        page = FanPage.objects.filter(page_id=item['id'],user_id=user_header).first()
                         id = item['id']
                         if page is None:
                             FanPage.objects.create(
-                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],  avatar_url=f'{graph_api}/{id}/picture',last_subscribe=timezone.now() )
+                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],
+                                avatar_url=f'{graph_api}/{id}/picture',last_subscribe=timezone.now(),
+                                user_id=user_header
+                            )
                         else:
                             pass
 
@@ -66,6 +72,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="page/subscribe")
     def subscribe_page(self, request, *args):
         logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         sz = FacebookConnectPageSerializer(data=request.data)
         if sz.is_valid(raise_exception=True):
             graph_api = settings.FACEBOOK_GRAPH_API
@@ -73,7 +80,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
             if request.data.get('is_subscribe') == True:
                 page_id = request.data.get('page_id')
                 try:
-                    page = FanPage.objects.filter(page_id=page_id).first()
+                    page = FanPage.objects.filter(page_id=page_id, user_id=user_header).first()
                     query_field = {'subscribed_fields': settings.SUBCRIBE_FIELDS,
                                    'access_token': page.access_token_page}
                     response = requests.post(f'{graph_api}/{page_id}/subscribed_apps', data=query_field)
@@ -100,7 +107,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
             else:
                 page_id = request.data.get('page_id')
                 try:
-                    page = FanPage.objects.filter(page_id=page_id).first()
+                    page = FanPage.objects.filter(page_id=page_id, user_id=user_header).first()
                     if page:
                         if page.is_active:
                             page_id = page.page_id
@@ -136,10 +143,11 @@ class FacebookViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'], url_path='delete')
     def delete(self, request, *args, **kwargs):
+        user_header = get_user_from_header(request.headers)
         sz = DeleteFanPageSerializer(data = request.data)
         sz.is_valid(raise_exception=True)
         for id in sz.data['id']:
-            page = FanPage.objects.filter(id=id).first()
+            page = FanPage.objects.filter(id=id, user_id=user_header).first()
             if page:
                 page.delete()
             else:
@@ -159,33 +167,42 @@ class FacebookViewSet(viewsets.ModelViewSet):
     def get_data(self,request,*args, **kwargs):
         graph_api = settings.FACEBOOK_GRAPH_API
         page_id = request.data['page_id']
-        page = FanPage.objects.get(page_id =page_id)
+        user_header = get_user_from_header(request.headers)
+        page = FanPage.objects.get(page_id =page_id, user_id=user_header)
         query = {'access_token': page.access_token_page, 'fields': "senders"}
        
         conversation = requests.get(f'{graph_api}/{page_id}/conversations',params=query)
         if conversation.status_code == 200:
            for item in conversation.json()['data']:               
-               check_room= Room.objects.filter(conversation_id = item['id']).first()
+               check_room= Room.objects.filter(conversation_id = item['id'], user_id=user_header).first()
                if check_room:
                    continue
                else:
                    external_id =''
                    name=''
                    for data in item['senders']['data']:
-                       if data['id'] == page_id:
-                           continue
-                       else:
-                           name = data['name']
-                           external_id = data['id']       
-                       room= Room.objects.create(page_id=page,external_id=external_id, name = name,type='facebook',conversation_id=item['id'])
-                       room.save()
+                        if data['id'] == page_id:
+                            continue
+                        else:
+                            name = data['name']
+                            external_id = data['id']       
+                        room = Room.objects.create(
+                                page_id=page,
+                                external_id=external_id,
+                                name = name,
+                                type='facebook',
+                                conversation_id=item['id'],
+                                user_id=user_header
+                            )
+                        room.save()
         return custom_response(200,"ok",conversation.json()['data'])
     @action(detail=False, methods=['POST'], url_path ='message')
     def get_message_room(self,request,*args, **kwargs):
         graph_api = settings.FACEBOOK_GRAPH_API
-        room_id = request.data['room_id'] 
-        room = Room.objects.get(id =room_id)
-        page = FanPage.objects.filter(id=room.page_id_id).first()
+        room_id = request.data['room_id']
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.get(id =room_id,user_id=user_header)
+        page = FanPage.objects.filter(id=room.page_id_id, user_id=user_header).first()
         conversation_id=room.conversation_id
         query = {'access_token': page.access_token_page, 'fields': "message,attachments,sticker,created_time,to,from"}
         message = requests.get(f'{graph_api}/{conversation_id}/messages',params=query)

@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from sop_chat_service.app_connect.serializers.message_facebook_serializers import MessageFacebookSerializer
 from sop_chat_service.app_connect.models import Room
 from core.utils.api_facebook_app import api_send_message_text_facebook, api_send_message_file_facebook, get_message_from_mid
-from core.utils import send_and_save_message_store_database, format_message_data_for_websocket, format_data_from_facebook
+from core.utils import send_and_save_message_store_database, format_data_from_facebook
 import asyncio
 import nats
 from django.conf import settings
