@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
-from ...app_connect.models import Attachment, Message, Room
+from sop_chat_service.app_connect.serializers.room_serializers import GetMessageSerializer
+from ...app_connect.models import Attachment, Message, Room, UserApp
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo, UserLiveChat
 
 
@@ -43,6 +44,28 @@ class MessageLiveChatSerializer(serializers.ModelSerializer):
         model = Message
         fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender']
 
+class MessageLiveChatSend(serializers.Serializer):
+    file = serializers.FileField(required=False)
+    text = serializers.CharField(required=False)
+    room_id = serializers.CharField(required=True)
+    mid = serializers.CharField(required=False)
+    message_type= serializers.CharField(required=True)
+
+    class Meta:
+        fields = ['file', 'text', 'room_id', 'mid', 'message_type']
+    def validate(self, attrs):
+        if attrs.get("message_type") == "text":
+            if not attrs.get("text"):
+                raise serializers.ValidationError({"text": "message is required"})
+        if attrs.get("message_type") == "file":
+            if not attrs.get("file"):
+                raise serializers.ValidationError({"file": "file is required"})
+        if attrs.get("mid"):
+            message = Message.objects.get(id = attrs.get('mid'))
+            if not message:
+                raise serializers.ValidationError({"mid": "Message is Invalid"})
+
+        return attrs
 
 class AttachmentSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField(source='get_url', read_only=True)
@@ -85,3 +108,21 @@ class CreateUserLiveChatSerializers(serializers.ModelSerializer):
     class Meta:
         model = UserLiveChat
         fields =[ 'title','value']
+class RoomLiveChatSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
+    unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
+
+    class Meta:
+        model = Room
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id']
+
+    def get_last_message(self, obj):
+        message = Message.objects.filter(room_id=obj).order_by('-id').first()
+        sz = GetMessageSerializer(message)
+        return sz.data
+
+    def get_unseen_message_count(self, obj):
+        count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
+        return count
+    

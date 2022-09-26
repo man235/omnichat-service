@@ -1,33 +1,39 @@
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sop_chat_service.facebook.utils import custom_response
+from sop_chat_service.utils.request_headers import get_user_from_header
 
 from ..utils import Pagination
 from ...app_connect.models import Attachment, Message, Room
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
-from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializers, GetMessageLiveChatSerializer, LiveChatSerializer, MessageLiveChatSerializer, RoomSerializer, UpdateAvatarLiveChatSerializer
+from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializers, GetMessageLiveChatSerializer, LiveChatSerializer, MessageLiveChatSend, MessageLiveChatSerializer, RoomSerializer, UpdateAvatarLiveChatSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 import time
+from iteration_utilities import unique_everseen
 
 
 
 class LiveChatViewSet(viewsets.ModelViewSet):
+
     queryset = LiveChat.objects.all()
     serializer_class = LiveChatSerializer
     permission_classes = (permissions.AllowAny, )
 
     def list(self, request, *args, **kwargs):
-        qs = LiveChat.objects.all()
+        user_header = get_user_from_header(request.headers)
+
+        qs = LiveChat.objects.filter(user_id = user_header)
         sz = LiveChatSerializer(qs, many=True)
         return custom_response(200,"Get Config Live Chat Successfully",sz.data)
     
 
     def create(self, request, *args, **kwargs):
+        user_header = get_user_from_header(request.headers)
         try:
-            config = LiveChat.objects.all().first()
+            config = LiveChat.objects.filter(user_id = user_header).first()
             data = request.data
             if config:
                 if data:
@@ -41,13 +47,12 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                             for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                     message= 'Update success'
-                    
                     return custom_response(200,message,config.id)
             else:
                 if data:
                     data_config = data.get('live_chat', None)
                     if data_config:
-                        live_chat = LiveChat.objects.create(**data_config)
+                        live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
                         if data.get('registerinfo', None):
                             for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
@@ -64,65 +69,47 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 update = UpdateAvatarLiveChatSerializer(live_chat,data=request.data)
                 update.is_valid(raise_exception=True)
                 update.save()
-              
                 message= 'Update success'
             return custom_response(200,message,[])
         return Response(200, status=status.HTTP_200_OK)
+    @action(detail=False, methods=["GET"], url_path="room")
+    def room(self, request, *args):
+        user_header = get_user_from_header(request.headers)
 
-    @action(detail=False, methods=["POST"], url_path="message/send")
-    def send_message(self, request, *args):
-        x_cookie = request.headers.get('X-Cookie')
-
+        start_date=datetime.today() - timedelta(days=1)
+        end_date=datetime.today()
         try:
-            sz = MessageLiveChatSerializer(data=request.data)
-            sz.is_valid(raise_exception=True)
-            room = Room.objects.filter(type='Live Chat',external_id=x_cookie).order_by('-id').first()
-            current_room = room
-            if room:
-                message = Message.objects.filter(room_id=room, is_sender=True).order_by('-created_at').first()
-                if message:
-                    a = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                    b = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    delta = (datetime.strptime(b, '%Y-%m-%d %H:%M:%S') -
-                             datetime.strptime(a, '%Y-%m-%d %H:%M:%S')).total_seconds()
-                    if delta/3600 > 24:
-                        new_room = Room.objects.create( type='Live Chat')
-                        current_room = new_room
-            else:
-                new_room = Room.objects.create(type='Live Chat',external_id=x_cookie)
-                current_room = new_room
-
-            new_message = Message.objects.create(room_id=current_room, is_sender=True, sender_id=sz.validated_data.get(
-                'sender_id'), recipient_id=sz.validated_data.get('recipient_id'), text=sz.validated_data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
-            attachments = request.FILES.getlist('attachments')
-            for attachment in attachments:
-                new_attachment = Attachment.objects.create(
-                    file=attachment, type=attachment.content_type, mid=new_message)
-            return Response(status=status.HTTP_200_OK)
+            rooms = Room.objects.filter(user_id =user_header,type= 'live chat',room_message__is_sender = False).exclude(room_message__created_at__range = [start_date, end_date])
+            if rooms:
+                for room in unique_everseen(rooms):
+                    Room.objects.filter(id = room.id).update(status="expired")
+                return custom_response(200,"ok",[])
         except Exception:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return custom_response(500,"INTERNAL_SERVER_ERROR",[])
+    @action(detail=False, methods=["POST"], url_path="message")
+    def send_message(self, request, *args):
+        user_header = get_user_from_header(request.headers)
+        try:
+            sz = MessageLiveChatSend(data=request.data)
+            sz.is_valid(raise_exception=True)
+            room = Room.objects.filter(id = sz.room_id).first()
+            if sz.data.get("mid"):
+                message = Message.objects.get(id = sz.data.get("mid"))
+                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
+                attachments = request.FILES.getlist('file')
+                for attachment in attachments:
+                    new_attachment = Attachment.objects.create(
+                        file=attachment, type=attachment.content_type, mid=new_message)
+            else:
+                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
+                attachments = request.FILES.getlist('file')
+                for attachment in attachments:
+                    new_attachment = Attachment.objects.create(
+                        file=attachment, type=attachment.content_type, mid=new_message)
+            return custom_response(200,"ok",[])
+        except Exception:
+            return custom_response(500,"INTERNAL_SERVER_ERROR",[])
 
 
-    @action(detail=False,methods=['POST'],url_path='start')
-    def start(self,request,*args, **kwargs):
-        x_cookie = request.headers.get('X-Cookie')
-
-        data = request.data
-        room = Room.objects.create(type='livechat',external_id=x_cookie,name=x_cookie)
-        sz = CreateUserLiveChatSerializers(data=data,many=True)
-        sz.is_valid(raise_exception=True)
-        sz.save(room_id=room)
-        return custom_response(200,"ok",[])
-        
-    @action(detail=False, methods=["GET"], url_path="active")
-    def active(self,request,*args, **kwargs):
-        id = request.data.get("id",None)
-        active = request.data("active",None)
-        
-        live_chat = LiveChat.objects.filter(id = id).first()
-        if active:
-            live_chat.is_active = True
-        else:
-            live_chat.is_active =False
-        return custom_response(200,"Active Live Chat Successfully",[])
-
+    
+  
