@@ -6,3 +6,16 @@ class FanPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = FanPage
         fields = ['id', 'name', 'page_id', 'avatar_url', 'is_active', 'created_by', 'created_at', 'last_subscribe']
+
+    def create(self, validated_data: dict):
+        return FanPage.objects.create(**validated_data) 
+    
+    def update(self, instance: FanPage, validated_data: dict):
+        instance.name = validated_data.get('name')
+        instance.access_token_page = validated_data.get('access_token_page')
+        instance.refresh_token_page = validated_data.get('refresh_token_page')
+        instance.avatar_url = validated_data.get('avatar_url')
+        instance.is_active = validated_data.get('is_active')
+        instance.created_by = validated_data.get('created_by')
+        instance.save()
+        return instance

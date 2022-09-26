@@ -17,7 +17,7 @@ build-dev:
 #    - mv $DEV_ENV .env
 #    - cat .env
     - docker build --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:latest -f compose/production/django/Dockerfile .
-
+    
     - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:latest
 
@@ -46,6 +46,7 @@ build-stg:
     - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
   script:
     - docker build --tag $CI_REGISTRY_URL/$STG_REGISTRY_NAME:$CI_COMMIT_SHA --tag $CI_REGISTRY_URL/$STG_REGISTRY_NAME:latest -f compose/production/django/Dockerfile .
+
     - docker push $CI_REGISTRY_URL/$STG_REGISTRY_NAME:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_URL/$STG_REGISTRY_NAME:latest
 
