@@ -15,7 +15,7 @@ def format_message_data_for_websocket(data, uuid):
         "sender_id": data.get("senderId"),
         "sender_name": None,
         "text": data.get("text"),
-        "uuid": uuid
+        "uuid": str(uuid)
     }
     data_res = json.dumps(data)
     return data_res
@@ -87,6 +87,6 @@ def format_data_from_facebook(room, message_response, uuid):
         "reaction": None,
         "reply_id": None,
         "sender_name": None,
-        "uuid": uuid
+        "uuid": str(uuid)
     }
     return data_mid_json
