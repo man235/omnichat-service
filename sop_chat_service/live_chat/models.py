@@ -1,6 +1,7 @@
 from django.db import models
 
 from sop_chat_service.app_connect.models import Room
+from sop_chat_service.live_chat.utils import file_size
 
 # Create your models here.
 
@@ -16,7 +17,7 @@ class LiveChat(models.Model):
     name_agent = models.CharField(max_length=255, null=True, blank=True)
     is_show_avatar = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    avatar = models.ImageField(null=True, blank=True)
+    avatar = models.ImageField(null=True, blank=True,validators=[file_size])
     name_agent_active = models.BooleanField(default=True)
     is_popup = models.BooleanField(default=False)
     color = models.CharField(max_length=10, null=True, blank=True)
