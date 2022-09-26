@@ -15,7 +15,7 @@ from sop_chat_service.zalo.utils import zalo_oa_auth
 class ZaloViewSet(viewsets.ModelViewSet):
     queryset = FanPage.objects.all()
     permission_classes = (permissions.AllowAny, )
-    serializer_class = FanPageSerializer
+    serializer_class = ZaloAuthenticationSerializer
         
     @action(detail=False, methods=['post'], url_path='subscribe')
     def connect_oa(self, request, *args, **kwargs) -> Response:
@@ -33,10 +33,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
             )
 
             if not oa_token_json:
-                return custom_response(status.HTTP_400_BAD_REQUEST)
+                return custom_response(400, 'Failure')
             elif oa_token_json.get('message') != 'Success':
-                return custom_response(status.HTTP_400_BAD_REQUEST, 
-                                       oa_token_json.get('error'))
+                return custom_response(400, oa_token_json.get('error'))
 
             access_token = oa_token_json.get('data').get('access_token')
             refresh_token = oa_token_json.get('data').get('refresh_token')
@@ -56,8 +55,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
                             'is_active': True,
                             'created_by': request.user.id,
                         }
-                        oa_sz = self.get_serializer(data=oa_data_bundle)
-                        if oa_sz.is_valid():
+                        oa_sz = FanPageSerializer(data=oa_data_bundle)
+                        if oa_sz.is_valid(raise_exception=True):
                             # is_subscribed = oa_connection_sz.validated_data.get('is_subscribed')             
                             oa_queryset = FanPage.objects.filter(page_id=
                                                                  oa_data.get('oa_id')
@@ -66,15 +65,15 @@ class ZaloViewSet(viewsets.ModelViewSet):
                                 oa_model = oa_sz.create(oa_data_bundle)
                             else:
                                 oa_model = oa_sz.update(oa_queryset, oa_data_bundle)
-                            return custom_response(status.HTTP_200_OK, 'Success', self.get_serializer(oa_model).data)
+                            return custom_response(200, 'Success', FanPageSerializer(oa_model).data)
                         else:
-                            return custom_response(status.HTTP_500_INTERNAL_SERVER_ERROR)
+                            return custom_response(400, 'Failure')
                     except Exception as e:
-                        return custom_response(status.HTTP_401_UNAUTHORIZED, e)
+                        return custom_response(500, str(e))
             else:
-                return custom_response(status.HTTP_400_BAD_REQUEST)
+                return custom_response(401, 'Failed to authorize')
         else:
-            return custom_response(status.HTTP_400_BAD_REQUEST)
+            return custom_response(400, 'Bad request')
     
     @action(detail=False, methods=['post'], url_path='delete')
     def delete_oa(self, request, *args, **kwargs) -> Response:
@@ -83,9 +82,12 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        FanPage.objects.filter(page_id=sz.validated_data.get('oa_id')).delete()
-        
-        return custom_response(200, 'Delete OA successfully', [])
+        qs = FanPage.objects.filter(page_id=sz.validated_data.get('oa_id'))
+        if qs:
+            qs.delete()
+            return custom_response(200, 'Deleted Zalo OA successfully')
+        return custom_response(400, 'Failed to delete Zalo OA', [])
+
     
     @action(detail=False, methods=['post'], url_path='unsubscribe')
     def unsubscribe_oa(self, request, *args, **kwargs) -> Response:
@@ -94,9 +96,11 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        FanPage.objects.filter(page_id=sz.validated_data.get('oa_id')).update(is_active=False)
-
-        return custom_response(200, 'Unsubscribe to Zalo OA successfully', [])
+        qs = FanPage.objects.filter(page_id=sz.validated_data.get('oa_id'))
+        if qs:
+            qs.update(is_active=False)
+            return custom_response(200, 'Unsubscribe Zalo OA successfully')
+        return custom_response(400, 'Failed to unsubscribe Zalo OA', [])
         
     @action(detail=False, methods=['post'], url_path='list')
     def get_oa_list(self, request, *args, **kwargs) -> Response:
@@ -104,7 +108,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         API get Zalo OA list
         """
         oa_queryset = FanPage.objects.all()
-        oa_serializer = self.get_serializer(oa_queryset, many=True)
+        oa_serializer = FanPageSerializer(oa_queryset, many=True)
         
         for item in oa_serializer.data:
             data = dict(item)
