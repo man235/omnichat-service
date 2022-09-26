@@ -12,6 +12,7 @@ def check_room_facebook(data):
         return None
     user_app = UserApp.objects.filter(external_id=data.get("senderId")).first()
     if not user_app:
+        logger.debug(f' NOT FIND USER APP FROM DATABASE ------------------------- ')
         res_user_app = get_user_info(data.get("senderId"), check_fanpage.access_token_page)
         if not res_user_app:
             logger.debug(f' NOT FIND USER APP FROM FACEBOOK ------------------------- ')
