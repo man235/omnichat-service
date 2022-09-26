@@ -6,7 +6,7 @@ from django.utils import timezone
 
 
 @sync_to_async
-def save_message_store_database(room, data_msg):
+def save_message_store_database(room, data_msg, uuid):
     data_res = get_message_from_mid(room.page_id.access_token_page, data_msg.get("mid"))
     data = format_data_from_facebook_nats_subscribe(room, data_res, data_msg)
     message = Message(
@@ -14,7 +14,8 @@ def save_message_store_database(room, data_msg):
         fb_message_id = data.get("mid"),
         sender_id = data.get("sender_id"),
         recipient_id = data.get("recipient_id"),
-        text = data.get("text")
+        text = data.get("text"),
+        uuid = uuid
     )
     message.save()
     if data.get("attachments"):
@@ -30,7 +31,7 @@ def save_message_store_database(room, data_msg):
     return
 
 
-def send_and_save_message_store_database(room, data: dict):
+def send_and_save_message_store_database(room, data: dict, uuid):
     message = Message(
         room_id = room,
         fb_message_id = data.get("mid"),
@@ -38,7 +39,8 @@ def send_and_save_message_store_database(room, data: dict):
         recipient_id = data.get("recipient_id"),
         text = data.get("text"),
         is_sender= True,
-        is_seen = timezone.now()
+        is_seen = timezone.now(),
+        uuid = uuid
     )
     message.save()
     attachments = data.get("attachments")

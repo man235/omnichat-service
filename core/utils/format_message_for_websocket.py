@@ -2,7 +2,7 @@ from django.utils import timezone
 import json
 
 
-def format_message_data_for_websocket(data):
+def format_message_data_for_websocket(data, uuid):
     data = {
         "attachments": data.get("attachments"),
         "created_at": str(timezone.now()),
@@ -14,7 +14,8 @@ def format_message_data_for_websocket(data):
         "reply_id": None,
         "sender_id": data.get("senderId"),
         "sender_name": None,
-        "text": data.get("text")
+        "text": data.get("text"),
+        "uuid": uuid
     }
     data_res = json.dumps(data)
     return data_res
@@ -54,7 +55,7 @@ def format_data_from_facebook_nats_subscribe(room, message_response, data_msg):
     return data_mid_json
 
 
-def format_data_from_facebook(room, message_response):
+def format_data_from_facebook(room, message_response, uuid):
     attachments = []
     data_attachment = message_response.get('attachments')
     if data_attachment:
@@ -85,6 +86,7 @@ def format_data_from_facebook(room, message_response):
         "message_reply": None,
         "reaction": None,
         "reply_id": None,
-        "sender_name": None
+        "sender_name": None,
+        "uuid": uuid
     }
     return data_mid_json
