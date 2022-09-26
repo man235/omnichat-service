@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 def check_room_facebook(data):
     check_fanpage = FanPage.objects.filter(page_id=data.get("recipientId")).first()
     if not check_fanpage or not check_fanpage.is_active:
+        logger.debug(f' NOT FIND FANPAGE FROM DATABASE -------------------------')
         return None
     user_app = UserApp.objects.filter(external_id=data.get("senderId")).first()
     if not user_app:
