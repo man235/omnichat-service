@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-import time
+from datetime import datetime
 from typing import Union, Any
 from django.conf import settings
 
@@ -70,14 +69,17 @@ def check_valid_token(time_update: datetime = None) -> tuple:
     """
     Utility function check valid token by time remaining
     """
-    diff = datetime.now(timezone.utc) - time_update
-    time_remaining = diff.seconds
-    expired_atk = False
-    expired_rtk = False
-    
-    if time_remaining > settings.OA_ACCESS_EXPIRED_IN:
-        expired_atk = True
-    if time_remaining > settings.OA_REFRESH_EXPIRED_IN:
-        expired_rtk = True
-
-    return expired_atk, expired_rtk
+    try:
+        now = datetime.now()
+        diff = now - time_update
+        time_remaining = diff.seconds
+        expired_atk = False
+        expired_rtk = False
+        
+        if time_remaining > settings.OA_ACCESS_EXPIRED_IN:
+            expired_atk = True
+        if time_remaining > settings.OA_REFRESH_EXPIRED_IN:
+            expired_rtk = True
+        return expired_atk, expired_rtk
+    except Exception:
+        return None
