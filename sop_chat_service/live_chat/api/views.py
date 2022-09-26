@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 
 from sop_chat_service.facebook.utils import custom_response
+from sop_chat_service.utils.request_headers import get_user_from_header
 
 from ..utils import Pagination
 from ...app_connect.models import Attachment, Message, Room
@@ -22,16 +23,17 @@ class LiveChatViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny, )
 
     def list(self, request, *args, **kwargs):
-        auth_id = request.headers.get('X-Auth-Id')
-        qs = LiveChat.objects.filter(user_id = auth_id)
+        user_header = get_user_from_header(request.headers)
+
+        qs = LiveChat.objects.filter(user_id = user_header)
         sz = LiveChatSerializer(qs, many=True)
         return custom_response(200,"Get Config Live Chat Successfully",sz.data)
     
 
     def create(self, request, *args, **kwargs):
-        auth_id = request.headers.get('X-Auth-Id')
+        user_header = get_user_from_header(request.headers)
         try:
-            config = LiveChat.objects.filter(user_id = auth_id).first()
+            config = LiveChat.objects.filter(user_id = user_header).first()
             data = request.data
             if config:
                 if data:
@@ -50,7 +52,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 if data:
                     data_config = data.get('live_chat', None)
                     if data_config:
-                        live_chat = LiveChat.objects.create(**data_config,user_id = auth_id)
+                        live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
                         if data.get('registerinfo', None):
                             for item in data.get('registerinfo', None):
                                 LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
@@ -72,11 +74,12 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         return Response(200, status=status.HTTP_200_OK)
     @action(detail=False, methods=["GET"], url_path="room")
     def room(self, request, *args):
-        auth_id = request.headers.get('X-Auth-Id')
+        user_header = get_user_from_header(request.headers)
+
         start_date=datetime.today() - timedelta(days=1)
         end_date=datetime.today()
         try:
-            rooms = Room.objects.filter(user_id =auth_id,type= 'live chat',room_message__is_sender = False).exclude(room_message__created_at__range = [start_date, end_date])
+            rooms = Room.objects.filter(user_id =user_header,type= 'live chat',room_message__is_sender = False).exclude(room_message__created_at__range = [start_date, end_date])
             if rooms:
                 for room in unique_everseen(rooms):
                     Room.objects.filter(id = room.id).update(status="expired")
@@ -85,20 +88,20 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             return custom_response(500,"INTERNAL_SERVER_ERROR",[])
     @action(detail=False, methods=["POST"], url_path="message")
     def send_message(self, request, *args):
-        auth_id = request.headers.get('X-Auth-Id')
+        user_header = get_user_from_header(request.headers)
         try:
             sz = MessageLiveChatSend(data=request.data)
             sz.is_valid(raise_exception=True)
             room = Room.objects.filter(id = sz.room_id).first()
             if sz.data.get("mid"):
                 message = Message.objects.get(id = sz.data.get("mid"))
-                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=auth_id, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create(
                         file=attachment, type=attachment.content_type, mid=new_message)
             else:
-                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=auth_id, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create(
