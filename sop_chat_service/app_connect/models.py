@@ -50,6 +50,7 @@ class Room(models.Model):
         ALL='all'
         PROCESSING='processing'
         COMPLETED = 'completed'
+        EXPIRED ="expired"
     class State(models.TextChoices):
         UNREAD='unread'
         NOT_ANSWER='not_answer'
