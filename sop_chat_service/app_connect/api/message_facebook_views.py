@@ -10,6 +10,7 @@ import asyncio
 import nats
 from django.conf import settings
 import json
+import uuid
 
 
 async def connect_nats_client_publish_websocket(new_topic_publish, data_mid):
@@ -35,9 +36,10 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 if not res:
                     return Response(False, status=status.HTTP_400_BAD_REQUEST)
                 message_response = get_message_from_mid(room.page_id.access_token_page, res['message_id'])
-                data_mid_json = format_data_from_facebook(room, message_response)
+                _uuid = uuid.uuid4()
+                data_mid_json = format_data_from_facebook(room, message_response, _uuid)
                 asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-                send_and_save_message_store_database(room, data_mid_json)
+                send_and_save_message_store_database(room, data_mid_json,_uuid)
             return Response(True, status=status.HTTP_200_OK)
         else:
         # get message from mid
@@ -45,7 +47,8 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             if not res:
                 return Response(False, status=status.HTTP_400_BAD_REQUEST)
             message_response = get_message_from_mid(room.page_id.access_token_page, res['message_id'])
-            data_mid_json = format_data_from_facebook(room, message_response)
+            _uuid = uuid.uuid4()
+            data_mid_json = format_data_from_facebook(room, message_response, _uuid)
             asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-            send_and_save_message_store_database(room, data_mid_json)
+            send_and_save_message_store_database(room, data_mid_json, _uuid)
             return Response(True, status=status.HTTP_200_OK)

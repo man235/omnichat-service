@@ -50,6 +50,7 @@ class Room(models.Model):
         ALL='all'
         PROCESSING='processing'
         COMPLETED = 'completed'
+        EXPIRED ="expired"
     class State(models.TextChoices):
         UNREAD='unread'
         NOT_ANSWER='not_answer'
@@ -112,6 +113,7 @@ class Message(models.Model):
         ANGRY = 'angry'
         YAY = 'yay'
 
+    uuid = models.CharField(max_length=255, null=True, blank=True)      # id unique of message
     room_id = models.ForeignKey(Room, related_name='room_message', null=True, blank=True,
                                 on_delete=models.SET_NULL)     # foreign key with room
     fb_message_id = models.CharField(max_length=255, null=True, blank=True)      # message id of message

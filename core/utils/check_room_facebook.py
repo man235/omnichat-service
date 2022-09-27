@@ -2,17 +2,21 @@ from sop_chat_service.app_connect.models import FanPage, Room, UserApp
 from .api_facebook_app import get_user_info
 from django.utils import timezone
 from asgiref.sync import sync_to_async
-
+import logging
+logger = logging.getLogger(__name__)
 
 @sync_to_async
 def check_room_facebook(data):
     check_fanpage = FanPage.objects.filter(page_id=data.get("recipientId")).first()
     if not check_fanpage or not check_fanpage.is_active:
+        logger.debug(f' NOT FIND FANPAGE FROM DATABASE -------------------------')
         return None
     user_app = UserApp.objects.filter(external_id=data.get("senderId")).first()
     if not user_app:
+        logger.debug(f' NOT FIND USER APP FROM DATABASE ------------------------- ')
         res_user_app = get_user_info(data.get("senderId"), check_fanpage.access_token_page)
         if not res_user_app:
+            logger.debug(f' NOT FIND USER APP FROM FACEBOOK ------------------------- ')
             return
         user_app = UserApp.objects.create(
             # user_id = res_user_app.get('profile_pic'),
