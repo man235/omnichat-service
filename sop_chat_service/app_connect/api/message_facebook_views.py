@@ -39,7 +39,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 _uuid = uuid.uuid4()
                 data_mid_json = format_data_from_facebook(room, message_response, _uuid)
                 asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-                send_and_save_message_store_database(room, data_mid_json)
+                send_and_save_message_store_database(room, data_mid_json,_uuid)
             return Response(True, status=status.HTTP_200_OK)
         else:
         # get message from mid
