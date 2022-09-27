@@ -69,7 +69,9 @@ def format_data_from_facebook(room, message_response, uuid):
                 data_attachment.get('data')[0].get('image_data') else
                 data_attachment.get('data')[0].get('file_url')
             ),
-            "size": data_attachment.get('data')[0]['size']
+            "size": data_attachment.get('data')[0]['size'],
+            "video_url": data_attachment.get('data')[0]['video_data']['url'] if 
+                data_attachment.get('data')[0].get('video_data') else None
         }
         attachments.append(attachment)
     data_mid_json = {
