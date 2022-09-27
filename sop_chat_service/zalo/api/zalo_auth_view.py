@@ -102,7 +102,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
             return custom_response(200, 'Unsubscribe Zalo OA successfully')
         return custom_response(400, 'Failed to unsubscribe Zalo OA', [])
         
-    @action(detail=False, methods=['post'], url_path='list')
+    @action(detail=False, methods=['post'], url_path='getoa')
     def get_oa_list(self, request, *args, **kwargs) -> Response:
         """
         API get Zalo OA list
@@ -131,6 +131,74 @@ class ZaloViewSet(viewsets.ModelViewSet):
                                                                                     refresh_token_page=new_refresh_token)
                     else:
                         FanPage.objects.filter(page_id=data.get('page_id')).update(is_active=False)
-         
+
+        # Update FanPage Serializers
+        oa_serializer = FanPageSerializer(FanPage.objects.all(), many=True)
         return custom_response(message='Success', data=oa_serializer.data)
+    
+    @action(detail=False, methods=['post'], url_path='oa-list')
+    def get_oa_list_v2(self, request, *args, **kwargs) -> Response:
+        """
+        API get Zalo OA list
+        """
+        oa_queryset = FanPage.objects.all()
+        oa_serializer = FanPageSerializer(oa_queryset, many=True)
         
+        for item in oa_serializer.data:
+            data = dict(item)
+      
+            if data.get('is_active'):
+                oa = FanPage.objects.get(page_id=data.get('page_id'))   
+                time_remaining = oa.last_subscribe  
+                expired_access, expired_refresh = zalo_oa_auth.check_valid_token(time_remaining)
+            
+                if expired_refresh:
+                    FanPage.objects.filter(page_id=data.get('page_id')).update(is_active=False)
+                elif expired_access:
+                    token_json = zalo_oa_auth.get_oa_token(refresh_token=
+                                                           data.get('refresh_token_page'))
+                    
+                    if token_json.get('message') != 'Success':
+                        new_access_token = token_json.get('data').get('access_token')
+                        new_refresh_token = token_json.get('data').get('refresh_token')
+                        FanPage.objects.filter(page_id=data.get('page_id')).update(access_token_page=new_access_token,
+                                                                                    refresh_token_page=new_refresh_token)
+                    else:
+                        FanPage.objects.filter(page_id=data.get('page_id')).update(is_active=False)
+
+        # Update FanPage Serializers
+        oa_serializer = FanPageSerializer(FanPage.objects.all(), many=True)
+        return custom_response(message='Success', data=oa_serializer.data)
+    
+    @action(detail=False, methods=['post'], url_path='refresh')
+    def refresh_token(self, request, *args, **kwargs) -> Response:
+        """
+        API refresh tokens
+        """
+        
+        serializer = ZaloConnectPageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        oa_id = serializer.data.get('oa_id')
+        queryset = FanPage.objects.filter(page_id=oa_id)
+        if queryset:
+            refresh_token_page = FanPage.objects.get(page_id=oa_id).refresh_token_page
+            if refresh_token_page:
+                oa_token = zalo_oa_auth.get_oa_token(oa_id=oa_id, refresh_token=refresh_token_page)
+                if not oa_token:
+                    return custom_response(400, 'Failure')
+                if oa_token.get('message') == 'Success':
+                    access_token = oa_token.get('data').get('access_token')
+                    refresh_token = oa_token.get('data').get('refresh_token')
+                    
+                    queryset.update(access_token_page=access_token,
+                                    refresh_token_page=refresh_token)
+                    
+                    return custom_response(200, 'Success')
+                else:
+                    return custom_response(400, oa_token.get('error'))
+            return custom_response(401, 'Failure')
+        else:
+            return custom_response(400, 'Zalo OA not found')
+
+                
+                
