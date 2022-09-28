@@ -111,10 +111,10 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         oa_queryset = FanPage.objects.filter(type='zalo')
         oa_serializer = FanPageSerializer(oa_queryset, many=True)
-        
+
         for item in oa_serializer.data:
             data = dict(item)
-
+            
             if not data.get('is_active'):
                 continue
             
@@ -134,7 +134,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 )
 
         # Update FanPage Serializers
-        oa_serializer = FanPageSerializer(FanPage.objects.all(), many=True)
+        oa_updated_serializer = FanPageSerializer(FanPage.objects.filter(type='zalo'), many=True)
         return custom_response(message='Success', data=oa_serializer.data)
     
     @action(detail=False, methods=['post'], url_path='refresh')
