@@ -50,6 +50,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 try:                  
                     oa_data_bundle = {
                         'page_id': oa_data.get('page_id'),
+                        'type': 'zalo',
                         'name': oa_data.get('name'),
                         'access_token_page': access_token,
                         'refresh_token_page': refresh_token,
@@ -108,7 +109,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API get Zalo OA list
         """
-        oa_queryset = FanPage.objects.all()
+        oa_queryset = FanPage.objects.filter(type='zalo')
         oa_serializer = FanPageSerializer(oa_queryset, many=True)
         
         for item in oa_serializer.data:
