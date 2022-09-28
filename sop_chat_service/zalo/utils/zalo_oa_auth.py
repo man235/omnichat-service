@@ -52,18 +52,36 @@ def get_oa_token(oa_id: Union[int, str] = None,
         else:
             return None  # BAD Request
     except Exception as e:  
-        return json_response(is_success=False, result=e)
+        return json_response(is_success=False, result=str(e))
     
-def get_oa_info(access_token: str = None) -> Response:
+def get_oa_info(access_token: str = None) -> Any:
     """
-    Utility function gets OA's informations
+    Utility function gets OA's informations v2.0 - return json data
     """
     if access_token:
-        url = f'{settings.ZALO_OA_OPEN_API}/getoa'
-        headers = {'access_token': access_token}
-        oa_info_reponse = requests.get(url=url, headers=headers)  
-           
-        return oa_info_reponse
+        try:
+            url = f'{settings.ZALO_OA_OPEN_API}/getoa'
+            headers = {'access_token': access_token}
+            oa_info_reponse = requests.get(url=url, headers=headers)  
+            
+            oa_info_json = oa_info_reponse.json()
+
+            if oa_info_reponse.status_code == 200:
+                if oa_info_json.get('message') == 'Success':
+                    oa_data: dict = oa_info_json.get('data')
+                    oa_data_bundle = {
+                        'page_id': oa_data.get('oa_id'),
+                        'name': oa_data.get('name'),
+                        'avatar_url': oa_data.get('avatar'),
+                        'is_active': True,
+                    }
+                    return json_response(is_success=True, result=oa_data_bundle)
+                else:
+                    return json_response(is_success=False, result=oa_info_json)
+            else:
+                return None
+        except Exception as e:
+            return json_response(is_success=False, result=str(e)) 
     
 def check_valid_token(time_update: datetime = None) -> tuple:
     """
