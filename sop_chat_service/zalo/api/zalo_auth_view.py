@@ -1,3 +1,4 @@
+from django.utils import timezone
 import requests
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets, permissions, status
@@ -135,7 +136,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
 
         # Update FanPage Serializers
         oa_updated_serializer = FanPageSerializer(FanPage.objects.filter(type='zalo'), many=True)
-        return custom_response(message='Success', data=oa_serializer.data)
+        return custom_response(message='Success', data=oa_updated_serializer.data)
     
     @action(detail=False, methods=['post'], url_path='refresh')
     def refresh_token(self, request, *args, **kwargs) -> Response:
@@ -162,7 +163,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     
                     queryset.update(access_token_page=access_token,
                                     refresh_token_page=refresh_token,
-                                    is_active=True)
+                                    is_active=True,
+                                    last_subscribe=timezone.now()
+                                   )
                     
                     return custom_response(200, 'Success')
                 else:
