@@ -54,6 +54,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                             'avatar_url': oa_data.get('avatar'),
                             'is_active': True,
                             'created_by': request.user.id,
+                            'type': 'zalo'
                         }
                         oa_sz = FanPageSerializer(data=oa_data_bundle)
                         if oa_sz.is_valid(raise_exception=True):

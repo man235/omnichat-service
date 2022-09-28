@@ -7,9 +7,9 @@ import time
 
 class FanPage(models.Model):
     class Type(models.TextChoices):
-        FACEBOOK = 'Facebook', 'Facebook'
-        ZALO = 'Zalo', 'Zalo'
-        LIVECHAT = 'LiveChat', 'LiveChat'
+        FACEBOOK = 'facebook'
+        ZALO = 'zalo'
+        LIVE_CHAT= 'livechat'
     page_id = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     access_token_page = models.CharField(max_length=12288, null=True, blank=True)
@@ -21,6 +21,8 @@ class FanPage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_subscribe = models.DateTimeField(auto_now=True, null=True, blank=True)
     user_id = models.CharField(max_length=255, null=True, blank=True)
+    type = models.CharField(max_length=30, default=Type.FACEBOOK,
+                            choices=Type.choices)
 
     def __str__(self):
         return str(self.id) + '-' + self.name+'-'+self.access_token_page
