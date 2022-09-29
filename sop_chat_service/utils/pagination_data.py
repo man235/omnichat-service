@@ -1,5 +1,6 @@
 
 def pagination_list_data(data, limit, offset):
+    data_result = {}
     if data:
         limit_req = limit
         offset_req = offset

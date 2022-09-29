@@ -37,20 +37,17 @@ class RoomViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         pass
 
-    def list(self, request, *args, **kwargs):
+    @action(detail=False, methods=["POST"], url_path="list-room")
+    def list_room(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
         qs = Room.objects.filter(completed_date__isnull=True, user_id=user_header, page_id__isnull=False).order_by("-room_message__created_at")
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
-        limit_req = request.data.get('limit')
-        offset_req = request.data.get('offset')
+        limit_req = request.data.get('limit', 10)
+        offset_req = request.data.get('offset', 1)
 
-        #   sort by room message
-        if ser_sort.data.get('sort'):
-            if ser_sort.data.get('sort').lower() == "new":
-                new_list = sorted(list(unique_everseen(sz.data)), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
-                return custom_response(200, "Get List Room Successfully", new_list)
+        list_data = []
         filter_request = ser_sort.data.get('filter')
         if filter_request:
             data_filter = {
@@ -58,17 +55,18 @@ class RoomViewSet(viewsets.ModelViewSet):
                 "status" : filter_request.get('status',None),
                 "state" : filter_request.get('state',None),
                 "phone" : filter_request.get('phone',None),
-                "label" : filter_request.get('label',None)    
+                "label" : filter_request.get('label',None)
             }
             qs = filter_room(data_filter, qs)
-        sz = RoomMessageSerializer(qs, many=True)
-        list_data = []
+            sz = RoomMessageSerializer(qs, many=True)
         list_data=list(unique_everseen(sz.data))
-        
-        if list_data:
-            data_result = pagination_list_data(list_data, limit_req, offset_req)
-            return custom_response(200,"ok",data_result)
-        return custom_response(200,"ok",sz.data)
+        #   sort by room message
+        if ser_sort.data.get('sort'):
+            if ser_sort.data.get('sort').lower() == "new":
+                list_data = sorted(list(unique_everseen(sz.data)), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
+
+        data_result = pagination_list_data(list_data, limit_req, offset_req)
+        return custom_response(200,"success",data_result)
     
     @action(detail=False, methods=["POST"], url_path="search")
     def search_for_room(self, request, pk=None, *args, **kwargs):
