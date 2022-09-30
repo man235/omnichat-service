@@ -86,7 +86,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id'))
+        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
         if qs:
             qs.delete()
             return custom_response(200, 'Success')
@@ -99,7 +99,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id'))
+        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
         if qs:
             qs.update(is_active=False)
             return custom_response(200, 'Success')
@@ -154,7 +154,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
             if refresh_token_page:
                 oa_token = zalo_oa_auth.get_oa_token(oa_id=oa_id, refresh_token=refresh_token_page)
                 
-                if not oa_token:
+                if not oa_token or oa_token.get('message') == 'Failure':
+                    queryset.update(is_active=False)
                     return custom_response(401, 'Failure')
 
                 if oa_token.get('message') == 'Success':
