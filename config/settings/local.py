@@ -72,8 +72,8 @@ FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v14.0'
 URL_FACEBOOK_GRAPH_API_SEND_MESSAGE = 'https://graph.facebook.com/me/messages'
 
 # Zalo OA
-ZALO_APP_ID = '1910014910662737087'
-ZALO_APP_SECRET_KEY = 'C88Hy3I4wq4CSAC2H3bU'
+ZALO_APP_ID = '1244402066467636358'
+ZALO_APP_SECRET_KEY = 'q9sESGTOXlld2ELXlxmE'
 ZALO_OA_OAUTH_API = 'https://oauth.zaloapp.com/v4/oa'
 ZALO_OA_OPEN_API = 'https://openapi.zalo.me/v2.0/oa'
 OA_ACCESS_EXPIRED_IN = 90000      # 25h
