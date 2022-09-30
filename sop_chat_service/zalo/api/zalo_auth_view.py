@@ -86,7 +86,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
+        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id'))
         if qs:
             qs.delete()
             return custom_response(200, 'Success')
@@ -99,7 +99,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
+        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id'))
         if qs:
             qs.update(is_active=False)
             return custom_response(200, 'Success')
