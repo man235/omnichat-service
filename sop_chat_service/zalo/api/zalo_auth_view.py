@@ -101,7 +101,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
         if qs:
-            qs.update(is_active=False)
+            qs.is_active = False
+            qs.save()
             return custom_response(200, 'Success')
         return custom_response(400, 'Failure', [])      
     
@@ -120,20 +121,20 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 continue
             
             oa_id = data.get('page_id')
-            oa_model = FanPage.objects.get(page_id=oa_id)
+            oa_model = FanPage.objects.filter(page_id=oa_id).first()
             access_token = oa_model.access_token_page
             oa_info = zalo_oa_auth.get_oa_info(access_token)
 
             if not oa_info or oa_info.get('message') != 'Success':
-                FanPage.objects.filter(page_id=oa_id).update(is_active=False)
+                oa_model.is_active = False
+                oa_model.save()
             else:
                 oa_data = oa_info.get('data')
-                FanPage.objects.filter(page_id=oa_id).update(
-                    name=oa_data.get('name'),
-                    avatar_url=oa_data.get('avatar_url'),
-                    created_by=request.user.id,
-                )
-
+                oa_model.name = oa_data.get('name')
+                oa_model.avatar_url = oa_data.get('avatar_url')
+                oa_model.created_by = request.user.id,
+                oa_model.save()
+                
         # Update FanPage Serializers
         oa_updated_serializer = FanPageSerializer(FanPage.objects.filter(type='zalo'), many=True)
         return custom_response(message='Success', data=oa_updated_serializer.data)
@@ -146,27 +147,28 @@ class ZaloViewSet(viewsets.ModelViewSet):
         serializer = ZaloConnectPageSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         oa_id = serializer.data.get('oa_id')
-        queryset = FanPage.objects.filter(page_id=oa_id)
+        queryset = FanPage.objects.filter(page_id=oa_id).first()
         
         if queryset:
-            refresh_token_page = FanPage.objects.get(page_id=oa_id).refresh_token_page
+            refresh_token_page = queryset.refresh_token_page
 
             if refresh_token_page:
                 oa_token = zalo_oa_auth.get_oa_token(oa_id=oa_id, refresh_token=refresh_token_page)
                 
                 if not oa_token or oa_token.get('message') == 'Failure':
-                    queryset.update(is_active=False)
+                    queryset.is_active = False
+                    queryset.save()
                     return custom_response(401, 'Failure')
 
                 if oa_token.get('message') == 'Success':
                     access_token = oa_token.get('data').get('access_token')
                     refresh_token = oa_token.get('data').get('refresh_token')
                     
-                    queryset.update(access_token_page=access_token,
-                                    refresh_token_page=refresh_token,
-                                    is_active=True,
-                                    last_subscribe=timezone.now()
-                                   )
+                    queryset.access_token_page = access_token
+                    queryset.refresh_token_page = refresh_token
+                    queryset.is_active = True
+                    queryset.last_subscribe=timezone.now()
+                    queryset.save()
                     
                     return custom_response(200, 'Success')
                 else:
