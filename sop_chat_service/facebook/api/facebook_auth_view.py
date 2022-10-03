@@ -20,7 +20,6 @@ class FacebookViewSet(viewsets.ModelViewSet):
     serializer_class = FacebookAuthenticationSerializer
 
     def list(self, request, *args, **kwargs):
-        logger.debug(f'headers ----------------- {request.headers}')
         user_header = get_user_from_header(request.headers)
         pages = FanPage.objects.filter(user_id=user_header).exclude(last_subscribe=None)
         sz = FanPageSerializer(pages, many=True)
@@ -28,7 +27,6 @@ class FacebookViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["POST"], url_path="list-page")
     def get_page(self, request, *args):
-        logger.debug(f'headers ----------------- {request.headers}')
         user_header = get_user_from_header(request.headers)
         sz = self.get_serializer(data=request.data)
         sz.is_valid(raise_exception=True)
@@ -36,16 +34,13 @@ class FacebookViewSet(viewsets.ModelViewSet):
         try:
             query = {'redirect_uri': sz.data['redirect_url'], 'code': sz.data['code'],
                         'client_id': settings.FACEBOOK_APP_ID, 'client_secret': settings.FACEBOOK_APP_SECRET}
-
             access_response = requests.get(f'{graph_api}/oauth/access_token', params=query)
-            logger.debug(f'access_response ------------------- {access_response.json()}')
-
             if access_response.status_code == 200:
                 page_query = {'access_token': access_response.json()['access_token']}
                 page_response = requests.get(f'{graph_api}/me/accounts', params=page_query)
-                logger.debug(f'page_response ------------------- {page_response.json()}')
                 if page_response.status_code == 200:
                     data = page_response.json()
+                    
                     for item in data['data']:
                         page = FanPage.objects.filter(page_id=item['id'],user_id=user_header).first()
                         id = item['id']
@@ -59,9 +54,11 @@ class FacebookViewSet(viewsets.ModelViewSet):
                         else:
                             logger.debug(f"{item}khong tao page ++++++++++++++++++++++++++++++++")
                             pass
+                            # page.is_active = False
+                            # page.access_token_page =""
+                            # page.save()
 
-                    # list_page = FanPage.objects.filter(is_active=False, last_subscribe=None)
-                    # pages = FanPageSerializer(list_page, many=True)
+                        FanPage.objects.filter(user_id=user_header).exclude(page_id= id).update(is_active = False)
 
                     return custom_response(200, "Get list page success", [])
                 else:
@@ -148,13 +145,25 @@ class FacebookViewSet(viewsets.ModelViewSet):
         user_header = get_user_from_header(request.headers)
         sz = DeleteFanPageSerializer(data = request.data)
         sz.is_valid(raise_exception=True)
+        graph_api = settings.FACEBOOK_GRAPH_API
+
         for id in sz.data['id']:
             page = FanPage.objects.filter(id=id, user_id=user_header).first()
-            if page:
+            page_id = page.id
+            if page.is_active == True:
+                query_field = {'access_token': page.access_token_page}
+                response = requests.delete(f'{graph_api}/{page_id}/subscribed_apps', data=query_field)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data['success']:
+                        page.delete()
+                    else:
+                        pass
+                else:
+                    page.delete()
+            else :
                 page.delete()
-            else:
-                continue      
-        return custom_response(200,'Delete Pages Successfully',[])
+            return custom_response(200,'Delete Pages Successfully',[])
 
     def destroy(self, request, pk=None):
         pass

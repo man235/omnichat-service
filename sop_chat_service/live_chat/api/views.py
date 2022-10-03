@@ -1,17 +1,23 @@
 
 from datetime import datetime, timedelta
+import json
+import time
+import uuid
 
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
 
-from ..utils import Pagination
+from ..utils import  connect_nats_client_publish_websocket, format_message, format_room
 from ...app_connect.models import Attachment, Message, Room
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
-from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializers, GetMessageLiveChatSerializer, LiveChatSerializer, MessageLiveChatSend, MessageLiveChatSerializer, RoomSerializer, UpdateAvatarLiveChatSerializer
+from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, LiveChatSerializer, MessageLiveChatSend, UpdateAvatarLiveChatSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-import time
+from django.utils import timezone
+import asyncio
+
+
 from iteration_utilities import unique_everseen
 
 
@@ -32,6 +38,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
+        
         try:
             config = LiveChat.objects.filter(user_id = user_header).first()
             data = request.data
@@ -79,36 +86,66 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         start_date=datetime.today() - timedelta(days=1)
         end_date=datetime.today()
         try:
-            rooms = Room.objects.filter(user_id =user_header,type= 'live chat',room_message__is_sender = False).exclude(room_message__created_at__range = [start_date, end_date])
+            rooms = Room.objects.filter(user_id =user_header,type= 'live chat',
+                                        room_message__is_sender = False).exclude(room_message__created_at__range = [start_date, end_date])
             if rooms:
                 for room in unique_everseen(rooms):
                     Room.objects.filter(id = room.id).update(status="expired")
                 return custom_response(200,"ok",[])
         except Exception:
             return custom_response(500,"INTERNAL_SERVER_ERROR",[])
+    @action(detail=False, methods=["POST"], url_path="room/completed")
+    def completed_room(self, request, *args):
+        user_header = get_user_from_header(request.headers)
+        data = request.data
+        sz= CompletedRoomSerializer(data=data,many=False)
+        sz.is_valid(raise_exception=True)
+        room_id=sz.data['room_id']
+        try:
+            new_topic_publish = f'omniChat.livechat.action.room.{room_id}'
+            room = Room.objects.filter(user_id =user_header,id = sz.data['room_id']).first()
+            if room :
+                room.status = "completed"
+                room.completed_date = timezone.now()
+                room.save()
+                room_data = format_room(room)
+                asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(room_data).encode()))
+                return custom_response(200,"ok",[])
+        except Exception:
+            return custom_response(500,"INTERNAL_SERVER_ERROR",[])
     @action(detail=False, methods=["POST"], url_path="message")
     def send_message(self, request, *args):
         user_header = get_user_from_header(request.headers)
+        sz = MessageLiveChatSend(data=request.data, context={"request": request})
+        sz.is_valid(raise_exception=True)
         try:
-            sz = MessageLiveChatSend(data=request.data)
-            sz.is_valid(raise_exception=True)
-            room = Room.objects.filter(id = sz.room_id).first()
+            room_id = sz.data['room_id']
+            room = Room.objects.filter(id = room_id).first()
+            new_topic_publish = f'omniChat.livechat.room.{room_id}'
+            Message.objects.filter(room_id=room).update(is_seen= True)
+            data_message={}
             if sz.data.get("mid"):
                 message = Message.objects.get(id = sz.data.get("mid"))
-                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create(
                         file=attachment, type=attachment.content_type, mid=new_message)
+                data_message = format_message(new_message) 
             else:
-                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create(
                         file=attachment, type=attachment.content_type, mid=new_message)
+                data_message = format_message(new_message)
+            asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
             return custom_response(200,"ok",[])
         except Exception:
             return custom_response(500,"INTERNAL_SERVER_ERROR",[])
+        
+        
+   
 
 
     
