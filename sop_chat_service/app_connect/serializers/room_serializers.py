@@ -97,14 +97,14 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
         sz_user_info = UserInfoSerializer(user_info)
         return sz_user_info.data
     def get_fan_page_name(self,obj):
-        if not obj:
+        if not obj.page_id:
             return None
         page = FanPage.objects.filter(id=obj.page_id.id).first()
         if not page:
             return None
         return page.name
     def get_fan_page_avatar(self,obj):
-        if not obj:
+        if not obj.page_id:
             return None
         page = FanPage.objects.filter(id=obj.page_id.id).first()
         if not page:
