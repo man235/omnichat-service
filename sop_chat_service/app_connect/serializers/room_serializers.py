@@ -91,15 +91,21 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
         fields = ['id', 'user_id',"fan_page_name","fan_page_avatar", 'external_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id', 'user_info']
 
     def get_user_info(self, obj):
+        if not obj:
+            return None
         user_info = UserApp.objects.filter(external_id=obj.external_id).first()
         sz_user_info = UserInfoSerializer(user_info)
         return sz_user_info.data
     def get_fan_page_name(self,obj):
+        if not obj:
+            return None
         page = FanPage.objects.filter(id=obj.page_id.id).first()
         if not page:
             return None
         return page.name
     def get_fan_page_avatar(self,obj):
+        if not obj:
+            return None
         page = FanPage.objects.filter(id=obj.page_id.id).first()
         if not page:
             return None
