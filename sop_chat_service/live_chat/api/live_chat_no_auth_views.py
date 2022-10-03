@@ -54,4 +54,16 @@ class ChatViewSet(viewsets.ModelViewSet):
                 sz.is_valid(raise_exception=True)
                 sz.save(room_id=new_room)
             return custom_response(200,"ok",[])
+    
+    def retrieve(self, request, pk=None):    
+        qs = LiveChat.objects.filter(id = pk)
+        sz = LiveChatSerializer(qs, many=True)
+        data = {
+            "user_info":{
+                "name":"",
+                "avatar":""
+            },
+            "config":sz.data
+        }
+        return custom_response(200,"Get Config Live Chat Successfully",data)
         

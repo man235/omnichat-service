@@ -5,7 +5,7 @@ from sop_chat_service.app_connect.models import FanPage
 class FanPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = FanPage
-        fields = ['id', 'name', 'page_id', 'avatar_url', 'is_active', 'created_by', 'created_at', 'last_subscribe']
+        fields = ['id', 'name', 'page_id', 'avatar_url', 'is_active', 'created_by', 'created_at', 'last_subscribe', 'type']
 
     def create(self, validated_data: dict):
         return FanPage.objects.create(**validated_data) 
@@ -17,5 +17,6 @@ class FanPageSerializer(serializers.ModelSerializer):
         instance.avatar_url = validated_data.get('avatar_url')
         instance.is_active = validated_data.get('is_active')
         instance.created_by = validated_data.get('created_by')
+        instance.type = validated_data.get('type')
         instance.save()
         return instance
