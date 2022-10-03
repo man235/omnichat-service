@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 nats_client = NATS()
 
-class ChatConsumer(AsyncWebsocketConsumer):
+class SaleChatConsumer(AsyncWebsocketConsumer):
     async def subscribe_handler_new_message(self, msg):
         print("checking --------------- websocket ")
         # data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
@@ -26,23 +26,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
   
     async def connect(self):
-
-        self.room_id = self.scope['url_route']['kwargs']['room_id']                                             
-        # self.topic = self.scope['url_route']['kwargs']['topic']
-        self.room_group_name = 'live_chat_user'
-
+       
+        self.room_group_name = "livechat_saleman"
         await nats_client.connect(
             servers=[settings.NATS_URL]
         )
-        topics = [f'omniChat.livechat.room.{self.room_id}',f'omniChat.livechat.action.room.{self.room_id}']
+        topics = [f'omniChat.livechat.room.*',f'omniChat.livechat.action.room.*']
         
         sub=[]
         # sub = await nats_client.subscribe(f'omniChat.livechat.{self.topic}.{self.room_id}', "room", self.subscribe_handler_new_message)
         for topic in topics:
             if topic == topics[0]:
-                sub = await nats_client.subscribe(topic, "message", self.subscribe_handler_new_message)
+                sub = await nats_client.subscribe(topic, "saleman_message", self.subscribe_handler_new_message)
             if topic == topics[1]:
-                sub = await nats_client.subscribe(topic, "action_room", self.subscribe_handler_new_message)
+                sub = await nats_client.subscribe(topic, "saleman_action_room", self.subscribe_handler_new_message)
         self.sub = sub
         await self.channel_layer.group_add(
             self.room_group_name,

@@ -54,11 +54,17 @@ class MessageLiveChatSend(serializers.Serializer):
     class Meta:
         fields = ['file', 'text', 'room_id', 'mid', 'message_type']
     def validate(self, attrs):
+    
+        file= self.context['request'].FILES.getlist('file')
+        if attrs.get("room_id"):
+            room= Room.objects.filter(id=attrs.get("room_id")).first()
+            if not room or room.status == "expired" or room.status =="completed":
+                raise serializers.ValidationError({"room_id": "Room is Invalid"})
         if attrs.get("message_type") == "text":
             if not attrs.get("text"):
                 raise serializers.ValidationError({"text": "message is required"})
         if attrs.get("message_type") == "file":
-            if not attrs.get("file"):
+            if not file:
                 raise serializers.ValidationError({"file": "file is required"})
         if attrs.get("mid"):
             message = Message.objects.get(id = attrs.get('mid'))
@@ -126,3 +132,14 @@ class RoomLiveChatSerializer(serializers.ModelSerializer):
         count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
         return count
     
+class CompletedRoomSerializer(serializers.Serializer):
+    room_id = serializers.CharField(required=True)
+
+    class Meta:
+        fields = [ 'room_id']
+    def validate(self, attrs):
+        if attrs.get("room_id"):
+            room= Room.objects.filter(id=attrs.get("room_id")).first()
+            if not room or room.status == "expired":
+                raise serializers.ValidationError({"room_id": "Room is Invalid"})
+        return attrs

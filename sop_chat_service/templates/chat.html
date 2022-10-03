@@ -14,7 +14,7 @@
       <input type="button" value="Send" />
     </form>
     <script>
-      const chat = `ws://127.0.0.1:8000/live-chat/message/4`;
+      const chat = `ws://127.0.0.1:8000/live-chat/room/4`;
       const chatSocket = new WebSocket(chat);
       const toBase64 = (file) =>
         new Promise((resolve, reject) => {
