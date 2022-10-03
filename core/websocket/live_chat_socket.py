@@ -29,7 +29,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self.room_id = self.scope['url_route']['kwargs']['room_id']                                             
         # self.topic = self.scope['url_route']['kwargs']['topic']
-        self.room_group_name = 'live_chat_user'
+        self.room_group_name = f'live_chat_user_{self.room_id}'
 
         await nats_client.connect(
             servers=[settings.NATS_URL]

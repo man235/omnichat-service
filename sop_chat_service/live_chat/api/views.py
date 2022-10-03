@@ -113,7 +113,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 return custom_response(200,"ok",[])
         except Exception:
             return custom_response(500,"INTERNAL_SERVER_ERROR",[])
-    @action(detail=False, methods=["POST"], url_path="message")
+    @action(detail=False, methods=["POST"], url_path="send-message")
     def send_message(self, request, *args):
         user_header = get_user_from_header(request.headers)
         sz = MessageLiveChatSend(data=request.data, context={"request": request})
