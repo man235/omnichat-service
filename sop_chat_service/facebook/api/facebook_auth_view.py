@@ -50,12 +50,14 @@ class FacebookViewSet(viewsets.ModelViewSet):
                         page = FanPage.objects.filter(page_id=item['id'],user_id=user_header).first()
                         id = item['id']
                         if page is None:
+                            logger.debug(f"{item}tao page ===================================")
                             FanPage.objects.create(
                                 page_id=item['id'], name=item['name'], access_token_page=item['access_token'],
                                 avatar_url=f'{graph_api}/{id}/picture',last_subscribe=timezone.now(),
                                 user_id=user_header
                             )
                         else:
+                            logger.debug(f"{item}khong tao page ++++++++++++++++++++++++++++++++")
                             pass
 
                     # list_page = FanPage.objects.filter(is_active=False, last_subscribe=None)
