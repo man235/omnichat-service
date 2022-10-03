@@ -83,6 +83,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             for qs_message in qs_messages:
                 count_mess = Message.objects.filter(text__icontains=sz.data.get('search'), room_id=qs_message).count()
                 user_info = UserApp.objects.filter(external_id=qs_message.external_id).first()
+                # print(qs_message.page_id.name)
                 data_count_message = {
                     "user_id": qs_message.user_id,
                     "external_id": qs_message.external_id,
@@ -90,7 +91,9 @@ class RoomViewSet(viewsets.ModelViewSet):
                     "type": qs_message.type,
                     "room_id": qs_message.room_id,
                     "count_message": count_mess,
-                    "avatar": user_info.avatar if user_info else None
+                    "avatar": user_info.avatar if user_info else None,
+                    "fan_page_name": qs_message.page_id.name if qs_message.page_id else None,
+                    "fan_page_avatar":qs_message.page_id.avatar_url if qs_message.page_id else None
                 }
                 serializer_message.append(data_count_message)
             data['messages'] = serializer_message
