@@ -84,14 +84,27 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 class ResponseSearchMessageSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
+    fan_page_name = serializers.SerializerMethodField(source='get_fan_page_name', read_only=True)
+    fan_page_avatar =serializers.SerializerMethodField(source='get_fan_page_avatar', read_only=True)
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'external_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id', 'user_info']
+        fields = ['id', 'user_id',"fan_page_name","fan_page_avatar", 'external_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id', 'user_info']
 
     def get_user_info(self, obj):
         user_info = UserApp.objects.filter(external_id=obj.external_id).first()
         sz_user_info = UserInfoSerializer(user_info)
         return sz_user_info.data
+    def get_fan_page_name(self,obj):
+        page = FanPage.objects.filter(id=obj.page_id.id).first()
+        if not page:
+            return None
+        return page.name
+    def get_fan_page_avatar(self,obj):
+        page = FanPage.objects.filter(id=obj.page_id.id).first()
+        if not page:
+            return None
+        return page.avatar_url
+    
 
 class SearchMessageSerializer(serializers.Serializer):
     search = serializers.CharField(required=False)
