@@ -7,7 +7,7 @@ import uuid
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
 
-from ..utils import  connect_nats_client_publish_websocket, format_message, format_room
+from ..utils import  connect_nats_client_publish_websocket, format_message_room, format_room
 from ...app_connect.models import Attachment, Message, Room
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
 from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, LiveChatSerializer, MessageLiveChatSend, UpdateAvatarLiveChatSerializer
@@ -102,7 +102,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         room_id=sz.data['room_id']
         try:
-            new_topic_publish = f'omniChat.livechat.action.room.{room_id}'
+            new_topic_publish = f'live-chat-room_{room_id}'
             room = Room.objects.filter(user_id =user_header,id = sz.data['room_id']).first()
             if room :
                 room.status = "completed"
@@ -118,31 +118,32 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         user_header = get_user_from_header(request.headers)
         sz = MessageLiveChatSend(data=request.data, context={"request": request})
         sz.is_valid(raise_exception=True)
-        try:
-            room_id = sz.data['room_id']
-            room = Room.objects.filter(id = room_id).first()
-            new_topic_publish = f'omniChat.livechat.room.{room_id}'
-            Message.objects.filter(room_id=room).update(is_seen= True)
-            data_message={}
-            if sz.data.get("mid"):
-                message = Message.objects.get(id = sz.data.get("mid"))
-                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
-                attachments = request.FILES.getlist('file')
-                for attachment in attachments:
-                    new_attachment = Attachment.objects.create(
-                        file=attachment, type=attachment.content_type, mid=new_message)
-                data_message = format_message(new_message) 
-            else:
-                new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
-                attachments = request.FILES.getlist('file')
-                for attachment in attachments:
-                    new_attachment = Attachment.objects.create(
-                        file=attachment, type=attachment.content_type, mid=new_message)
-                data_message = format_message(new_message)
-            asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
-            return custom_response(200,"ok",[])
-        except Exception:
-            return custom_response(500,"INTERNAL_SERVER_ERROR",[])
+        # try:
+        room_id = sz.data['room_id']
+        room = Room.objects.filter(id = room_id).first()
+        new_topic_publish = f'live-chat-room_{room_id}'
+
+        Message.objects.filter(room_id=room).update(is_seen= datetime.now())
+        data_message={}
+        if sz.data.get("mid"):
+            message = Message.objects.get(id = sz.data.get("mid"))
+            new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+            attachments = request.FILES.getlist('file')
+            for attachment in attachments:
+                new_attachment = Attachment.objects.create(
+                    file=attachment, type=attachment.content_type, mid=new_message)
+        else:
+            new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+            attachments = request.FILES.getlist('file')
+            for attachment in attachments:
+                new_attachment = Attachment.objects.create(
+                    file=attachment, type=attachment.content_type, mid=new_message)
+        data_message = format_message_room(room)
+        asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
+        asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
+        return custom_response(200,"ok",[])
+        # except Exception:
+        #     return custom_response(500,"INTERNAL_SERVER_ERROR",[])
         
         
    

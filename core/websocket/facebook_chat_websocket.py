@@ -11,6 +11,7 @@ class FacebookChatConsumer(AsyncJsonWebsocketConsumer):
     async def subscribe_handler(self, msg):
         # data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
         logger.debug(f'data subscribe natsUrl ----------------- {msg.data.decode("utf-8")}')
+        print("chat-message")
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -22,17 +23,36 @@ class FacebookChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.topic = self.scope['url_route']['kwargs']['topic']
-        self.room_group_name = f'{self.topic}_{self.room_id}'
+        user =self.scope['url_route']['kwargs']['x_auth_user_id']
         await nats_client.connect(
             servers=[settings.NATS_URL]
         )
-        sub = await nats_client.subscribe(self.room_group_name, self.room_group_name, cb = self.subscribe_handler)
-        self.sub = sub
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-        await self.accept()
+        if self.topic == "live-chat-room" or self.topic == "live-chat-action-room":
+            self.room_group_name = f'{self.topic}.{self.room_id}'
+
+            topics = [f'live-chat-room.{self.room_id}',f'live-chat-action-room.{user}']
+            for topic in topics:
+                if topic == topics[0]:
+                    sub = await nats_client.subscribe(topic, "message", self.subscribe_handler)
+                if topic == topics[1]:
+                    sub = await nats_client.subscribe(topic, "action_room", self.subscribe_handler)
+            self.sub = sub
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+                
+            )
+            await self.accept()
+
+        else:  
+            self.room_group_name = f'{self.topic}_{self.room_id}'
+            sub = await nats_client.subscribe(self.room_group_name, self.room_group_name, cb = self.subscribe_handler)
+            self.sub = sub
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
+            await self.accept()
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(

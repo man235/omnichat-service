@@ -163,3 +163,23 @@ class CountAttachmentRoomSerializer(serializers.ModelSerializer):
             }
         }
         return data
+    
+class FormatRoomSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
+    unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
+    class Meta:
+        model = Room
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id']
+
+    def get_last_message(self, obj):
+        message = Message.objects.filter(room_id=obj).order_by('-id').first()
+        sz = GetMessageSerializer(message)
+        return sz.data
+
+    def get_unseen_message_count(self, obj):
+        count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
+        return count
+    
+   
+
