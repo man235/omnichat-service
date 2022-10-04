@@ -130,13 +130,15 @@ class RoomViewSet(viewsets.ModelViewSet):
         room = Room.objects.filter(room_id=pk,user_id=user_header).first()
         if not room:
             return custom_response(400,"Invalid room",[])
+        room_sz = RoomSerializer(room,many=False)
         qs_customer = UserApp.objects.filter(external_id=room.external_id).first()
         sz_customer = UserInfoSerializer(qs_customer,many=False)
         qs_label = Label.objects.filter(room_id=room)
         sz_label = LabelSerializer(qs_label,many=True)
         data = {
             "customer_info": sz_customer.data,
-            "label": sz_label.data
+            "label": sz_label.data,
+            "room_info":room_sz.data
         }
         return custom_response(200,"User Info",data)
 

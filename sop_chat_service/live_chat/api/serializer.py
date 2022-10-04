@@ -143,3 +143,13 @@ class CompletedRoomSerializer(serializers.Serializer):
             if not room or room.status == "expired":
                 raise serializers.ValidationError({"room_id": "Room is Invalid"})
         return attrs
+class StartSerializer(serializers.Serializer):
+    live_chat_id = serializers.IntegerField(required= True)
+    def validate(self, attrs):
+        if not attrs.get("live_chat_id"):
+            raise serializers.ValidationError({"live_chat_id": "live_chat_id is required"})
+        if attrs.get("live_chat_id"):
+            live_chat= LiveChat.objects.filter(id=attrs.get("live_chat_id")).first()
+            if not live_chat:
+                raise serializers.ValidationError({"live_chat_id": "Live Chat Is Invalid"})
+        return attrs

@@ -6,7 +6,7 @@ import nats
 from django.conf import settings
 
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
-from sop_chat_service.app_connect.serializers.room_serializers import RoomSerializer
+from sop_chat_service.app_connect.serializers.room_serializers import FormatRoomSerializer, RoomSerializer
 import asyncio
 
 class Pagination(PageNumberPagination):
@@ -39,15 +39,27 @@ async def connect_nats_client_publish_websocket(new_topic_publish, data_mid):
     await nats_client.close()
     print("NATS close ----------------------")
     return
+def format_message_room(data):
+    sz = FormatRoomSerializer(data,many=False)
+    return {
+        "events":"new_message",
+        "data":sz.data
+        }
 def format_message(data):
     sz = MessageSerializer(data,many=False)
     return {
-        "events":"new_message",
+        "events":"new_last_message",
         "data":sz.data
         }
 def format_room(data):
     sz = RoomSerializer(data, many=False)
     return {
         "events":"completed_room",
+        "data":sz.data
+        }
+def format_new_room(data):
+    sz = RoomSerializer(data, many=False)
+    return {
+        "events":"new_room",
         "data":sz.data
         }
