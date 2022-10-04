@@ -30,8 +30,10 @@ def get_oa_token(oa_id: Union[int, str] = None,
                 'code': authorization_code,
                 'app_id': settings.ZALO_APP_ID,
                 'grant_type': 'authorization_code',
-                'code_verifier': code_verifier
             }
+            
+            if code_verifier != None:
+                payload['code_verifier'] = code_verifier
 
         url = f'{oa_oauth_url}/access_token'
         headers = {
