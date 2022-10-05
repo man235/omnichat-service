@@ -17,7 +17,7 @@ class DeleteFanPageSerializer(serializers.Serializer):
     class Meta:
        fields = ['id']
     def validate(self, attrs):
-        room = FanPage.objects.filter(room_id=attrs.get("id")).first()
-        if not room:
+        page = FanPage.objects.filter(id=attrs.get("id")).first()
+        if not page:
             raise serializers.ValidationError({"id": "FanPage Invalid"})
         return attrs
