@@ -32,12 +32,9 @@ def file_size(value): # add this to some file where you can import it from
 async def connect_nats_client_publish_websocket(new_topic_publish, data_mid):
    
     nats_client = await nats.connect(settings.NATS_URL)
-    print("connect nats --------------------")
     await nats_client.publish(new_topic_publish, bytes(data_mid))
 
-    print("nats publish --------------------",data_mid)
     await nats_client.close()
-    print("NATS close ----------------------")
     return
 def format_message_room(data):
     sz = FormatRoomSerializer(data,many=False)

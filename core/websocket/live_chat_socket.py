@@ -14,7 +14,6 @@ nats_client = NATS()
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def subscribe_handler_new_message(self, msg):
-        print("checking --------------- websocket ")
         # data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
         logger.debug(f'data subscribe natsUrl ----------------- {msg.data.decode("utf-8")}')
         await self.channel_layer.group_send(

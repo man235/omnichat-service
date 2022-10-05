@@ -23,7 +23,6 @@ class MessageAdmin(admin.ModelAdmin):
     search_fields = ["text", "id"]
     actions = ['check_is_seen']
     def check_is_seen(self, request, queryset):
-        print(0)
         for qs in queryset:
             if qs.is_seen:
                 qs.is_seen =None

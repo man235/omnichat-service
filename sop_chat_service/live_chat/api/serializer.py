@@ -32,18 +32,6 @@ class RegisterInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MessageLiveChatSerializer(serializers.ModelSerializer):
-    attachments = serializers.FileField(required=False)
-    sender_id = serializers.CharField(required=True)
-    recipient_id = serializers.CharField(required=True)
-    text = serializers.CharField(required=False)
-    reply_id = serializers.CharField(required=False)
-    is_sender = serializers.BooleanField(default=True)
-
-    class Meta:
-        model = Message
-        fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender']
-
 class MessageLiveChatSend(serializers.Serializer):
     file = serializers.FileField(required=False)
     text = serializers.CharField(required=False)

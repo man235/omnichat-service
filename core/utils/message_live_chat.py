@@ -3,5 +3,4 @@ from sop_chat_service.app_connect.serializers.message_serializers import Message
 @sync_to_async
 def message_store_database(message):
     sz = MessageSerializer(message,many=True)
-    print(sz.data)
     return sz.data

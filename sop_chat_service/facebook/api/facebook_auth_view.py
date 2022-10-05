@@ -40,7 +40,6 @@ class FacebookViewSet(viewsets.ModelViewSet):
                 page_response = requests.get(f'{graph_api}/me/accounts', params=page_query)
                 if page_response.status_code == 200:
                     data = page_response.json()
-                    
                     for item in data['data']:
                         page = FanPage.objects.filter(page_id=item['id'],user_id=user_header).first()
                         id = item['id']
@@ -56,7 +55,8 @@ class FacebookViewSet(viewsets.ModelViewSet):
                             # page.access_token_page =""
                             # page.save()
 
-                        FanPage.objects.filter(user_id=user_header).exclude(page_id= id).update(is_active = False)
+                    # list_page = FanPage.objects.filter(is_active=False, last_subscribe=None)
+                    # pages = FanPageSerializer(list_page, many=True)
 
                     return custom_response(200, "Get list page success", [])
                 else:
