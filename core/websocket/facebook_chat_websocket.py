@@ -11,7 +11,6 @@ class FacebookChatConsumer(AsyncJsonWebsocketConsumer):
     async def subscribe_handler(self, msg):
         # data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
         logger.debug(f'data subscribe natsUrl ----------------- {msg.data.decode("utf-8")}')
-        print("chat-message")
         await self.channel_layer.group_send(
             self.room_group_name,
             {

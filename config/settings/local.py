@@ -87,8 +87,19 @@ REDIS_PORT = 6379
 REDIS_PASSWORD = '02011993'
 REDIS_USER = ''
 REDIS_DB = 0
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = "Bn6aG5NeEcpSCCAx"
+AWS_SECRET_ACCESS_KEY = "bfHx6nlrqrddWH5uT4axHJ3HCMZ1e1Zg"
+AWS_STORAGE_BUCKET_NAME = "sop-local"
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+AWS_S3_FILE_OVERWRITE = False
 
-# NATS_URL = "nats://172.24.222.112:4222"       # nats://172.27.228.190:4222
+if DEBUG:
+    AWS_S3_ENDPOINT_URL = "http://172.24.222.114:9000"
+
+
+
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
 SITE_ID = 1
 NATS_URL = env(
