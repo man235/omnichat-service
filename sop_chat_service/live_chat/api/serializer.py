@@ -33,25 +33,24 @@ class RegisterInfoSerializer(serializers.ModelSerializer):
 
 
 class MessageLiveChatSend(serializers.Serializer):
-    file = serializers.FileField(required=False)
-    text = serializers.CharField(required=False)
+    message_text = serializers.CharField(required=False)
     room_id = serializers.CharField(required=True)
     mid = serializers.CharField(required=False)
-    message_type= serializers.CharField(required=True)
+    is_text = serializers.BooleanField(required=True)
 
     class Meta:
-        fields = ['file', 'text', 'room_id', 'mid', 'message_type']
+        fields = ['file', 'message_text', 'room_id', 'mid', 'message_type']
     def validate(self, attrs):
     
         file= self.context['request'].FILES.getlist('file')
         if attrs.get("room_id"):
-            room= Room.objects.filter(id=attrs.get("room_id")).first()
+            room= Room.objects.filter(room_id=attrs.get("room_id")).first()
             if not room or room.status == "expired" or room.status =="completed":
                 raise serializers.ValidationError({"room_id": "Room is Invalid"})
-        if attrs.get("message_type") == "text":
-            if not attrs.get("text"):
-                raise serializers.ValidationError({"text": "message is required"})
-        if attrs.get("message_type") == "file":
+        if str(attrs.get("is_text")).lower() == "true":
+            if not attrs.get("message_text"):
+                raise serializers.ValidationError({"message_text": "message is required"})
+        if str(attrs.get("is_text")).lower() == "false":
             if not file:
                 raise serializers.ValidationError({"file": "file is required"})
         if attrs.get("mid"):
