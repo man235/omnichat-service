@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 from typing import List, Optional, Dict
 from .base_model import CustomBaseModel
-from .message_receive import NatsChatMessageAttachment
+# from .message_receive import NatsChatMessageAttachment
 
+
+class ChatMessageAttachment(CustomBaseModel):
+    type: Optional[str]
+    url: Optional[str]
 
 class MessageWebSocket(CustomBaseModel):
     mid: Optional[str]
     room_id: Optional[str]
-    attachments: List[NatsChatMessageAttachment] = []
+    attachments: List[ChatMessageAttachment] = []
     created_at: str
     is_seen: Optional[str]
     is_sender: bool = False
