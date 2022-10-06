@@ -51,6 +51,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         filter_request = ser_sort.data.get('filter')
         if filter_request:
             data_filter = {
+                "type":filter_request.get('type',None),
                 "time" : filter_request.get('time',None),
                 "status" : filter_request.get('status',None),
                 "state" : filter_request.get('state',None),

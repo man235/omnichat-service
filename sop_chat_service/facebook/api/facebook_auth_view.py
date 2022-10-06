@@ -37,27 +37,32 @@ class FacebookViewSet(viewsets.ModelViewSet):
             access_response = requests.get(f'{graph_api}/oauth/access_token', params=query)
             if access_response.status_code == 200:
                 page_query = {'access_token': access_response.json()['access_token']}
+                me = requests.get(f'{graph_api}/me', params=page_query)
+                fb_user_id= me.json()['id']
                 page_response = requests.get(f'{graph_api}/me/accounts', params=page_query)
                 if page_response.status_code == 200:
                     data = page_response.json()
+                    id = []
                     for item in data['data']:
-                        page = FanPage.objects.filter(page_id=item['id'],user_id=user_header).first()
-                        id = item['id']
+                        page = FanPage.objects.filter(type='facebook',page_id=item['id'],user_id=user_header,fanpage_user_id=fb_user_id).first()
+                        id.append(item['id'])
                         if page is None:
                             FanPage.objects.create(
                                 page_id=item['id'], name=item['name'], access_token_page=item['access_token'],
                                 avatar_url=f'{graph_api}/{id}/picture',last_subscribe=timezone.now(),
-                                user_id=user_header
+                                user_id=user_header,fanpage_user_id=fb_user_id
                             )
                         else:
-                            pass
-                            # page.is_active = False
-                            # page.access_token_page =""
-                            # page.save()
-
-                    # list_page = FanPage.objects.filter(is_active=False, last_subscribe=None)
-                    # pages = FanPageSerializer(list_page, many=True)
-
+                            page.access_token_page=item['access_token']
+                            page.name=item['name']
+                            page.avatar_url=f'{graph_api}/{id}/picture'
+                            page.save()
+                    page_remove = FanPage.objects.filter(user_id=user_header,fanpage_user_id=fb_user_id,type='facebook').exclude(page_id__in=id )
+                    for item in page_remove:
+                        item.is_active = False
+                        item.access_token_page = ''
+                        item.save()
+                        
                     return custom_response(200, "Get list page success", [])
                 else:
                     return custom_response(500, "INTERNAL_SERVER_ERROR", [])
@@ -74,10 +79,12 @@ class FacebookViewSet(viewsets.ModelViewSet):
         if sz.is_valid(raise_exception=True):
             graph_api = settings.FACEBOOK_GRAPH_API
 
-            if request.data.get('is_subscribe') == True:
-                page_id = request.data.get('page_id')
+            if sz.data.get('is_subscribe') == True:
+                page_id = sz.data.get('page_id')
                 try:
-                    page = FanPage.objects.filter(page_id=page_id, user_id=user_header).first()
+                    page = FanPage.objects.filter(type='facebook',page_id=page_id, user_id=user_header).first()
+                    if not page.access_token_page:
+                        return custom_response(400,"Page does not exist in the App",[])
                     query_field = {'subscribed_fields': settings.SUBCRIBE_FIELDS,
                                    'access_token': page.access_token_page}
                     response = requests.post(f'{graph_api}/{page_id}/subscribed_apps', data=query_field)
@@ -236,4 +243,3 @@ class FacebookViewSet(viewsets.ModelViewSet):
                             else:
                                 Attachment.objects.create(mid=new_message,attachment_id=attachment['id'],type=attachment['mime_type'],url=attachment['image_data']['url'])
         return custom_response(200,"ok",message.json())
-    
