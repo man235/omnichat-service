@@ -56,7 +56,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             if not live_chat:
                 return custom_response(400,"live chat is valid",[])
             user_id = live_chat.user_id
-            new_room = Room.objects.create(type='livechat',external_id=x_cookie,name=x_cookie,user_id=user_id,room_id=uuid.uuid4(),approved_date=timezone.now())
+            new_room = Room.objects.create(type='livechat',external_id=x_cookie,user_id=user_id,room_id=uuid.uuid4(),approved_date=timezone.now())
             room_id = new_room.id
             if live_chat.is_start_message:
                 Message.objects.create(room_id=new_room, is_sender=False, sender_id=x_cookie, text=live_chat.start_message, uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
