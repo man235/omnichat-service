@@ -1,5 +1,5 @@
 FACEBOOK = "facebook"
-ZALO = "zalo"
+ZALO = "Zalo"
 LIVECHAT = "livechat"
 
 MESSAGE_TEXT = "text"
