@@ -62,7 +62,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         list_data=list(unique_everseen(sz.data))
         #   sort by room message
         if ser_sort.data.get('sort'):
-            if ser_sort.data.get('sort').lower() == "new":
+            if ser_sort.data.get('sort').lower() == "old":
                 list_data = sorted(list(unique_everseen(sz.data)), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
 
         data_result = pagination_list_data(list_data, limit_req, offset_req)
