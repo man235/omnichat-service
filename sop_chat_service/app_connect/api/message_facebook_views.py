@@ -11,6 +11,8 @@ import nats
 from django.conf import settings
 import json
 import uuid
+import logging
+logger = logging.getLogger(__name__)
 
 
 async def connect_nats_client_publish_websocket(new_topic_publish, data_mid):
@@ -39,6 +41,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 _uuid = uuid.uuid4()
                 data_mid_json = format_data_from_facebook(room, message_response, _uuid)
                 asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
+                logger.debug(f"{new_topic_publish} ------ {data_mid_json['uuid']}")
                 send_and_save_message_store_database(room, data_mid_json,_uuid)
             return Response(True, status=status.HTTP_200_OK)
         else:
