@@ -8,7 +8,7 @@ class BaseHandler(SingletonClass, AbsHandler):
     def _singleton_init(self, **kwargs):
         self._initialized: bool = False
     
-    async def get_manager(self, manager):
+    async def set_manager(self, manager):
         self.manager = manager
 
     async def handle_message(self, *args, **kwargs):

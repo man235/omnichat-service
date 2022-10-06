@@ -12,6 +12,7 @@ class StorageManager(BaseManager):
     async def _get_handlers(self) -> Dict[str, AbsHandler]:
         for handler_class in (StorageDataBase,StorageRedis):
             handler_instance = handler_class()
+            await handler_instance.set_manager(self)
             self._handlers.update({handler_instance.storage_type: handler_instance})
         return self._handlers
 

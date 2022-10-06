@@ -6,5 +6,5 @@ class AbsHandler(ABC):
     async def handle_message(self, *args, **kwargs):
         raise NotImplementedError
     
-    async def get_manager(self, *args, **kwargs):
+    async def set_manager(self, *args, **kwargs):
         raise NotImplementedError

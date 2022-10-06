@@ -5,6 +5,7 @@ from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook, format_message_data_for_websocket
 from core.context import AppContextManager
 from core.schema import CoreChatInputMessage
+from core import constants
 from nats.aio.client import Client as NATS
 nats_client = NATS()
 import logging
@@ -18,10 +19,14 @@ async def subscribe_channels(topics):
     app_context = AppContextManager()
     async def subscribe_handler(msg):
         try:
-            logger.debug(f'data subscribe natsUrl -----------------')
             data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
             data['_uuid'] = str(uuid.uuid4())
-            text_message = CoreChatInputMessage(msg_type='text', chat_type=data['typeChat'])
+            logger.debug(f'data subscribe natsUrl ----------------- {data}')
+            
+            if not data.get('typeChat'):
+                logger.debug(f'Data Receive not chat type -----------------')
+                raise
+            text_message = CoreChatInputMessage(msg_type=constants.MESSAGE_TEXT, chat_type=data.get('typeChat'))
             await app_context.run_receiver(text_message, data)
             logger.debug(f'RECEIVE DATA -----------------')
         except Exception as e:

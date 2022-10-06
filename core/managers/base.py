@@ -34,7 +34,7 @@ class BaseManager(SingletonClass, AbsManager):
     async def process_message(self, message: CoreChatInputMessage, data: Dict, *args, **kwargs):
         handler: AbsHandler = self._handlers.get(message.msg_type)
         if handler:
-            await handler.get_manager(self)
+            await handler.set_manager(self)
             await handler.handle_message(message, **kwargs)
         else:
             print(f'{self.__class__.__name__} not found handler for {message}')
