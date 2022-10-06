@@ -120,8 +120,8 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         try:
             room_id = sz.data['room_id']
-            room = Room.objects.filter(id = room_id).first()
-            new_topic_publish = f'omniChat.livechat.room.{room_id}'
+            room = Room.objects.filter(room_id = room_id).first()
+            new_topic_publish = f'live-chat-room_{room_id}'
             Message.objects.filter(room_id=room).update(is_seen= True)
             data_message={}
             if sz.data.get("mid"):
