@@ -3,6 +3,8 @@ import json
 import uuid
 from django.conf import settings
 from core.utils import save_message_store_database, check_room_facebook, format_message_data_for_websocket
+from core.context import AppContextManager
+from core.schema import CoreChatInputMessage
 from nats.aio.client import Client as NATS
 nats_client = NATS()
 import logging
@@ -13,18 +15,15 @@ async def subscribe_channels(topics):
     await nats_client.connect(servers=[settings.NATS_URL])
     logger.debug(f' natsUrl ----------------- {settings.NATS_URL} -------- ')
 
+    app_context = AppContextManager()
     async def subscribe_handler(msg):
         try:
-            logger.debug(f'data subscribe natsUrl ----------------- {msg.data}')
+            logger.debug(f'data subscribe natsUrl -----------------')
             data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
-            room = await check_room_facebook(data)
-            _uuid = uuid.uuid4()
-            if not room:
-                return      # No Fanpage to subscribe
-            data_message = format_message_data_for_websocket(data, _uuid)
-            new_topic_publish = f'message_{room.room_id}'
-            await nats_client.publish(new_topic_publish, data_message.encode())
-            await save_message_store_database(room, data, _uuid)
+            data['_uuid'] = str(uuid.uuid4())
+            text_message = CoreChatInputMessage(msg_type='text', chat_type=data['typeChat'])
+            await app_context.run_receiver(text_message, data)
+            logger.debug(f'RECEIVE DATA -----------------')
         except Exception as e:
             logger.debug(f'Exception subscribe ----------------- {e}')
 
