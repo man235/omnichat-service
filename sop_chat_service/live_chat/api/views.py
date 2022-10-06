@@ -7,7 +7,7 @@ import uuid
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
 
-from ..utils import  connect_nats_client_publish_websocket, format_message_room, format_room
+from ..utils import  connect_nats_client_publish_websocket, format_message, format_message_room, format_room
 from ...app_connect.models import Attachment, Message, Room
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
 from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, LiveChatSerializer, MessageLiveChatSend, UpdateAvatarLiveChatSerializer
@@ -126,14 +126,14 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             data_message={}
             if sz.data.get("mid"):
                 message = Message.objects.get(id = sz.data.get("mid"))
-                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,mid =message, is_sender=True, sender_id=user_header, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create(
                         file=attachment, type=attachment.content_type, mid=new_message)
                 data_message = format_message(new_message) 
             else:
-                new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create(

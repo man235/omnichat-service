@@ -56,7 +56,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             if not live_chat:
                 return custom_response(400,"live chat is valid",[])
             user_id = live_chat.user_id
-            new_room = Room.objects.create(type='livechat',external_id=x_cookie,name=x_cookie,user_id=user_id,room_id=x_cookie,approved_date=timezone.now())
+            new_room = Room.objects.create(type='livechat',external_id=x_cookie,name=x_cookie,user_id=user_id,room_id=uuid.uuid4(),approved_date=timezone.now())
             room_id = new_room.id
             if live_chat.is_start_message:
                 Message.objects.create(room_id=new_room, is_sender=False, sender_id=x_cookie, text=live_chat.start_message, uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
@@ -90,7 +90,7 @@ class ChatViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         try:
             room_id = sz.data['room_id']
-            room = Room.objects.filter(id = room_id).first()
+            room = Room.objects.filter(room_id = room_id).first()
             user_id = room.user_id
             new_topic_publish = f'live-chat-room.{room_id}'
             
@@ -98,7 +98,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             data_message={}
             if sz.data.get("mid"):
                 message = Message.objects.get(id = sz.data.get("mid"))
-                new_message = Message.objects.create(room_id=room,mid =message, is_sender=False, sender_id=x_cookie, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,mid =message, is_sender=False, sender_id=x_cookie, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create( 
@@ -107,7 +107,7 @@ class ChatViewSet(viewsets.ModelViewSet):
                 asyncio.run(connect_nats_client_publish_websocket(live_chat_action_room, json.dumps(data_message).encode()))
 
             else:
-                new_message = Message.objects.create(room_id=room,is_sender=False, sender_id=x_cookie, text=sz.data.get('text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+                new_message = Message.objects.create(room_id=room,is_sender=False, sender_id=x_cookie, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
                 attachments = request.FILES.getlist('file')
                 for attachment in attachments:
                     new_attachment = Attachment.objects.create(
