@@ -1,7 +1,7 @@
 from .base import BaseManager
 from core import constants
 from typing import Dict
-from core.schema import CoreChatInputMessage
+from core.schema import CoreChatInputMessage, NatsChatMessage
 from core.websocket_handler import FacebookWebSocketHandler, LiveChatWebSocketHandler
 from core.abstractions import AbsHandler
 
@@ -18,7 +18,7 @@ class WebSocketManager(BaseManager):
             self._handlers.update({handler_instance.ws_type: handler_instance})
         return self._handlers
 
-    async def process_message(self, room, message: CoreChatInputMessage, data: Dict, *args, **kwargs):
+    async def process_message(self, room, message: CoreChatInputMessage, data: NatsChatMessage, *args, **kwargs):
         handler: AbsHandler = self._handlers.get(message.chat_type)
         if handler:
             await handler.handle_message(room, message, data, **kwargs)

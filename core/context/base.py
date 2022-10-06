@@ -5,7 +5,7 @@ from core.abstractions import (
     AbsManager
 )
 from core.routers import MessageTextRouter, MessageEmojiRouter
-from core.schema import CoreChatInputMessage
+from core.schema import CoreChatInputMessage, NatsChatMessage
 from core.managers import StorageManager, WebSocketManager
 
 
@@ -21,7 +21,7 @@ class BaseAppContext(AbsAppContext):
             self._routers.update({router_instance.msg_type: router_instance})
         return self._routers.get(msg_type)
 
-    async def run_receiver(self, message: CoreChatInputMessage, data: Dict, **kwargs):
+    async def run_receiver(self, message: CoreChatInputMessage, data: NatsChatMessage, **kwargs):
         router: AbsRouter = await self._get_routers(message.msg_type)
         if router:
             router.bind_context(self)

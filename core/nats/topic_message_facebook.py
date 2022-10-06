@@ -2,13 +2,14 @@ import asyncio
 import json
 import uuid
 from django.conf import settings
-from core.utils import save_message_store_database, check_room_facebook, format_message_data_for_websocket
 from core.context import AppContextManager
-from core.schema import CoreChatInputMessage
+from core.schema import CoreChatInputMessage, NatsChatMessage
 from core import constants
+from pydantic import BaseModel, parse_obj_as
 from nats.aio.client import Client as NATS
-nats_client = NATS()
 import logging
+
+nats_client = NATS()
 logger = logging.getLogger(__name__)
 
 
@@ -20,14 +21,13 @@ async def subscribe_channels(topics):
     async def subscribe_handler(msg):
         try:
             data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
-            data['_uuid'] = str(uuid.uuid4())
-            logger.debug(f'data subscribe natsUrl ----------------- {data}')
-            
-            if not data.get('typeChat'):
-                logger.debug(f'Data Receive not chat type -----------------')
-                raise
+            data['uuid'] = str(uuid.uuid4())
+            nats_message = parse_obj_as(NatsChatMessage, data)
+            if not nats_message.typeChat:
+                logger.debug(f'Data Receive not chat type')
+                return
             text_message = CoreChatInputMessage(msg_type=constants.MESSAGE_TEXT, chat_type=data.get('typeChat'))
-            await app_context.run_receiver(text_message, data)
+            await app_context.run_receiver(text_message, nats_message)
             logger.debug(f'RECEIVE DATA -----------------')
         except Exception as e:
             logger.debug(f'Exception subscribe ----------------- {e}')
