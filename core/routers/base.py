@@ -1,7 +1,7 @@
-from core.abstractions import AbsRouter, SingletonClass, AbsAppContext, AbsCheckDataMessage
 from typing import Dict
-from core.schema import CoreChatInputMessage
+from core.schema import CoreChatInputMessage, NatsChatMessage
 from core.check_data_message import CheckDataMessageFacebook, CheckDataMessageLiveChat, CheckDataMessageZalo
+from core.abstractions import AbsRouter, SingletonClass, AbsAppContext, AbsCheckDataMessage
 
 
 class BaseRouter(SingletonClass, AbsRouter):
@@ -24,10 +24,12 @@ class BaseRouter(SingletonClass, AbsRouter):
             self._check_data_message.update({router_instance.chat_type: router_instance})
         return self._check_data_message.get(chat_type)
 
-    async def run_check_data_message(self, message: CoreChatInputMessage, data: Dict, **kwargs):
+    async def run_check_data_message(self, message: CoreChatInputMessage, data: NatsChatMessage, **kwargs):
         check_data_message: AbsCheckDataMessage = await self._get_check_data_message(message.chat_type)
         if check_data_message:
-            return await check_data_message.check_data_message(message, data)
+            # Check Fanpage - User_app - Room --> Room
+            room = await check_data_message.check_data_message(data)
+            return room
         else:
             print(f'not found router for {message.msg_type}')
 # ----------------    END CHECK DATA MESSAGE    ----------------

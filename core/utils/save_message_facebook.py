@@ -1,21 +1,20 @@
 from sop_chat_service.app_connect.models import Message, Attachment
 from core.utils.api_facebook_app import get_message_from_mid
-from core.utils.format_message_for_websocket import format_data_from_facebook_nats_subscribe
-from asgiref.sync import sync_to_async
+from core.utils.format_message_for_websocket import format_data_from_facebook_nats_subscribe, format_mid_facebook
 from django.utils import timezone
+from core.schema import MessageWebSocket
 
 
-@sync_to_async
-def save_message_store_database(room, data_msg, uuid):
-    data_res = get_message_from_mid(room.page_id.access_token_page, data_msg.get("mid"))
-    data = format_data_from_facebook_nats_subscribe(room, data_res, data_msg)
+async def save_message_store_databases(room, msg: MessageWebSocket):
+    data_res = get_message_from_mid(room.page_id.access_token_page, msg.mid)
+    data = format_mid_facebook(room, data_res)
     message = Message(
         room_id = room,
         fb_message_id = data.get("mid"),
         sender_id = data.get("sender_id"),
         recipient_id = data.get("recipient_id"),
         text = data.get("text"),
-        uuid = uuid
+        uuid = msg.uuid
     )
     message.save()
     if data.get("attachments"):

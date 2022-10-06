@@ -75,3 +75,4 @@ django-storages
 boto3
 boto
 pydantic==1.10.2
+ujson

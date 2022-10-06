@@ -1,5 +1,60 @@
 from django.utils import timezone
 import json
+from core.schema import NatsChatMessage, MessageWebSocket
+
+
+def format_receive_message(data: NatsChatMessage):
+    message_ws = MessageWebSocket(
+        attachments = data.attachments,
+        created_at = str(timezone.now()),
+        is_seen = False,
+        is_sender = False,
+        message_reply = None,
+        reaction = None,
+        recipient_id = data.recipientId,
+        reply_id = None,
+        sender_id = data.senderId,
+        sender_name = None,
+        text = data.text,
+        uuid = data.uuid,
+        mid = data.mid,
+        room_id = None,
+        created_time = None
+    )
+    return message_ws
+
+def format_mid_facebook(room, message_response):
+    attachments = []
+    data_attachment = message_response.get('attachments')
+    if data_attachment:
+        attachment_data =data_attachment.get('data')
+        for attachment in attachment_data:
+            dt_attachment = {
+                "id": attachment['id'],
+                "type": attachment['mime_type'],
+                "name": attachment['name'],
+                "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
+                "size": attachment.get('size'),
+                "video_url": attachment['video_data']['url'] if attachment.get('video_data') else None
+            }
+            attachments.append(dt_attachment)
+    data_mid_json = {
+        "mid": message_response['id'],
+        "attachments": attachments,
+        "text": message_response['message'],
+        "created_time": message_response['created_time'],
+        "sender_id": message_response['from']['id'],
+        "recipient_id": message_response['to']['data'][0]['id'],
+        "room_id": room.id,
+        "is_sender": True,
+        "created_at": str(timezone.now()),
+        "is_seen": None,
+        "message_reply": None,
+        "reaction": None,
+        "reply_id": None,
+        "sender_name": None
+    }
+    return data_mid_json
 
 
 def format_message_data_for_websocket(data, uuid):
@@ -26,16 +81,24 @@ def format_data_from_facebook_nats_subscribe(room, message_response, data_msg):
     data_attachment = message_response.get('attachments')
     if data_attachment:
         attachment_data =data_attachment.get('data')
-        # for attachment in data_attachment:
-        attachment = {
-            "id": attachment_data[0]['id'],
-            "type": attachment_data[0]['mime_type'],
-            "name": attachment_data[0]['name'],
-            "url": data_msg.get('attachments')[0]['payloadUrl'] if data_msg.get('attachments') else None,
-            "size": attachment_data[0].get('size'),
-            "video_url": attachment_data[0]['video_data']['url'] if attachment_data[0].get('video_data') else None
-        }
-        attachments.append(attachment)
+        for attachment in attachment_data:
+            # attachment = {
+            #     "id": attachment_data[0]['id'],
+            #     "type": attachment_data[0]['mime_type'],
+            #     "name": attachment_data[0]['name'],
+            #     "url": data_msg.get('attachments')[0]['payloadUrl'] if data_msg.get('attachments') else None,
+            #     "size": attachment_data[0].get('size'),
+            #     "video_url": attachment_data[0]['video_data']['url'] if attachment_data[0].get('video_data') else None
+            # }
+            dt_attachment = {
+                "id": attachment['id'],
+                "type": attachment['mime_type'],
+                "name": attachment['name'],
+                "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
+                "size": attachment.get('size'),
+                "video_url": attachment['video_data']['url'] if attachment.get('video_data') else None
+            }
+            attachments.append(dt_attachment)
     data_mid_json = {
         "mid": message_response['id'],
         "attachments": attachments,
