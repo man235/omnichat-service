@@ -139,6 +139,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     new_attachment = Attachment.objects.create(
                         file=attachment, type=attachment.content_type, mid=new_message)
                 data_message = format_message(new_message)
+            asyncio.run(connect_nats_client_publish_websocket(f'live-chat-room.{room_id}', json.dumps(data_message).encode()))
             asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
             return custom_response(200,"ok",[])
         except Exception:
