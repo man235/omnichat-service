@@ -1,6 +1,6 @@
 from typing import Dict
 from core.schema import CoreChatInputMessage, NatsChatMessage
-from core.check_data_message import CheckDataMessageFacebook, CheckDataMessageLiveChat
+from core.check_data_message import CheckDataMessageFacebook, CheckDataMessageLiveChat, CheckDataMessageZalo
 from core.abstractions import AbsRouter, SingletonClass, AbsAppContext, AbsCheckDataMessage
 
 
@@ -19,7 +19,7 @@ class BaseRouter(SingletonClass, AbsRouter):
 
 # ----------------    CHECK DATA MESSAGE    ----------------
     async def _get_check_data_message(self, chat_type: str) -> Dict[str, AbsCheckDataMessage]:
-        for router_class in (CheckDataMessageFacebook, CheckDataMessageLiveChat):
+        for router_class in (CheckDataMessageFacebook, CheckDataMessageLiveChat, CheckDataMessageZalo):
             router_instance = router_class()
             self._check_data_message.update({router_instance.chat_type: router_instance})
         return self._check_data_message.get(chat_type)
