@@ -1,11 +1,13 @@
 from django.utils import timezone
 import json
-from core.schema import NatsChatMessage, MessageWebSocket
+from core.schema import NatsChatMessage, MessageWebSocket, ChatMessageAttachment
 
 
 def format_receive_message(data: NatsChatMessage):
+    attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
     message_ws = MessageWebSocket(
-        attachments = data.attachments,
+        attachments = attachments,
+        # attachments = data.attachments,
         created_at = str(timezone.now()),
         is_seen = False,
         is_sender = False,

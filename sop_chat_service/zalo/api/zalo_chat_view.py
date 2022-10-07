@@ -52,10 +52,10 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
         else:
             return custom_response(200, "This Zalo OA is not active")
         
-    @action(detail=False, methods=['post'], url_path='upload')
-    def upload(self, request, *args, **kwargs) -> Response:
-        serializer = ZaloUploadSerializer(data=request.data)
+    # @action(detail=False, methods=['post'], url_path='upload')
+    # def upload(self, request, *args, **kwargs) -> Response:
+    #     serializer = ZaloUploadSerializer(data=request.data)
         
-        print(serializer)
+    #     print(serializer)
 
-        return custom_response(200, )
+    #     return custom_response(200, )
