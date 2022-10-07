@@ -1,16 +1,20 @@
+import json
 from django.utils import timezone
 import requests
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework import permissions, status
-
 from config.settings.local import ZALO_APP_SECRET_KEY, ZALO_OA_OPEN_API
 from sop_chat_service.app_connect.models import FanPage
 from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
 from sop_chat_service.facebook.utils import custom_response
+from sop_chat_service.utils.request_headers import get_user_from_header
 from sop_chat_service.zalo.serializers.zalo_auth_serializers import ZaloAuthenticationSerializer, ZaloConnectPageSerializer
-from sop_chat_service.zalo.utils import zalo_oa_auth
+from sop_chat_service.zalo.utils.api_suport import zalo_oa_auth
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ZaloViewSet(viewsets.ModelViewSet):
@@ -23,6 +27,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API connect/reconnect to Zalo OA
         """
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         oa_connection_sz = ZaloConnectPageSerializer(data=request.data)
         if oa_connection_sz.is_valid(raise_exception=True):
             oa_auth_sz = ZaloAuthenticationSerializer(data=request.data)
@@ -53,6 +59,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         'page_id': oa_data.get('page_id'),
                         'type': 'zalo',
                         'name': oa_data.get('name'),
+                        'user_id': user_header,
                         'access_token_page': access_token,
                         'refresh_token_page': refresh_token,
                         'avatar_url': oa_data.get('avatar_url'),
@@ -84,9 +91,14 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API delete Zalo OA
         """
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
+        qs = FanPage.objects.filter(
+            page_id=sz.data.get('oa_id'),
+            user_id=user_header,
+        ).first()
         if qs:
             qs.delete()
             return custom_response(200, 'Success')
@@ -97,9 +109,14 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API delete Zalo OA
         """
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
+        qs = FanPage.objects.filter(
+            page_id=sz.data.get('oa_id'),
+            user_id=user_header,
+        ).first()
         if qs:
             qs.is_active = False
             qs.save()
