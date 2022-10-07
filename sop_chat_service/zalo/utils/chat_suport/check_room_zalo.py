@@ -24,7 +24,7 @@ def check_room_zalo(data: NatsChatMessage) -> Room:
         external_id=data.senderId,
     ).first()
 
-    print(f"check_room_zalo -------------------------- user_app-{user_app.__dict__}")
+    # print(f"check_room_zalo -------------------------- user_app-{user_app.__dict__}")
 
     if not user_app:
         logger.debug(f' NOT FIND USER ZALO APP FROM DATABASE ------------------------- ')

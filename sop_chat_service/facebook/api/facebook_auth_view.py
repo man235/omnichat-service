@@ -9,6 +9,7 @@ from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
 from sop_chat_service.facebook.serializers.facebook_auth_serializers import FacebookAuthenticationSerializer, FacebookConnectPageSerializer, DeleteFanPageSerializer
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
+from core import constants
 import logging
 import time
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        pages = FanPage.objects.filter(user_id=user_header).exclude(last_subscribe=None)
+        pages = FanPage.objects.filter(user_id=user_header, type=constants.FACEBOOK).exclude(last_subscribe=None)
         sz = FanPageSerializer(pages, many=True)
         return custom_response(200, "Get list page successfully", sz.data)
 
