@@ -35,7 +35,8 @@ def format_mid_facebook(room, message_response):
                 "id": attachment['id'],
                 "type": attachment['mime_type'],
                 "name": attachment['name'],
-                "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
+                # "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
+                "url": attachment.get('image_data')['url'] if attachment.get('image_data') else attachment.get('file_url'),
                 "size": attachment.get('size'),
                 "video_url": attachment['video_data']['url'] if attachment.get('video_data') else None
             }
