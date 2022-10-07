@@ -40,7 +40,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
             )
 
             if not oa_token:
-                return custom_response(400, 'Failure')
+                return custom_response(401, 'Failed to authorize Zalo OA')
             elif oa_token.get('message') != 'Success':
                 return custom_response(400, oa_token.get('error'))
 
@@ -49,7 +49,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
 
             oa_info = zalo_oa_auth.get_oa_info(access_token)
             if not oa_info:
-                return custom_response(401, 'Failure')
+                return custom_response(403, 'Failed to get Zalo OA infomation')
             elif oa_info.get('message') != 'Success':
                 return custom_response(400, oa_info.get('eror'))
             else:
@@ -78,9 +78,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         else:
                             oa_model = oa_sz.update(oa_queryset, oa_data_bundle)
                         
-                        return custom_response(200, 'Success', FanPageSerializer(oa_model).data)
+                        return custom_response(200, 'Connecto to Zalo OA successfully', FanPageSerializer(oa_model).data)
                     else:
-                        return custom_response(400, 'Failure')
+                        return custom_response(500, 'Failed to serialize data')
                 except Exception as e:
                     return custom_response(500, str(e))
         else:
@@ -101,8 +101,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
         ).first()
         if qs:
             qs.delete()
-            return custom_response(200, 'Success')
-        return custom_response(400, 'Failure', [])
+            return custom_response(200, 'Delete Zalo OA successfully')
+        return custom_response(400, 'Failed to delete Zalo OA', [])
     
     @action(detail=False, methods=['post'], url_path='unsubscribe')
     def unsubscribe_oa(self, request, *args, **kwargs) -> Response:
@@ -120,8 +120,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
         if qs:
             qs.is_active = False
             qs.save()
-            return custom_response(200, 'Success')
-        return custom_response(400, 'Failure', [])      
+            return custom_response(200, 'Connect Zalo OA successfully')
+        return custom_response(400, 'Failed to disconnect Zalo OA', [])      
     
     @action(detail=False, methods=['post'], url_path='oa-list')
     def get_oa_list_v2(self, request, *args, **kwargs) -> Response:
@@ -154,7 +154,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 
         # Update FanPage Serializers
         oa_updated_serializer = FanPageSerializer(FanPage.objects.filter(type='zalo'), many=True)
-        return custom_response(message='Success', data=oa_updated_serializer.data)
+        return custom_response(message='Request successfully', data=oa_updated_serializer.data)
     
     @action(detail=False, methods=['post'], url_path='refresh')
     def refresh_token(self, request, *args, **kwargs) -> Response:
@@ -175,7 +175,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 if not oa_token or oa_token.get('message') == 'Failure':
                     queryset.is_active = False
                     queryset.save()
-                    return custom_response(401, 'Failure')
+                    return custom_response(401, 'Failed to authorize Zalo OA')
 
                 if oa_token.get('message') == 'Success':
                     access_token = oa_token.get('data').get('access_token')
@@ -187,9 +187,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     queryset.last_subscribe=timezone.now()
                     queryset.save()
                     
-                    return custom_response(200, 'Success')
+                    return custom_response(200, 'Reconnect to Zalo OA successfully')
                 else:
                     return custom_response(400, oa_token.get('error'))
-            return custom_response(400, 'Failure')
+            return custom_response(400, 'Can not refresh Zalo OA')
         else:
             return custom_response(400, 'Zalo OA not found')
