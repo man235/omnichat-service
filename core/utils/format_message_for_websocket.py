@@ -84,19 +84,12 @@ def format_data_from_facebook_nats_subscribe(room, message_response, data_msg):
     if data_attachment:
         attachment_data =data_attachment.get('data')
         for attachment in attachment_data:
-            # attachment = {
-            #     "id": attachment_data[0]['id'],
-            #     "type": attachment_data[0]['mime_type'],
-            #     "name": attachment_data[0]['name'],
-            #     "url": data_msg.get('attachments')[0]['payloadUrl'] if data_msg.get('attachments') else None,
-            #     "size": attachment_data[0].get('size'),
-            #     "video_url": attachment_data[0]['video_data']['url'] if attachment_data[0].get('video_data') else None
-            # }
             dt_attachment = {
                 "id": attachment['id'],
                 "type": attachment['mime_type'],
                 "name": attachment['name'],
-                "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
+                # "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
+                "url": attachment.get('image_data')['url'] if attachment.get('image_data') else attachment.get('file_url'),
                 "size": attachment.get('size'),
                 "video_url": attachment['video_data']['url'] if attachment.get('video_data') else None
             }
