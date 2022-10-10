@@ -94,7 +94,8 @@ class ChatViewSet(viewsets.ModelViewSet):
             user_id = room.user_id
             new_topic_publish = f'LiveChat.SaleMan.{room_id}'
             
-            live_chat_action_room = f'live-chat-action-room.{user_id}'
+            live_chat_action_room = f'LiveChat.SaleMan.{room_id}'
+            # live_chat_action_room = f'live-chat-action-room.{user_id}'
             data_message={}
             if sz.data.get("mid"):
                 message = Message.objects.get(id = sz.data.get("mid"))
