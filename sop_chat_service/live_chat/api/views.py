@@ -125,7 +125,9 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         # try:
         room_id = sz.data['room_id']
         room = Room.objects.filter(room_id = room_id).first()
-        new_topic_publish = f'AnonymousLiveChat.Core.{room_id}'
+        # new_topic_publish = f'AnonymousLiveChat.Core.{room_id}'
+        new_topic_publish = f'LiveChat.SaleMan.{room_id}'
+
         Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         data_message={}
         if sz.data.get("mid"):
