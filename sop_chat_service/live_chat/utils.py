@@ -11,7 +11,7 @@ from sop_chat_service.app_connect.serializers.room_serializers import FormatRoom
 import asyncio
 from django.utils import timezone
 
-from models import LiveChat
+# from .models import LiveChat
 
 
 
@@ -49,50 +49,6 @@ def format_message_room(data):
         "event":"new_message",
         "data":sz.data
         }
-
-def format_message(data):
-    sz = MessageSerializer(data,many=False)
-    
-    attachments = []
-    data_attachment = sz.data.get('attachments')
-    # print(data_attachment.id)
-    if data_attachment:
-        file = Attachment.objects.filter(id in data_attachment)
-        for item in file:
-            
-            attachment = {
-                "id": file.id,
-                "type": file.type,
-                "name": file.name,
-                "url":file.url,
-                "size": "",
-                "video_url": ""
-      
-            }
-            attachments.append(attachment)
-    room= Room.objects.filter(room_message__id =sz.data['id']).first()
-    live_chat = LiveChat.objects.filter(user_id = sz.data['sender_id']).first()
-    data_mid_json = {
-        "mid": sz.data['id'],
-        "attachments": attachments,
-        "text": sz.data['text'],
-        "senderId": sz.data['sender_id'],
-        "recipientId":  sz.data['recipient_id'],
-        "room_id": room.room_id,
-        "is_sender": True,
-        "created_at": str(timezone.now()),
-        "is_seen": None,
-        "message_reply": None,
-        "reaction": None,
-        "reply_id": None,
-        "sender_name": None,
-        "uuid": sz.data['uuid'],
-        "timestamp":int(time.time()),
-        "typeChat":"livechat",
-        "appId":"",
-        "live_chat_id":live_chat.id,
-    }
-    return data_mid_json
 
 def format_room(data):
     sz = RoomSerializer(data, many=False)

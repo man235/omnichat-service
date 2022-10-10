@@ -7,8 +7,8 @@ import os
 import uuid
 
 from sop_chat_service.facebook.utils import custom_response
-from sop_chat_service.live_chat.utils import connect_nats_client_publish_websocket, format_message, format_message_room, format_new_room
-
+from sop_chat_service.live_chat.utils import connect_nats_client_publish_websocket, format_message_room, format_new_room
+from core.utils import format_message
 from ...app_connect.models import Attachment, Message, Room
 from sop_chat_service.live_chat.models import LiveChat
 from sop_chat_service.live_chat.api.serializer import CreateUserLiveChatSerializers, LiveChatSerializer, MessageLiveChatSend, RoomLiveChatSerializer
