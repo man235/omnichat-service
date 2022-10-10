@@ -29,7 +29,8 @@ class FacebookChatConsumer(AsyncJsonWebsocketConsumer):
         if self.topic == "live-chat-room" or self.topic == "live-chat-action-room":
             self.room_group_name = f'{self.topic}.{self.room_id}'
 
-            topics = [f'live-chat-room.{self.room_id}',f'live-chat-action-room.{user}']
+            # topics = [f'live-chat-room.{self.room_id}',f'live-chat-action-room.{user}']
+            topics = [f'LiveChat.SaleMan.{self.room_id}',f'live-chat-action-room_{self.room_id}']
             for topic in topics:
                 if topic == topics[0]:
                     sub = await nats_client.subscribe(topic, "message", self.subscribe_handler)
