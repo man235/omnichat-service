@@ -20,7 +20,7 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
                 Attachment.objects.create(
                     mid = message,
                     type = attachment.type,
-                    attachment_id = attachment.id,
+                    # attachment_id = attachment.id,
                     # url = attachment.url if attachment.url else attachment.video_url,
                     url = attachment.payloadUrl,
                     # name = attachment.name,
