@@ -92,7 +92,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             room_id = sz.data['room_id']
             room = Room.objects.filter(room_id = room_id).first()
             user_id = room.user_id
-            new_topic_publish = f'live-chat-room.{room_id}'
+            new_topic_publish = f'LiveChat.SaleMan.{room_id}'
             
             live_chat_action_room = f'live-chat-action-room.{user_id}'
             data_message={}
