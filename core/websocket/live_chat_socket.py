@@ -33,7 +33,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await nats_client.connect(
             servers=[settings.NATS_URL]
         )
-        topics = [f'live-chat-room_{self.room_id}',f'live-chat-action-room_{self.room_id}']
+        # topics = [f'live-chat-room_{self.room_id}',f'live-chat-action-room_{self.room_id}']
+        topics = [f'LiveChat.SaleMan.{self.room_id}',f'live-chat-action-room_{self.room_id}']
         
         sub=[]
         for topic in topics:
