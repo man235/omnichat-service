@@ -152,6 +152,6 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
         asyncio.run(connect_nats_client_publish_websocket(f'live-chat-room.{room_id}', json.dumps(data_message).encode()))
         asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
-        return custom_response(200,"ok",[])
+        return custom_response(200,"ok",data_message)
         # except Exception:
         #     return custom_response(500,"INTERNAL_SERVER_ERROR",[])
