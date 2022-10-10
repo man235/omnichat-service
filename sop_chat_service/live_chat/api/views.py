@@ -21,6 +21,9 @@ import asyncio
 
 from iteration_utilities import unique_everseen
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 class LiveChatViewSet(viewsets.ModelViewSet):
@@ -127,29 +130,26 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         data_message={}
         if sz.data.get("mid"):
             message = Message.objects.get(id = sz.data.get("mid"))
-            new_message = Message.objects.create(room_id=room,mid =message,recipient_id=room.external_id, is_sender=True, sender_id=user_header, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+            new_message = Message.objects.create(room_id=room,mid =message,recipient_id=room.external_id,is_sender=True,
+                sender_id=user_header, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
             attachments = request.FILES.getlist('file')
             for attachment in attachments:
                 new_attachment = Attachment.objects.create(
                     file=attachment, type=attachment.content_type, mid=new_message)
+            logger.debug(f"SEND MESSAGE LIVECHAT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
             data_message = format_message(new_message) 
         else:
-            new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header,recipient_id=room.external_id, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+            new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header,
+                recipient_id=room.external_id, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
             attachments = request.FILES.getlist('file')
             for attachment in attachments:
                 new_attachment = Attachment.objects.create(
                     file=attachment, type=attachment.content_type, mid=new_message)
+            logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
             data_message = format_message(new_message)
-            print(data_message)
+        logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
         asyncio.run(connect_nats_client_publish_websocket(f'live-chat-room.{room_id}', json.dumps(data_message).encode()))
         asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
         return custom_response(200,"ok",[])
         # except Exception:
         #     return custom_response(500,"INTERNAL_SERVER_ERROR",[])
-        
-        
-   
-
-
-    
-  
