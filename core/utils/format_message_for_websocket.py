@@ -25,9 +25,9 @@ def format_receive_message(data: NatsChatMessage):
     )
     return message_ws
 def format_receive_live_chat(data: NatsChatMessage):
-    
+    attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
     message_ws = MessageWebSocket(
-        attachments = data.attachments,
+        attachments = attachments,
         created_at = str(timezone.now()),
         is_seen = "",
         is_sender = False,
@@ -43,7 +43,6 @@ def format_receive_live_chat(data: NatsChatMessage):
         room_id = None,
         event= "live_chat_new_message_ack",
     )
-    
     return message_ws
 
 
