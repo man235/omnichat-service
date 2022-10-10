@@ -24,3 +24,4 @@ class MessageWebSocket(CustomBaseModel):
     text: Optional[str] = None
     uuid: Optional[str]
     created_time: Optional[str]
+    event: Optional[str]

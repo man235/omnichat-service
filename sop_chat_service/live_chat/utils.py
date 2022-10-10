@@ -1,13 +1,19 @@
+import time
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
 import nats
 from django.conf import settings
-
+from sop_chat_service.app_connect.models import Attachment, Room
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
 from sop_chat_service.app_connect.serializers.room_serializers import FormatRoomSerializer, RoomSerializer
 import asyncio
+from django.utils import timezone
+
+from models import LiveChat
+
+
 
 class Pagination(PageNumberPagination):
     page_size = 1
@@ -36,27 +42,68 @@ async def connect_nats_client_publish_websocket(new_topic_publish, data_mid):
 
     await nats_client.close()
     return
+
 def format_message_room(data):
     sz = FormatRoomSerializer(data,many=False)
     return {
-        "events":"new_message",
+        "event":"new_message",
         "data":sz.data
         }
+
 def format_message(data):
     sz = MessageSerializer(data,many=False)
-    return {
-        "events":"new_last_message",
-        "data":sz.data
-        }
+    
+    attachments = []
+    data_attachment = sz.data.get('attachments')
+    # print(data_attachment.id)
+    if data_attachment:
+        file = Attachment.objects.filter(id in data_attachment)
+        for item in file:
+            
+            attachment = {
+                "id": file.id,
+                "type": file.type,
+                "name": file.name,
+                "url":file.url,
+                "size": "",
+                "video_url": ""
+      
+            }
+            attachments.append(attachment)
+    room= Room.objects.filter(room_message__id =sz.data['id']).first()
+    live_chat = LiveChat.objects.filter(user_id = sz.data['sender_id']).first()
+    data_mid_json = {
+        "mid": sz.data['id'],
+        "attachments": attachments,
+        "text": sz.data['text'],
+        "senderId": sz.data['sender_id'],
+        "recipientId":  sz.data['recipient_id'],
+        "room_id": room.room_id,
+        "is_sender": True,
+        "created_at": str(timezone.now()),
+        "is_seen": None,
+        "message_reply": None,
+        "reaction": None,
+        "reply_id": None,
+        "sender_name": None,
+        "uuid": sz.data['uuid'],
+        "timestamp":int(time.time()),
+        "typeChat":"livechat",
+        "appId":"",
+        "live_chat_id":live_chat.id,
+    }
+    return data_mid_json
+
 def format_room(data):
     sz = RoomSerializer(data, many=False)
     return {
-        "events":"completed_room",
+        "event":"completed_room",
         "data":sz.data
         }
+
 def format_new_room(data):
     sz = RoomSerializer(data, many=False)
     return {
-        "events":"new_room",
+        "event":"new_room",
         "data":sz.data
         }
