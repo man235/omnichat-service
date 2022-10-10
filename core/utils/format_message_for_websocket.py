@@ -24,6 +24,28 @@ def format_receive_message(data: NatsChatMessage):
         created_time = None
     )
     return message_ws
+def format_receive_live_chat(data: NatsChatMessage):
+    
+    message_ws = MessageWebSocket(
+        attachments = data.attachments,
+        created_at = str(timezone.now()),
+        is_seen = "",
+        is_sender = False,
+        message_reply = None,
+        reaction = None,
+        recipient_id = data.recipientId,
+        reply_id = None,
+        sender_id = data.senderId,
+        sender_name = None,
+        text = data.text,
+        uuid = data.uuid,
+        mid = data.mid,
+        room_id = None,
+        event= "live_chat_new_message_ack",
+    )
+    
+    return message_ws
+
 
 def format_mid_facebook(room, message_response):
     attachments = []
