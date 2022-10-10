@@ -16,7 +16,8 @@ from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 import time
 from django.utils import timezone
-
+import logging
+logger = logging.getLogger(__name__)
 
 
 class ChatViewSet(viewsets.ModelViewSet):
@@ -105,6 +106,7 @@ class ChatViewSet(viewsets.ModelViewSet):
                     new_attachment = Attachment.objects.create( 
                         file=attachment, type=attachment.content_type, mid=new_message)
                 data_message = format_message(new_message)
+                logger.debug(f"SEND MESSAGE LIVECHAT WITH MID -> WS: {new_topic_publish} ****************  {data_message}")
                 asyncio.run(connect_nats_client_publish_websocket(live_chat_action_room, json.dumps(data_message).encode()))
 
             else:
@@ -114,9 +116,11 @@ class ChatViewSet(viewsets.ModelViewSet):
                     new_attachment = Attachment.objects.create(
                         file=attachment, type=attachment.content_type, mid=new_message)
                 data_message = format_message(new_message)
+                logger.debug(f"SEND MESSAGE LIVECHAT NOT MID -> WS: {new_topic_publish} ++++++++++++++++++++++++++ {data_message}")
                 asyncio.run(connect_nats_client_publish_websocket(live_chat_action_room, json.dumps(data_message).encode()))
             data_message = format_message_room(room)
-            asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
+            logger.debug(f"SEND MESSAGE LIVECHAT -> WS: {new_topic_publish} ++++++++++++++++++++++++++ {data_message}")
+            asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message)))
             return custom_response(200,"ok",[])
         except Exception:
             return custom_response(500,"INTERNAL_SERVER_ERROR",[])
