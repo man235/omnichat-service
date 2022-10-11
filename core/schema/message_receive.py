@@ -23,3 +23,4 @@ class NatsChatMessage(CustomBaseModel):
     typeChat: str
     optionals: List[ChatOptional] = []
     uuid: Optional[str] = ""
+    room_id: Optional[str] = None
