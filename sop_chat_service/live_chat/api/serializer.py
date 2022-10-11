@@ -7,6 +7,7 @@ from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo, Us
 
 class LiveChatSerializer(serializers.ModelSerializer):
     register_info = serializers.SerializerMethodField(source='get_register_info', read_only=True)
+    avatar_url = serializers.SerializerMethodField(source='get_avatar_url', read_only=True)
 
     class Meta:
         model = LiveChat
@@ -17,6 +18,9 @@ class LiveChatSerializer(serializers.ModelSerializer):
         sz = RegisterInfoSerializer(data=register_info, many=True)
         sz.is_valid()
         return sz.data
+    
+    def get_avatar_url(self, obj):
+        return obj.avatar.name
 
 
 class UpdateAvatarLiveChatSerializer(serializers.ModelSerializer):
