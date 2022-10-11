@@ -148,11 +148,11 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
             sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}"
             for attachment in attachments:
-                logger.debug(f"ATTACHMENT {attachment.name} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
+                logger.debug(f"ATTACHMENT {attachment} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ {type(attachment)} ")
                 new_attachment = Attachment.objects.create(
                     file=attachment, type=attachment.content_type,
                     mid=new_message, name=attachment.name,
-                    url = str(domain+sub_url)
+                    url = str(domain+sub_url) + str(attachment)
                 )
             logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
             data_message = format_message(new_message)
