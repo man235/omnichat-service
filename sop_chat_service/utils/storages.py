@@ -28,10 +28,12 @@ def upload_image_to(instance, filename):
 
 def upload_file_to_minio(file, room_id):
     basename, extension = splitext(file.name)
-    file_directory_within_bucket = f'live_chat_room_{room_id}/{uuid.uuid4().hex}{extension}'
+    file_directory_within_bucket = f'live_chat_room_{room_id}'
+    name = f"{uuid.uuid4().hex}{extension}"
     file_path_within_bucket = os.path.join(
         file_directory_within_bucket,
-        file.name
+        # file.name
+        name
     )
     media_storage = MediaRootS3Boto3Storage()
 
@@ -39,8 +41,8 @@ def upload_file_to_minio(file, room_id):
         media_storage.save(file_path_within_bucket, file)
         file_url = media_storage.url(file_path_within_bucket)
         logger.debug(f"DIR OF MEDIA_STORAGE: ------------------------------ {dir(media_storage)}")
-        data = {
-            'name': file.name,
-            'fileUrl': file_url,
-        }
-        return data
+        # data = {
+        #     'name': file.name,
+        #     'file_url': f"{file_directory_within_bucket}/{name}",
+        # }
+        return name

@@ -151,11 +151,11 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             for attachment in attachments:
                 data_upload_file = upload_file_to_minio(attachment, room_id)
                 logger.debug(f"ATTACHMENT {data_upload_file} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
-                # new_attachment = Attachment.objects.create(
-                #     file=attachment, type=attachment.content_type,
-                #     mid=new_message, name=attachment.name,
-                #     url = str(domain+sub_url) + str(attachment)
-                # )
+                new_attachment = Attachment.objects.create(
+                    file=attachment, type=attachment.content_type,
+                    mid=new_message, name=attachment.name,
+                    url = str(domain+sub_url) + str(data_upload_file)
+                )
             logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
             data_message = format_message(new_message)
         logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
