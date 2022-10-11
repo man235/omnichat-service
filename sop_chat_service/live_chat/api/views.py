@@ -152,7 +152,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 data_upload_file = upload_file_to_minio(attachment, room_id)
                 logger.debug(f"ATTACHMENT {data_upload_file} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
                 new_attachment = Attachment.objects.create(
-                    file=attachment, type=attachment.content_type,
+                    file=data_upload_file, type=attachment.content_type,
                     mid=new_message, name=attachment.name,
                     url = str(domain+sub_url) + str(data_upload_file)
                 )
