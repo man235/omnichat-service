@@ -18,6 +18,7 @@ from rest_framework.decorators import action
 from django.utils import timezone
 import asyncio
 from sop_chat_service.utils.storages import upload_file_to_minio
+from core.stream.redis_connection import redis_client
 
 
 from iteration_utilities import unique_everseen
@@ -35,7 +36,6 @@ class LiveChatViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-
         qs = LiveChat.objects.filter(user_id = user_header)
         sz = LiveChatSerializer(qs, many=True)
         return custom_response(200,"Get Config Live Chat Successfully",sz.data)
