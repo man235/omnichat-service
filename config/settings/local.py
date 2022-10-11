@@ -98,8 +98,7 @@ AWS_S3_FILE_OVERWRITE = False
 if DEBUG:
     AWS_S3_ENDPOINT_URL = "http://172.24.222.114:9000"
 
-
-
+DOMAIN_MINIO_SAVE_ATTACHMENT = "https://webhook.minhhv11.xyz/"
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
 SITE_ID = 1
 NATS_URL = env(

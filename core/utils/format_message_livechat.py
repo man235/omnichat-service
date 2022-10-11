@@ -22,17 +22,6 @@ def format_message(data):
       
             }
             attachments.append(attachment_dt)
-        # file = Attachment.objects.filter(id in data_attachment)
-        # for item in file:
-        #     attachment = {
-        #         "id": file.id,
-        #         "type": file.type,
-        #         "name": file.name,
-        #         "url":file.url,
-        #         "size": "",
-        #         "video_url": ""
-        #     }
-        #     attachments.append(attachment)
     room= Room.objects.filter(room_message__id =sz.data['id']).first()
     live_chat = LiveChat.objects.filter(user_id = sz.data['sender_id']).first()
     data_mid_json = {

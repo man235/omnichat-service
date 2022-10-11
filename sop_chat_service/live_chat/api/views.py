@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import json
 import time
 import uuid
-
+from django.conf import settings
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
 
@@ -145,10 +145,15 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header,
                 recipient_id=room.external_id, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
             attachments = request.FILES.getlist('file')
+            domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
+            sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}"
             for attachment in attachments:
-                logger.debug(f"ATTACHMENT {attachment.url} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
+                logger.debug(f"ATTACHMENT {attachment.name} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
                 new_attachment = Attachment.objects.create(
-                    file=attachment, type=attachment.content_type, mid=new_message, name=attachment.name)
+                    file=attachment, type=attachment.content_type,
+                    mid=new_message, name=attachment.name,
+                    url = str(domain+sub_url)
+                )
             logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
             data_message = format_message(new_message)
         logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
