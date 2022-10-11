@@ -152,7 +152,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 new_attachment = Attachment.objects.create(
                     file=attachment, type=attachment.content_type,
                     mid=new_message, name=attachment.name,
-                    url = str(domain+sub_url) + attachment
+                    url = str(domain+sub_url) + str(attachment)
                 )
             logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
             data_message = format_message(new_message)
