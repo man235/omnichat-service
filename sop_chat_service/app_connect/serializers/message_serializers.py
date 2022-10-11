@@ -29,9 +29,7 @@ class MessageSerializer(serializers.ModelSerializer):
         attachments = Attachment.objects.filter(mid=obj.id)
         id =[]
         for attachment in attachments:
-            id.append(attachment.id)    
-        
-        
+            id.append(attachment.id)
         return id
     class Meta: 
         model= Message

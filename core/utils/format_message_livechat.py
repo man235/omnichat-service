@@ -10,9 +10,9 @@ def format_message(data):
     attachments = []
     data_attachment = sz.data.get('attachments')
     if data_attachment:
-        file = Attachment.objects.filter(id in data_attachment)
-        for item in file:
-            attachment = {
+        for attachment in data_attachment:
+            file = Attachment.objects.filter(id = attachment).first()
+            attachment_dt = {
                 "id": file.id,
                 "type": file.type,
                 "name": file.name,
@@ -21,7 +21,18 @@ def format_message(data):
                 "video_url": ""
       
             }
-            attachments.append(attachment)
+            attachments.append(attachment_dt)
+        # file = Attachment.objects.filter(id in data_attachment)
+        # for item in file:
+        #     attachment = {
+        #         "id": file.id,
+        #         "type": file.type,
+        #         "name": file.name,
+        #         "url":file.url,
+        #         "size": "",
+        #         "video_url": ""
+        #     }
+        #     attachments.append(attachment)
     room= Room.objects.filter(room_message__id =sz.data['id']).first()
     live_chat = LiveChat.objects.filter(user_id = sz.data['sender_id']).first()
     data_mid_json = {
