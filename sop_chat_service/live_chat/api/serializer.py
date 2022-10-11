@@ -37,6 +37,7 @@ class MessageLiveChatSend(serializers.Serializer):
     room_id = serializers.CharField(required=True)
     mid = serializers.CharField(required=False)
     is_text = serializers.BooleanField(required=True)
+    recipient_id = serializers.CharField(required=False)
 
     class Meta:
         fields = ['file', 'message_text', 'room_id', 'mid', 'message_type']

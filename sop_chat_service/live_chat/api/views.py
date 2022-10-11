@@ -124,7 +124,8 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         # try:
         room_id = sz.data['room_id']
-        room = Room.objects.filter(room_id = room_id).first()
+        room = Room.objects.filter(room_id = room_id, external_id=sz.data.get("recipient_id")).first()
+        logger.debug(f"CHECK ROOM SEND MESSAGE LIVECHAT: {room} **************** ")
         # new_topic_publish = f'AnonymousLiveChat.Core.{room_id}'
         new_topic_publish = f'LiveChat.SaleMan.{room_id}'
 

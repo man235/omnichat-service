@@ -43,6 +43,6 @@ def format_message(data):
         "typeChat":"livechat",
         "appId":"",
         "live_chat_id":live_chat.id,
-        "event": "live_chat_new_message_ack",
+        "event": "live_chat_new_message",
     }
     return data_mid_json
