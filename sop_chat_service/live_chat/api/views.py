@@ -146,7 +146,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 recipient_id=room.external_id, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
             attachments = request.FILES.getlist('file')
             for attachment in attachments:
-                logger.debug(f"ATTACHMENT {attachment.name} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
+                logger.debug(f"ATTACHMENT {attachment.url} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
                 new_attachment = Attachment.objects.create(
                     file=attachment, type=attachment.content_type, mid=new_message, name=attachment.name)
             logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
