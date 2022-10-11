@@ -15,15 +15,14 @@ class StaticRootS3Boto3Storage(S3Boto3Storage):
 
 
 class MediaRootS3Boto3Storage(S3Boto3Storage):
-    location = "media"
-    file_overwrite = False
+    # location = ''
+    file_overwrite = True
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
 
 
 
 def upload_image_to(instance, filename):
     basename, extension = splitext(filename)
-    logger.debug(f"Upload image to: ********************* {instance}")
     return f'{uuid.uuid4().hex}{extension}'
 
 
@@ -39,6 +38,7 @@ def upload_file_to_minio(file, room_id):
     if not media_storage.exists(file_path_within_bucket): # avoid overwriting existing file
         media_storage.save(file_path_within_bucket, file)
         file_url = media_storage.url(file_path_within_bucket)
+        logger.debug(f"DIR OF MEDIA_STORAGE: ------------------------------ {dir(media_storage)}")
         data = {
             'name': file.name,
             'fileUrl': file_url,
