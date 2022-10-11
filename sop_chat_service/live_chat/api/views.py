@@ -147,7 +147,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             attachments = request.FILES.getlist('file')
             for attachment in attachments:
                 new_attachment = Attachment.objects.create(
-                    file=attachment, type=attachment.content_type, mid=new_message)
+                    file=attachment, type=attachment.content_type, mid=new_message, name=attachment.name)
                 logger.debug(f"ATTACHMENT {attachment} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ {new_attachment}")
             logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
             data_message = format_message(new_message)

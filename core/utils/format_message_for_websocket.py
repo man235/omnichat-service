@@ -24,7 +24,7 @@ def format_receive_message(data: NatsChatMessage):
         created_time = None
     )
     return message_ws
-def format_receive_live_chat(data: NatsChatMessage):
+def format_receive_live_chat(room ,data: NatsChatMessage):
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
     message_ws = MessageWebSocket(
         attachments = attachments,
@@ -40,7 +40,7 @@ def format_receive_live_chat(data: NatsChatMessage):
         text = data.text,
         uuid = data.uuid,
         mid = data.mid,
-        room_id = None,
+        room_id = room.room_id,
         event= "live_chat_new_message_ack",
     )
     return message_ws
