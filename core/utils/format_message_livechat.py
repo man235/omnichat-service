@@ -11,7 +11,7 @@ def format_message(data):
     data_attachment = sz.data.get('attachments')
     if data_attachment:
         for attachment in data_attachment:
-            file = Attachment.objects.filter(id = attachment).first()
+            file = Attachment.objects.filter(id = attachment.id).first()
             attachment_dt = {
                 "id": file.id,
                 "type": file.type,

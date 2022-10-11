@@ -27,10 +27,12 @@ class MessageSerializer(serializers.ModelSerializer):
                 return message_reply
     def get_attachments(self, obj):
         attachments = Attachment.objects.filter(mid=obj.id)
-        id =[]
-        for attachment in attachments:
-            id.append(attachment.id)
-        return id
+        sz = AttachmentSerializer(attachments, many=True)
+        return sz.data
+        # id =[]
+        # for attachment in attachments:
+        #     id.append(attachment.id)
+        # return id
     class Meta: 
         model= Message
         fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id',
