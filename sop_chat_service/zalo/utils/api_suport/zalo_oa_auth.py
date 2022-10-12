@@ -1,11 +1,8 @@
 from datetime import datetime
 from typing import Union, Any
 from django.conf import settings
-
 import requests
-from rest_framework.response import Response
-
-from sop_chat_service.zalo.utils.response_templates import json_response
+from .response_templates import json_response
 
 
 def get_oa_token(oa_id: Union[int, str] = None, 
@@ -26,12 +23,13 @@ def get_oa_token(oa_id: Union[int, str] = None,
             }
         else:
             payload = {
-                'oa_id': oa_id,
                 'code': authorization_code,
                 'app_id': settings.ZALO_APP_ID,
                 'grant_type': 'authorization_code',
-                'code_verifier': code_verifier
             }
+            
+            if code_verifier != None:
+                payload['code_verifier'] = code_verifier
 
         url = f'{oa_oauth_url}/access_token'
         headers = {
@@ -53,6 +51,7 @@ def get_oa_token(oa_id: Union[int, str] = None,
             return None  # BAD Request
     except Exception as e:  
         return json_response(is_success=False, result=str(e))
+    
     
 def get_oa_info(access_token: str = None) -> Any:
     """
@@ -83,21 +82,3 @@ def get_oa_info(access_token: str = None) -> Any:
         except Exception as e:
             return json_response(is_success=False, result=str(e)) 
     
-def check_valid_token(time_update: datetime = None) -> tuple:
-    """
-    Utility function check valid token by time remaining
-    """
-    try:
-        now = datetime.now()
-        diff = now - time_update
-        time_remaining = diff.seconds
-        expired_atk = False
-        expired_rtk = False
-        
-        if time_remaining > settings.OA_ACCESS_EXPIRED_IN:
-            expired_atk = True
-        if time_remaining > settings.OA_REFRESH_EXPIRED_IN:
-            expired_rtk = True
-        return expired_atk, expired_rtk
-    except Exception:
-        return None

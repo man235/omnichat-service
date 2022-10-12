@@ -67,3 +67,12 @@ channels==3.0.5
 nats-py==2.1.4
 iteration-utilities
 Pillow
+minio
+django-minio-backend
+certifi
+urllib3
+django-storages
+boto3
+boto
+pydantic==1.10.2
+ujson

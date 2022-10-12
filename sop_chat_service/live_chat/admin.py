@@ -7,7 +7,7 @@ from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo, Us
 
 @admin.register(LiveChat)
 class LiveChatAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'name_agent', 'is_active', 'color']
+    list_display = ['id', 'name', 'name_agent', 'is_active', 'color',"user_id"]
 
 
 @admin.register(LiveChatRegisterInfo)

@@ -23,7 +23,7 @@ class FanPage(models.Model):
     user_id = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=30, default=Type.FACEBOOK,
                             choices=Type.choices)
-
+    fanpage_user_id = models.CharField(max_length=255, null=True, blank=True)
     def __str__(self):
         return str(self.id) + '-' + self.name+'-'+self.access_token_page
 
@@ -42,7 +42,7 @@ class Room(models.Model):
     class TypeRoomChoice(models.TextChoices):
         FACEBOOK = 'facebook'
         ZALO = 'zalo'
-        LIVE_CHAT= 'live chat'
+        LIVE_CHAT= 'livechat'
 
     class ApproachCustomerChoice(models.TextChoices):
         FACEBOOK = 'facebook'

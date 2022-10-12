@@ -7,6 +7,7 @@ from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo, Us
 
 class LiveChatSerializer(serializers.ModelSerializer):
     register_info = serializers.SerializerMethodField(source='get_register_info', read_only=True)
+    avatar_url = serializers.SerializerMethodField(source='get_avatar_url', read_only=True)
 
     class Meta:
         model = LiveChat
@@ -17,6 +18,9 @@ class LiveChatSerializer(serializers.ModelSerializer):
         sz = RegisterInfoSerializer(data=register_info, many=True)
         sz.is_valid()
         return sz.data
+    
+    def get_avatar_url(self, obj):
+        return obj.avatar.name
 
 
 class UpdateAvatarLiveChatSerializer(serializers.ModelSerializer):
@@ -32,33 +36,27 @@ class RegisterInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MessageLiveChatSerializer(serializers.ModelSerializer):
-    attachments = serializers.FileField(required=False)
-    sender_id = serializers.CharField(required=True)
-    recipient_id = serializers.CharField(required=True)
-    text = serializers.CharField(required=False)
-    reply_id = serializers.CharField(required=False)
-    is_sender = serializers.BooleanField(default=True)
-
-    class Meta:
-        model = Message
-        fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender']
-
 class MessageLiveChatSend(serializers.Serializer):
-    file = serializers.FileField(required=False)
-    text = serializers.CharField(required=False)
+    message_text = serializers.CharField(required=False)
     room_id = serializers.CharField(required=True)
     mid = serializers.CharField(required=False)
-    message_type= serializers.CharField(required=True)
+    is_text = serializers.BooleanField(required=True)
+    recipient_id = serializers.CharField(required=False)
 
     class Meta:
-        fields = ['file', 'text', 'room_id', 'mid', 'message_type']
+        fields = ['file', 'message_text', 'room_id', 'mid', 'message_type']
     def validate(self, attrs):
-        if attrs.get("message_type") == "text":
-            if not attrs.get("text"):
-                raise serializers.ValidationError({"text": "message is required"})
-        if attrs.get("message_type") == "file":
-            if not attrs.get("file"):
+    
+        file= self.context['request'].FILES.getlist('file')
+        if attrs.get("room_id"):
+            room= Room.objects.filter(room_id=attrs.get("room_id")).first()
+            if not room or room.status == "expired" or room.status =="completed":
+                raise serializers.ValidationError({"room_id": "Room is Invalid"})
+        if str(attrs.get("is_text")).lower() == "true":
+            if not attrs.get("message_text"):
+                raise serializers.ValidationError({"message_text": "message is required"})
+        if str(attrs.get("is_text")).lower() == "false":
+            if not file:
                 raise serializers.ValidationError({"file": "file is required"})
         if attrs.get("mid"):
             message = Message.objects.get(id = attrs.get('mid'))
@@ -126,3 +124,24 @@ class RoomLiveChatSerializer(serializers.ModelSerializer):
         count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
         return count
     
+class CompletedRoomSerializer(serializers.Serializer):
+    room_id = serializers.CharField(required=True)
+
+    class Meta:
+        fields = [ 'room_id']
+    def validate(self, attrs):
+        if attrs.get("room_id"):
+            room= Room.objects.filter(id=attrs.get("room_id")).first()
+            if not room or room.status == "expired":
+                raise serializers.ValidationError({"room_id": "Room is Invalid"})
+        return attrs
+class StartSerializer(serializers.Serializer):
+    live_chat_id = serializers.IntegerField(required= True)
+    def validate(self, attrs):
+        if not attrs.get("live_chat_id"):
+            raise serializers.ValidationError({"live_chat_id": "live_chat_id is required"})
+        if attrs.get("live_chat_id"):
+            live_chat= LiveChat.objects.filter(id=attrs.get("live_chat_id")).first()
+            if not live_chat:
+                raise serializers.ValidationError({"live_chat_id": "Live Chat Is Invalid"})
+        return attrs

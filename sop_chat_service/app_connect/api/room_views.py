@@ -40,7 +40,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="list-room")
     def list_room(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        qs = Room.objects.filter(completed_date__isnull=True, user_id=user_header, page_id__isnull=False).order_by("-room_message__created_at")
+        qs = Room.objects.filter(completed_date__isnull=True, user_id=user_header).order_by("-room_message__created_at")
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
@@ -51,6 +51,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         filter_request = ser_sort.data.get('filter')
         if filter_request:
             data_filter = {
+                "type":filter_request.get('type',None),
                 "time" : filter_request.get('time',None),
                 "status" : filter_request.get('status',None),
                 "state" : filter_request.get('state',None),
@@ -62,7 +63,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         list_data=list(unique_everseen(sz.data))
         #   sort by room message
         if ser_sort.data.get('sort'):
-            if ser_sort.data.get('sort').lower() == "new":
+            if ser_sort.data.get('sort').lower() == "old":
                 list_data = sorted(list(unique_everseen(sz.data)), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
 
         data_result = pagination_list_data(list_data, limit_req, offset_req)
@@ -78,7 +79,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             qs_contact = Room.objects.filter(name__icontains=sz.data.get('search'), user_id=user_header)
             serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
             data['contact'] = serializer_contact.data
-            qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search')).distinct()
+            qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search'),user_id=user_header).distinct()
             serializer_message = []
             for qs_message in qs_messages:
                 count_mess = Message.objects.filter(text__icontains=sz.data.get('search'), room_id=qs_message).count()
@@ -90,7 +91,9 @@ class RoomViewSet(viewsets.ModelViewSet):
                     "type": qs_message.type,
                     "room_id": qs_message.room_id,
                     "count_message": count_mess,
-                    "avatar": user_info.avatar if user_info else None
+                    "avatar": user_info.avatar if user_info else None,
+                    "fan_page_name": qs_message.page_id.name if qs_message.page_id else None,
+                    "fan_page_avatar":qs_message.page_id.avatar_url if qs_message.page_id else None
                 }
                 serializer_message.append(data_count_message)
             data['messages'] = serializer_message
@@ -128,13 +131,15 @@ class RoomViewSet(viewsets.ModelViewSet):
         room = Room.objects.filter(room_id=pk,user_id=user_header).first()
         if not room:
             return custom_response(400,"Invalid room",[])
+        room_sz = RoomSerializer(room,many=False)
         qs_customer = UserApp.objects.filter(external_id=room.external_id).first()
         sz_customer = UserInfoSerializer(qs_customer,many=False)
         qs_label = Label.objects.filter(room_id=room)
         sz_label = LabelSerializer(qs_label,many=True)
         data = {
             "customer_info": sz_customer.data,
-            "label": sz_label.data
+            "label": sz_label.data,
+            "room_info":room_sz.data
         }
         return custom_response(200,"User Info",data)
 

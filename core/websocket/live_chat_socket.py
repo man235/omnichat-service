@@ -2,125 +2,67 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import base64
 from django.core.files.base import ContentFile
+from django.conf import settings
+from nats.aio.client import Client as NATS
 import django
 django.setup()
+import logging
+logger = logging.getLogger(__name__)
 
-from sop_chat_service.app_connect.models import Attachment, Message, Room
+
+nats_client = NATS()
 
 class ChatConsumer(AsyncWebsocketConsumer):
-    def base64_decode(data, name):
-        '''decode the base64 string and create a compatible 
-       file that Django recognize
-    '''
-        format, imgstr = data.split(';base64,') 
-        ext = format.split('/')[-1]
-        data = ContentFile(base64.b64decode(imgstr), name=name + '.' + ext)
-        return data
-
-    async def new_message(self, data):
-        self.room_id = self.scope['url_route']['kwargs']['room_id']
-        room = Room.objects.filter(room_id=self.room_id).first()
-        message = Message.objects.create(text=data,room_id = room)
-        message = {
-            "text": message.text,
-            "room_id": self.room_id,
-            "created_at":message.created_at
-        }
-        return message
-        
-    async def new_message_attachment(self, data):
-        self.room_id = self.scope['url_route']['kwargs']['room_id']
-        room = Room.objects.filter(room_id=self.room_id).first()
-        message = Message.objects.create(room_id = room)
-
-        format, imgstr = data.split(';base64,') 
-        ext = format.split('/')[-1]
-        image = ContentFile(base64.b64decode(imgstr), name="file" + '.' + ext)
-        Attachment.objects.create(file = image,mid= message)
-    
-        
-     
-    async def connect(self):
-        self.room_id = self.scope['url_route']['kwargs']['room_id']
-        self.topic = self.scope['url_route']['kwargs']['topic']
-        self.room_group_name = f'{self.topic}_{self.room_id}'
-
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-    async def receive(self, text_data):
-        self.topic = self.scope['url_route']['kwargs']['topic']
-
-        text_data_json = json.loads(text_data)
-        if self.topic == 'mesage':
-            message = text_data_json.get("message",None)
-            file = text_data_json.get("file",None)
-
-            self.room_id = self.scope['url_route']['kwargs']['room_id']
-            self.room_group_name = f'{self.topic}_{self.room_id}'
-            if message:
-                check =await self.new_message(message)
-                print(check)
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'chat_message',
-                        "message": message
-                    }
-                )
-
-            elif file:
-                message = self.new_message_attachment(file)
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'chat_message',
-                        "message": message
-                    }
-                )
-                
-        elif self.topic =='new-room':
-            room= text_data_json.get("room",None)
-   
-            self.room_group_name = f'{self.topic}'
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'chat_room',
-                    "room":  room
-                }
-            )
-        
-    async def chat_message(self, event):
-        message = event.get("message",None)
-        file = event.get("file",None)
-        if message:
-            await self.send(text_data=json.dumps({
-                'message': message,
-            }))
-        elif file:
-            await self.send(text_data=json.dumps({
-            'message': "file sending",
-        }))
-    async def chat_room(self, event):
-        room = event.get("room",None)
-        room_check = Room.objects.filter(id = room)
-        room_data = {
-            "name" : room_check.name,
-            "external_id":room_check.external_id,
-            "user_id":room_check.user_id,
-            "status":room_check.status,
-            "room_id":room_check.room_id
-        }
-        await self.send(text_data=json.dumps({
-            'room': f'{room_data}',
-        }))
-      
+    async def subscribe_handler_new_message(self, msg):
+        # data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
+        logger.debug(f'data subscribe natsUrl ----------------- {msg.data.decode("utf-8")}')
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'new_message',     # call func chat_message handler
+                'message': msg.data.decode("utf-8")
+            }
+        )
   
+    async def connect(self):
+
+        self.room_id = self.scope['url_route']['kwargs']['room_id']                                             
+        # self.topic = self.scope['url_route']['kwargs']['topic']
+        self.room_group_name = f'live_chat_user_{self.room_id}'
+        
+        await nats_client.connect(
+            servers=[settings.NATS_URL]
+        )
+        # topics = [f'live-chat-room_{self.room_id}',f'live-chat-action-room_{self.room_id}']
+        topics = [f'LiveChat.SaleMan.{self.room_id}',f'live-chat-action-room_{self.room_id}']
+        
+        sub=[]
+        for topic in topics:
+            if topic == topics[0]:
+                sub = await nats_client.subscribe(topic, "message", self.subscribe_handler_new_message)
+            if topic == topics[1]:
+                sub = await nats_client.subscribe(topic, "action_room", self.subscribe_handler_new_message)
+        self.sub = sub
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        await self.accept()
 
     async def disconnect(self, close_code):
-        self.room_id = self.scope['url_route']['kwargs']['room_id']
-        self.topic = self.scope['url_route']['kwargs']['topic']
-        self.room_group_name = f'{self.topic}_{self.room_id}'
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-        print(f"Exit {self.channel_name}")
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+        await self.sub.unsubscribe()
+        await nats_client.close()
 
+    async def receive(self, text_data):
+        logger.debug(f'receive data websocket ----------------- ===============')
+        pass
 
+    async def new_message(self, event):
+        message = event['message']
+        
+        # message.events = "new_message"
+        await self.send(message)

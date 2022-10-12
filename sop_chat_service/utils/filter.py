@@ -8,7 +8,11 @@ def filter_room(data, room : Room):
     state = data.get('state',None)
     phone = data.get('phone',None)
     label = data.get('label',None)
+    type =data.get('type',None)
+
     if data:
+        if type:
+            room = room.filter(type= type)
         if time:
             start_date=datetime.today().replace(hour=0, minute=0, second=0)
             end_date=datetime.today()

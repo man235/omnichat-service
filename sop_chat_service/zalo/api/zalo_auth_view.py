@@ -1,16 +1,20 @@
+import json
 from django.utils import timezone
 import requests
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework import permissions, status
-
 from config.settings.local import ZALO_APP_SECRET_KEY, ZALO_OA_OPEN_API
 from sop_chat_service.app_connect.models import FanPage
 from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
 from sop_chat_service.facebook.utils import custom_response
+from sop_chat_service.utils.request_headers import get_user_from_header
 from sop_chat_service.zalo.serializers.zalo_auth_serializers import ZaloAuthenticationSerializer, ZaloConnectPageSerializer
-from sop_chat_service.zalo.utils import zalo_oa_auth
+from sop_chat_service.zalo.utils.api_suport import zalo_oa_auth
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ZaloViewSet(viewsets.ModelViewSet):
@@ -23,6 +27,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API connect/reconnect to Zalo OA
         """
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         oa_connection_sz = ZaloConnectPageSerializer(data=request.data)
         if oa_connection_sz.is_valid(raise_exception=True):
             oa_auth_sz = ZaloAuthenticationSerializer(data=request.data)
@@ -34,7 +40,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
             )
 
             if not oa_token:
-                return custom_response(400, 'Failure')
+                return custom_response(401, 'Failed to authorize Zalo OA')
             elif oa_token.get('message') != 'Success':
                 return custom_response(400, oa_token.get('error'))
 
@@ -43,7 +49,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
 
             oa_info = zalo_oa_auth.get_oa_info(access_token)
             if not oa_info:
-                return custom_response(401, 'Failure')
+                return custom_response(403, 'Failed to get Zalo OA infomation')
             elif oa_info.get('message') != 'Success':
                 return custom_response(400, oa_info.get('eror'))
             else:
@@ -53,6 +59,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         'page_id': oa_data.get('page_id'),
                         'type': 'zalo',
                         'name': oa_data.get('name'),
+                        'user_id': user_header,
                         'access_token_page': access_token,
                         'refresh_token_page': refresh_token,
                         'avatar_url': oa_data.get('avatar_url'),
@@ -71,9 +78,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         else:
                             oa_model = oa_sz.update(oa_queryset, oa_data_bundle)
                         
-                        return custom_response(200, 'Success', FanPageSerializer(oa_model).data)
+                        return custom_response(200, 'Connecto to Zalo OA successfully', FanPageSerializer(oa_model).data)
                     else:
-                        return custom_response(400, 'Failure')
+                        return custom_response(500, 'Failed to serialize data')
                 except Exception as e:
                     return custom_response(500, str(e))
         else:
@@ -84,27 +91,37 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API delete Zalo OA
         """
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
+        qs = FanPage.objects.filter(
+            page_id=sz.data.get('oa_id'),
+            user_id=user_header,
+        ).first()
         if qs:
             qs.delete()
-            return custom_response(200, 'Success')
-        return custom_response(400, 'Failure', [])
+            return custom_response(200, 'Delete Zalo OA successfully')
+        return custom_response(400, 'Failed to delete Zalo OA', [])
     
     @action(detail=False, methods=['post'], url_path='unsubscribe')
     def unsubscribe_oa(self, request, *args, **kwargs) -> Response:
         """
         API delete Zalo OA
         """
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         sz = ZaloConnectPageSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
-        qs = FanPage.objects.filter(page_id=sz.data.get('oa_id')).first()
+        qs = FanPage.objects.filter(
+            page_id=sz.data.get('oa_id'),
+            user_id=user_header,
+        ).first()
         if qs:
             qs.is_active = False
             qs.save()
-            return custom_response(200, 'Success')
-        return custom_response(400, 'Failure', [])      
+            return custom_response(200, 'Disconnect Zalo OA successfully')
+        return custom_response(400, 'Failed to disconnect Zalo OA', [])      
     
     @action(detail=False, methods=['post'], url_path='oa-list')
     def get_oa_list_v2(self, request, *args, **kwargs) -> Response:
@@ -137,7 +154,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 
         # Update FanPage Serializers
         oa_updated_serializer = FanPageSerializer(FanPage.objects.filter(type='zalo'), many=True)
-        return custom_response(message='Success', data=oa_updated_serializer.data)
+        return custom_response(message='Request successfully', data=oa_updated_serializer.data)
     
     @action(detail=False, methods=['post'], url_path='refresh')
     def refresh_token(self, request, *args, **kwargs) -> Response:
@@ -158,7 +175,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 if not oa_token or oa_token.get('message') == 'Failure':
                     queryset.is_active = False
                     queryset.save()
-                    return custom_response(401, 'Failure')
+                    return custom_response(401, 'Failed to authorize Zalo OA')
 
                 if oa_token.get('message') == 'Success':
                     access_token = oa_token.get('data').get('access_token')
@@ -170,9 +187,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     queryset.last_subscribe=timezone.now()
                     queryset.save()
                     
-                    return custom_response(200, 'Success')
+                    return custom_response(200, 'Refresh Zalo access successfully')
                 else:
                     return custom_response(400, oa_token.get('error'))
-            return custom_response(400, 'Failure')
+            return custom_response(400, 'Can not refresh Zalo OA')
         else:
             return custom_response(400, 'Zalo OA not found')

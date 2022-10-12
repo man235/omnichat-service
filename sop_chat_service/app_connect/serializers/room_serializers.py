@@ -84,14 +84,33 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 class ResponseSearchMessageSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
+    fan_page_name = serializers.SerializerMethodField(source='get_fan_page_name', read_only=True)
+    fan_page_avatar =serializers.SerializerMethodField(source='get_fan_page_avatar', read_only=True)
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'external_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id', 'user_info']
+        fields = ['id', 'user_id',"fan_page_name","fan_page_avatar", 'external_id', 'name', 'type', 'note', 'approved_date', 'completed_date', 'conversation_id', 'created_at', 'room_id', 'user_info']
 
     def get_user_info(self, obj):
+        if not obj:
+            return None
         user_info = UserApp.objects.filter(external_id=obj.external_id).first()
         sz_user_info = UserInfoSerializer(user_info)
         return sz_user_info.data
+    def get_fan_page_name(self,obj):
+        if not obj.page_id:
+            return None
+        page = FanPage.objects.filter(id=obj.page_id.id).first()
+        if not page:
+            return None
+        return page.name
+    def get_fan_page_avatar(self,obj):
+        if not obj.page_id:
+            return None
+        page = FanPage.objects.filter(id=obj.page_id.id).first()
+        if not page:
+            return None
+        return page.avatar_url
+    
 
 class SearchMessageSerializer(serializers.Serializer):
     search = serializers.CharField(required=False)
@@ -144,3 +163,23 @@ class CountAttachmentRoomSerializer(serializers.ModelSerializer):
             }
         }
         return data
+    
+class FormatRoomSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
+    unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
+    class Meta:
+        model = Room
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id']
+
+    def get_last_message(self, obj):
+        message = Message.objects.filter(room_id=obj).order_by('-id').first()
+        sz = GetMessageSerializer(message)
+        return sz.data
+
+    def get_unseen_message_count(self, obj):
+        count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
+        return count
+    
+   
+

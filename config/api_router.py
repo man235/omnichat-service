@@ -10,6 +10,7 @@ from sop_chat_service.live_chat.api.live_chat_no_auth_views import ChatViewSet
 from sop_chat_service.live_chat.api.views import LiveChatViewSet
 from sop_chat_service.users.api.views import UserViewSet
 from sop_chat_service.zalo.api.zalo_auth_view import ZaloViewSet
+from sop_chat_service.zalo.api.zalo_chat_view import ZaloChatViewSet
 # from sop_chat_service.facebook.api.facebook_views import FacebookViewSet
 
 
@@ -27,6 +28,7 @@ router.register('label', LabelViewSet)
 router.register('reminder', ReminderViewSet)
 router.register('live-chat',LiveChatViewSet)
 router.register('zalo', ZaloViewSet)
+router.register('zalo/message', ZaloChatViewSet)
 router.register("chat",ChatViewSet)
 app_name = "api"
 urlpatterns = router.urls

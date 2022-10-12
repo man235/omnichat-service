@@ -72,8 +72,8 @@ FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v14.0'
 URL_FACEBOOK_GRAPH_API_SEND_MESSAGE = 'https://graph.facebook.com/me/messages'
 
 # Zalo OA
-ZALO_APP_ID = '1244402066467636358'
-ZALO_APP_SECRET_KEY = 'q9sESGTOXlld2ELXlxmE'
+ZALO_APP_ID = '1910014910662737087'
+ZALO_APP_SECRET_KEY = 'C88Hy3I4wq4CSAC2H3bU'
 ZALO_OA_OAUTH_API = 'https://oauth.zaloapp.com/v4/oa'
 ZALO_OA_OPEN_API = 'https://openapi.zalo.me/v2.0/oa'
 OA_ACCESS_EXPIRED_IN = 90000      # 25h
@@ -87,8 +87,18 @@ REDIS_PORT = 6379
 REDIS_PASSWORD = '02011993'
 REDIS_USER = ''
 REDIS_DB = 0
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = "Bn6aG5NeEcpSCCAx"
+AWS_SECRET_ACCESS_KEY = "bfHx6nlrqrddWH5uT4axHJ3HCMZ1e1Zg"
+AWS_STORAGE_BUCKET_NAME = "sop-local"
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+AWS_S3_FILE_OVERWRITE = False
 
-# NATS_URL = "nats://172.24.222.112:4222"       # nats://172.27.228.190:4222
+if DEBUG:
+    AWS_S3_ENDPOINT_URL = "http://172.24.222.114:9000"
+
+DOMAIN_MINIO_SAVE_ATTACHMENT = "https://webhook.minhhv11.xyz/"
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
 SITE_ID = 1
 NATS_URL = env(
