@@ -36,42 +36,47 @@ class LiveChatViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        qs = LiveChat.objects.filter(user_id = user_header)
-        sz = LiveChatSerializer(qs, many=True)
+        qs = LiveChat.objects.filter(user_id = user_header).first()
+        sz = LiveChatSerializer(qs, many=False)
+        print(sz.data)
         return custom_response(200,"Get Config Live Chat Successfully",sz.data)
     
 
     def create(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
         
-        try:
-            config = LiveChat.objects.filter(user_id = user_header).first()
-            data = request.data
-            if config:
-                if data:
-                    data_config = data.get('live_chat', None)
-                    update_config = LiveChatSerializer(config, data=data_config, partial=True)
-                    update_config.is_valid(raise_exception=True)
-                    update_config.save()
-                    if data_config:
-                        LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
-                        if data.get('registerinfo', None):
-                            for item in data.get('registerinfo', None):
-                                LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
-                    message= 'Update success'
-                    return custom_response(200,message,config.id)
-            else:
-                if data:
-                    data_config = data.get('live_chat', None)
-                    if data_config:
-                        live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
-                        if data.get('registerinfo', None):
-                            for item in data.get('registerinfo', None):
-                                LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
-                        message= 'Create success'
-                        return custom_response(200,message,live_chat.id)
-        except Exception:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # try:
+        config = LiveChat.objects.filter(user_id = user_header).first()
+        data = request.data
+        if config:
+            if data:
+                data_config = data.get('live_chat', None)
+                update_config = LiveChatSerializer(config, data=data_config, partial=True)
+                update_config.is_valid(raise_exception=True)
+                update_config.save()
+                sz = LiveChatSerializer(config, many=False)
+                print(sz.data)
+                if data_config:
+                    LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
+                    if data.get('registerinfo', None):
+                        for item in data.get('registerinfo', None):
+                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
+                message= 'Update success'
+                return custom_response(200,message,config.id)
+        else:
+            if data:
+                data_config = data.get('live_chat', None)
+                if data_config:
+                    live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
+                    sz = LiveChatSerializer(live_chat, many=False)
+                    print(sz.data)
+                    if data.get('registerinfo', None):
+                        for item in data.get('registerinfo', None):
+                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
+                    message= 'Create success'
+                    return custom_response(200,message,live_chat.id)
+        # except Exception:
+        #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def update(self, request, pk=None, *args, **kwargs):
         live_chat = self.get_object()
