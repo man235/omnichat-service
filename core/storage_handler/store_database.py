@@ -1,7 +1,7 @@
-from typing import Dict
-from core.schema import CoreChatInputMessage, NatsChatMessage
+from core.schema import CoreChatInputMessage
 from core import constants
 from core.handlers import BaseHandler
+from core.schema.message_receive import ChatOptional, NatsChatMessage
 from core.utils import format_receive_message, save_message_store_databases
 from sop_chat_service.zalo.utils import save_message_store_database_zalo
 class StorageDataBase(BaseHandler):
@@ -13,4 +13,5 @@ class StorageDataBase(BaseHandler):
         if data.typeChat == 'facebook':
             await save_message_store_databases(room, message_storage)
         elif data.typeChat == 'zalo':
-            await save_message_store_database_zalo(room, message_storage)
+            optionals: list[ChatOptional] = data.optionals
+            await save_message_store_database_zalo(room, message_storage, optionals)
