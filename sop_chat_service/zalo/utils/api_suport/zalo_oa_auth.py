@@ -52,6 +52,7 @@ def get_oa_token(oa_id: Union[int, str] = None,
     except Exception as e:  
         return json_response(is_success=False, result=str(e))
     
+    
 def get_oa_info(access_token: str = None) -> Any:
     """
     Utility function gets OA's informations v2.0 - return json data
@@ -81,21 +82,3 @@ def get_oa_info(access_token: str = None) -> Any:
         except Exception as e:
             return json_response(is_success=False, result=str(e)) 
     
-# def check_valid_token(time_update: datetime = None) -> tuple:
-#     """
-#     Utility function check valid token by time remaining
-#     """
-#     try:
-#         now = datetime.now()
-#         diff = now - time_update
-#         time_remaining = diff.seconds
-#         expired_atk = False
-#         expired_rtk = False
-        
-#         if time_remaining > settings.OA_ACCESS_EXPIRED_IN:
-#             expired_atk = True
-#         if time_remaining > settings.OA_REFRESH_EXPIRED_IN:
-#             expired_rtk = True
-#         return expired_atk, expired_rtk
-#     except Exception:
-#         return None
