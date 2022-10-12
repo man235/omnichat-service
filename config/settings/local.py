@@ -94,6 +94,10 @@ REDIS_PASSWORD = env(
 REDIS_USER = env(
     "REDIS_USER", default=""
 )
+REDIS_DB = env(
+    "REDIS_DB", default=0
+)
+
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = "Bn6aG5NeEcpSCCAx"
