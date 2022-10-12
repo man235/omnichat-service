@@ -120,7 +120,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         if qs:
             qs.is_active = False
             qs.save()
-            return custom_response(200, 'Connect Zalo OA successfully')
+            return custom_response(200, 'Disconnect Zalo OA successfully')
         return custom_response(400, 'Failed to disconnect Zalo OA', [])      
     
     @action(detail=False, methods=['post'], url_path='oa-list')
@@ -187,7 +187,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     queryset.last_subscribe=timezone.now()
                     queryset.save()
                     
-                    return custom_response(200, 'Reconnect to Zalo OA successfully')
+                    return custom_response(200, 'Refresh Zalo access successfully')
                 else:
                     return custom_response(400, oa_token.get('error'))
             return custom_response(400, 'Can not refresh Zalo OA')
