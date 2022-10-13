@@ -23,11 +23,12 @@ async def subscribe_channels(topics):
             data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
             data['uuid'] = str(uuid.uuid4())
             nats_message = parse_obj_as(NatsChatMessage, data)
-            logger.debug(f' nats_message ----------------- {data} -------- {nats_message}')
+            # logger.debug(f' nats_message ----------------- {data} -------- {nats_message}')
             if not nats_message.typeChat:
                 logger.debug(f'Data Receive not chat type')
                 return
             text_message = CoreChatInputMessage(msg_type=constants.MESSAGE_TEXT, chat_type=data.get('typeChat'))
+            print("manhtaichip")
             await app_context.run_receiver(text_message, nats_message)
             logger.debug(f'RECEIVE DATA -----------------')
         except Exception as e:

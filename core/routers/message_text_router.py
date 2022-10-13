@@ -16,4 +16,5 @@ class MessageTextRouter(BaseRouter):
         if not room:
             return
         await self.context.run_manager(manager_type=constants.WEBSOCKET_MANAGER, room=room, data=data, message=message)
+        print("asdasjdjskskskks----- manhtai01")
         await self.context.run_manager(manager_type=constants.STORAGE_MANAGER, room=room, data=data, message=message)
