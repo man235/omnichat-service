@@ -1,3 +1,9 @@
+import asyncio
+import nats
+import json
+import uuid
+import logging
+from core import constants
 from django.conf import settings
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
@@ -6,12 +12,7 @@ from sop_chat_service.app_connect.serializers.message_facebook_serializers impor
 from sop_chat_service.app_connect.models import Room
 from core.utils.api_facebook_app import api_send_message_text_facebook, api_send_message_file_facebook, get_message_from_mid
 from core.utils import send_and_save_message_store_database, format_data_from_facebook
-import asyncio
-import nats
-from django.conf import settings
-import json
-import uuid
-import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +32,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
         serializer = MessageFacebookSerializer(data=request.data)
         room, data, message_type_attachment = serializer.validate(request ,request.data)
         # send message
-        new_topic_publish = f'message_{room.room_id}'
+        new_topic_publish = f'{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}'
         if message_type_attachment:
             for file in data['files']:
                 res = api_send_message_file_facebook(room.page_id.access_token_page, data, file)
@@ -40,9 +41,10 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 message_response = get_message_from_mid(room.page_id.access_token_page, res['message_id'])
                 _uuid = uuid.uuid4()
                 data_mid_json = format_data_from_facebook(room, message_response, _uuid)
+                
                 asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-                logger.debug(f"{new_topic_publish} ------ {data_mid_json['uuid']}")
-                send_and_save_message_store_database(room, data_mid_json,_uuid)
+                # logger.debug(f"{new_topic_publish} ------ {data_mid_json['uuid']}")
+                # send_and_save_message_store_database(room, data_mid_json,_uuid)
             return Response(True, status=status.HTTP_200_OK)
         else:
         # get message from mid
@@ -53,5 +55,5 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             _uuid = uuid.uuid4()
             data_mid_json = format_data_from_facebook(room, message_response, _uuid)
             asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-            send_and_save_message_store_database(room, data_mid_json, _uuid)
+            # send_and_save_message_store_database(room, data_mid_json, _uuid)
             return Response(True, status=status.HTTP_200_OK)

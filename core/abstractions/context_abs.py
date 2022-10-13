@@ -5,10 +5,17 @@ from .validations_abs import AbsValidator
 class AbsAppContext(ABC):
     @abstractmethod
     async def run_receiver(self, *args, **kwargs):
+        raise NotImplementedError    
+
+    @abstractmethod
+    async def run_send_message(self, *args, **kwargs):
         raise NotImplementedError
 
     @abstractmethod
     async def run_manager(self, *args, **kwargs):
+        raise NotImplementedError
+
+    async def run_send_message_manager(self, *args, **kwargs):
         raise NotImplementedError
 
 

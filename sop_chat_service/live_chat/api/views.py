@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 import time
 import uuid
+import ujson
 from django.conf import settings
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
@@ -54,13 +55,13 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 update_config = LiveChatSerializer(config, data=data_config, partial=True)
                 update_config.is_valid(raise_exception=True)
                 update_config.save()
-                sz = LiveChatSerializer(config, many=False)
-                redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(sz.data))
                 if data_config:
                     LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
                     if data.get('registerinfo', None):
                         for item in data.get('registerinfo', None):
                             LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
+                sz = LiveChatSerializer(config, many=False)
+                redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(sz.data)))
                 message= 'Update success'
                 return custom_response(200,message,sz.data['id'])
         else:
@@ -68,11 +69,11 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 data_config = data.get('live_chat', None)
                 if data_config:
                     live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
-                    sz = LiveChatSerializer(live_chat, many=False)
-                    redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(sz.data))
                     if data.get('registerinfo', None):
                         for item in data.get('registerinfo', None):
                             LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
+                    sz = LiveChatSerializer(live_chat, many=False)
+                    redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(sz.data)))
                     message= 'Create success'
                     return custom_response(200,message,sz.data)
         # except Exception:

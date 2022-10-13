@@ -1,6 +1,7 @@
 from django.utils import timezone
 import json
 from core.schema import NatsChatMessage, MessageWebSocket, ChatMessageAttachment
+from core import constants
 
 
 def format_receive_message(data: NatsChatMessage):
@@ -169,6 +170,7 @@ def format_data_from_facebook(room, message_response, uuid):
         "reaction": None,
         "reply_id": None,
         "sender_name": None,
-        "uuid": str(uuid)
+        "uuid": str(uuid),
+        "msg_status": constants.SEND_MESSAGE_STATUS
     }
     return data_mid_json
