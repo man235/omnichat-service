@@ -61,13 +61,12 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                         for item in data.get('registerinfo', None):
                             LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                 sz = LiveChatSerializer(config, many=False)
-                user_info = sz.data['register_info']
-                sz_data = sz.data
-                sz_data.pop("register_info")
-                config = sz_data
                 data = {
-                    "user_info" : user_info,
-                    "config":config
+                    "user_info" : {
+                        "name":"SaleMan",
+                        "avatar":""
+                        },
+                    "config" : sz.data, 
                 }
                 redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
                 message= 'Update success'
@@ -81,13 +80,12 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                         for item in data.get('registerinfo', None):
                             LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
                     sz = LiveChatSerializer(live_chat, many=False)
-                    user_info = sz.data['register_info']
-                    sz_data = sz.data
-                    sz_data.pop("register_info")
-                    config = sz_data
                     data = {
-                        "user_info" : user_info,
-                        "config":config
+                    "user_info" : {
+                        "name":"SaleMan",
+                        "avatar":""
+                        },
+                    "config" : sz.data,
                     }
                     redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
                     message= 'Create success'
@@ -106,14 +104,13 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 message= 'Update success'
             qs = LiveChat.objects.filter(id =pk).first()
             sz = LiveChatSerializer(qs, many=False)
-            user_info = sz.data['register_info']
-            sz_data = sz.data
-            sz_data.pop("register_info")
-            config = sz_data
             data = {
-                "user_info" : user_info,
-                "config":config
-            }
+                    "user_info" : {
+                        "name":"SaleMan",
+                        "avatar":""
+                        },
+                    "config" : sz.data, 
+                }
             redis_client.hset("live_chat-configs", sz.data['id'], str(data))
             return custom_response(200,message,sz.data)
         return Response(200, status=status.HTTP_200_OK)
