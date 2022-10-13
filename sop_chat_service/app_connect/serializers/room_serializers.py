@@ -3,12 +3,6 @@ from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Ro
 from django.db.models import Q
 
 
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = "__all__"
-
-
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
@@ -24,6 +18,20 @@ class GetMessageSerializer(serializers.ModelSerializer):
     def get_attachments(self, obj):
         attachments = Attachment.objects.filter(mid=obj.id)
         sz = AttachmentSerializer(attachments, many=True)
+        return sz.data
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
+
+    class Meta:
+        model = Room
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'room_id']
+
+    def get_last_message(self, obj):
+        message = Message.objects.filter(room_id=obj).order_by('-id').first()
+        sz = GetMessageSerializer(message)
         return sz.data
 
 
