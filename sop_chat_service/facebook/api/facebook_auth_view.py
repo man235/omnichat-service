@@ -44,21 +44,24 @@ class FacebookViewSet(viewsets.ModelViewSet):
                 if page_response.status_code == 200:
                     data = page_response.json()
                     id = []
-                    for item in data['data']:
-                        page = FanPage.objects.filter(type='facebook',page_id=item['id'],user_id=user_header,fanpage_user_id=fb_user_id).first()
-                        id.append(item['id'])
-                        avt_id = item['id']
-                        if page is None:
-                            FanPage.objects.create(
-                                page_id=item['id'], name=item['name'], access_token_page=item['access_token'],
-                                avatar_url=f'{graph_api}/{avt_id}/picture',last_subscribe=timezone.now(),
-                                user_id=user_header,fanpage_user_id=fb_user_id
-                            )
-                        else:
-                            page.access_token_page=item['access_token']
-                            page.name=item['name']
-                            page.avatar_url=f'{graph_api}/{avt_id}/picture'
-                            page.save()
+                    if not data:
+                        return custom_response(400, "List Page Is Null", [])
+                    else:
+                        for item in data['data']:
+                            page = FanPage.objects.filter(type='facebook',page_id=item['id'],user_id=user_header,fanpage_user_id=fb_user_id).first()
+                            id.append(item['id'])
+                            avt_id = item['id']
+                            if page is None:
+                                FanPage.objects.create(
+                                    page_id=item['id'], name=item['name'], access_token_page=item['access_token'],
+                                    avatar_url=f'{graph_api}/{avt_id}/picture',last_subscribe=timezone.now(),
+                                    user_id=user_header,fanpage_user_id=fb_user_id
+                                )
+                            else:
+                                page.access_token_page=item['access_token']
+                                page.name=item['name']
+                                page.avatar_url=f'{graph_api}/{avt_id}/picture'
+                                page.save()
                     page_remove = FanPage.objects.filter(user_id=user_header,fanpage_user_id=fb_user_id,type='facebook').exclude(page_id__in=id )
                     for item in page_remove:
                         item.is_active = False
