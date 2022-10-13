@@ -13,10 +13,11 @@ class FacebookConnectPageSerializer(serializers.Serializer):
     page_id = serializers.CharField(required=True)
     def validate(self, attrs):
         if attrs.get("page_id"):
-            page = FanPage.objects.filter(id=attrs.get("page_id")).first()
+            page = FanPage.objects.filter(type='facebook',page_id=attrs.get("page_id")).first()
             if not page:
-                raise serializers.ValidationError({"id": "FanPage Invalid"})
-            elif page and page.acaccess_token_page:
+                raise serializers.ValidationError({"page_id": "FanPage Invalid"})
+            elif page and page.access_token_page is None:
+                
                 raise serializers.ValidationError({"FanPage": "FanPage was removed on app. Please remove connection!"}) 
         return attrs
 class DeleteFanPageSerializer(serializers.Serializer):
