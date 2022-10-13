@@ -7,7 +7,6 @@ from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo, Us
 
 class LiveChatSerializer(serializers.ModelSerializer):
     register_info = serializers.SerializerMethodField(source='get_register_info', read_only=True)
-
     class Meta:
         model = LiveChat
         fields = '__all__'
