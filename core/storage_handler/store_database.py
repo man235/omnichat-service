@@ -6,6 +6,8 @@ from core.schema.message_receive import ChatOptional, NatsChatMessage
 from core.utils import format_receive_message, save_message_store_databases
 from core.utils.save_message_live_chat import live_chat_save_message_store_database
 from sop_chat_service.zalo.utils import save_message_store_database_zalo
+
+
 class StorageDataBase(BaseHandler):
     storage_type = constants.STORAGE_DATABASE
 

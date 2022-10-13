@@ -1,4 +1,5 @@
 import json
+from core import constants
 from django.conf import settings
 from nats.aio.client import Client as NATS
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -45,7 +46,8 @@ class FacebookChatConsumer(AsyncJsonWebsocketConsumer):
             await self.accept()
 
         else:  
-            self.room_group_name = f'{self.topic}_{self.room_id}'
+            # self.room_group_name = f'{self.topic}_{self.room_id}'
+            self.room_group_name = f'{constants.CORECHAT_TO_WEBHOOK_FACEBOOK}.{self.room_id}'
             sub = await nats_client.subscribe(self.room_group_name, self.room_group_name, cb = self.subscribe_handler)
             self.sub = sub
             await self.channel_layer.group_add(
