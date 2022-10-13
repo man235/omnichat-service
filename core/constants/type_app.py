@@ -10,3 +10,5 @@ STORAGE_MANAGER = "storage-manager"
 
 STORAGE_DATABASE = 'storage-database'
 STORAGE_REDIS = 'storage-redis'
+
+REDIS_CONFIG_LIVECHAT = "live_chat-configs"

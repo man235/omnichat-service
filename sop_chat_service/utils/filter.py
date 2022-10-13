@@ -12,7 +12,10 @@ def filter_room(data, room : Room):
 
     if data:
         if type:
-            room = room.filter(type= type)
+            if type.lower() == "all":
+                pass
+            else:
+                room = room.filter(type=type)
         if time:
             start_date=datetime.today().replace(hour=0, minute=0, second=0)
             end_date=datetime.today()
@@ -30,7 +33,6 @@ def filter_room(data, room : Room):
             room = room.filter(room_message__created_at__range = [start_date, end_date])
         if status:
             if status == "all":
-                # room = room.all()
                 room = room.filter(Q(status="processing") | Q(status="completed"))
             elif status == "processing":
                 room = room.filter(status="processing")

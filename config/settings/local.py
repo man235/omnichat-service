@@ -82,11 +82,23 @@ OA_REFRESH_EXPIRED_IN = 7889238    # 3m
 CHANNELS_SUBSCRIBE = ["omniChat.message.receive.*"]
 WEBSOCKET_URL_CONNECTION = '' # wss://domain/
 
-REDIS_HOST = '172.27.228.229'
-REDIS_PORT = 6379
-REDIS_PASSWORD = '02011993'
-REDIS_USER = ''
-REDIS_DB = 0
+REDIS_HOST = env(
+    "REDIS_HOST", default="172.24.22.112"
+)
+REDIS_PORT = env(
+    "REDIS_PORT", default="6379"
+)
+REDIS_PASSWORD = env(
+    "REDIS_PASSWORD", default="redisPassword"
+)
+REDIS_USER = env(
+    "REDIS_USER", default=""
+)
+REDIS_DB = env(
+    "REDIS_DB", default=0
+)
+
+
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = "Bn6aG5NeEcpSCCAx"
 AWS_SECRET_ACCESS_KEY = "bfHx6nlrqrddWH5uT4axHJ3HCMZ1e1Zg"
