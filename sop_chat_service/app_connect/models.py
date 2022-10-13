@@ -144,3 +144,10 @@ class Attachment(models.Model):
     url = models.CharField(max_length=500, null=True, blank=True)      # url of attachment
     name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
     size = models.IntegerField(null=True, blank=True)
+
+class ServiceSurvey(models.Model):
+    mid = models.ForeignKey(Message, related_name='service_message_id', null=True, blank=True,
+                            on_delete=models.SET_NULL)     # foreign key with message
+    
+    name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
+    value = models.CharField(max_length=500, null=True, blank=True)
