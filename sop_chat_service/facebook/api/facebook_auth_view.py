@@ -85,12 +85,9 @@ class FacebookViewSet(viewsets.ModelViewSet):
                 page_id = sz.data.get('page_id')
                 try:
                     page = FanPage.objects.filter(type='facebook',page_id=page_id, user_id=user_header).first()
-                    if not page.access_token_page:
-                        return custom_response(400,"Page does not exist in the App",[])
                     query_field = {'subscribed_fields': settings.SUBCRIBE_FIELDS,
                                    'access_token': page.access_token_page}
                     response = requests.post(f'{graph_api}/{page_id}/subscribed_apps', data=query_field)
-                    logger.debug(f'response ------------------- {response.json()}')
                     
                     if response.status_code == 200:
                         data = response.json()
