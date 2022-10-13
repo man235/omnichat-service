@@ -150,11 +150,9 @@ class CountAttachmentRoomSerializer(serializers.ModelSerializer):
             sz_attachment = AttachmentSerializer(attachment, many=True)
             for attachment in sz_attachment.data:
                 if 'image' in attachment['type'] or 'video' in attachment['type']:
-                    image_data.append(sz_attachment.data)
-                    break
+                    image_data.append(attachment)
                 else:
-                    file_data.append(sz_attachment.data)
-                    break
+                    file_data.append(attachment)
         data = {
             "file_data": {
                 "count": len(file_data),
