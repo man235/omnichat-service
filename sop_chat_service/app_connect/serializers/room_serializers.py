@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, UserApp, Label
+from django.db.models import Q
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -145,10 +146,10 @@ class CountAttachmentRoomSerializer(serializers.ModelSerializer):
         file_data = []
         image_data = []
         for message in message_attachment:
-            attachment = Attachment.objects.filter(mid=message.id).first()
-            sz_attachment = AttachmentSerializer(attachment, many=False)
-            if attachment:
-                if 'image' in attachment.type or 'video' in attachment.type:
+            attachment = Attachment.objects.filter(mid=message.id)
+            sz_attachment = AttachmentSerializer(attachment, many=True)
+            for attachment in sz_attachment.data:
+                if 'image' in attachment['type'] or 'video' in attachment['type']:
                     image_data.append(sz_attachment.data)
                 else:
                     file_data.append(sz_attachment.data)
