@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import base64
 from django.core.files.base import ContentFile
 from django.conf import settings
+from core import constants
 from nats.aio.client import Client as NATS
 import django
 django.setup()
@@ -34,7 +35,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             servers=[settings.NATS_URL]
         )
         # topics = [f'live-chat-room_{self.room_id}',f'live-chat-action-room_{self.room_id}']
-        topics = [f'LiveChat.SaleMan.{self.room_id}',f'live-chat-action-room_{self.room_id}']
+        topics = [f'{constants.CORECHAT_TO_WEBSOCKET_LIVECHAT}.{self.room_id}',f'live-chat-action-room_{self.room_id}']
         
         sub=[]
         for topic in topics:

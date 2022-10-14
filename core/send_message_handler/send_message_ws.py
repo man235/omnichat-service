@@ -12,7 +12,7 @@ class SendMessageWebSocketHandler(BaseHandler):
     send_message_type: str = constants.SEND_MESSAGE_WEBSOCKET
 
     async def handle_message(self, room, message: FormatSendMessage, *args, **kwargs):
-        new_topic_publish = f'{constants.CORECHAT_TO_WEBHOOK_FACEBOOK}.{room.room_id}'
+        new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_FACEBOOK}.{room.room_id}'
         data_ws = message.json().encode()
         await self.manager.nats_client.publish(new_topic_publish, data_ws)
         logger.debug(f"{new_topic_publish} ------ {message.uuid}")

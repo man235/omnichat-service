@@ -1,5 +1,6 @@
 import json
 from django.conf import settings
+from core import constants
 from nats.aio.client import Client as NATS
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 import logging
@@ -23,6 +24,7 @@ class ZaloChatConsumer(AsyncJsonWebsocketConsumer):
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.topic = self.scope['url_route']['kwargs']['topic']
         self.room_group_name = f'{self.topic}_{self.room_id}'
+        self.room_group_name = f'{constants.CORECHAT_TO_WEBSOCKET_ZALO}.{self.room_id}'
         await nats_client.connect(
             servers=[settings.NATS_URL]
         )

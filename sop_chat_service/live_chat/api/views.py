@@ -160,7 +160,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         room = Room.objects.filter(room_id = room_id, external_id=sz.data.get("recipient_id")).first()
         logger.debug(f"CHECK ROOM SEND MESSAGE LIVECHAT: {room} **************** ")
         # new_topic_publish = f'AnonymousLiveChat.Core.{room_id}'
-        new_topic_publish = f'LiveChat.SaleMan.{room_id}'
+        new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_LIVECHAT}.{room_id}'
         Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         data_message={}
         if sz.data.get("mid"):
