@@ -19,7 +19,7 @@ class FanPage(models.Model):
     app_secret_key = models.CharField(max_length=255, null=True, blank=True)
     created_by = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    last_subscribe = models.DateTimeField(auto_now=True, null=True, blank=True)
+    last_subscribe = models.DateTimeField(null=True, blank=True)
     user_id = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=30, default=Type.FACEBOOK,
                             choices=Type.choices)
