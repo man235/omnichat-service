@@ -22,7 +22,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        pages = FanPage.objects.filter(user_id=user_header, type=constants.FACEBOOK).exclude(last_subscribe=None)
+        pages = FanPage.objects.filter(user_id=user_header, type=constants.FACEBOOK)
         sz = FanPageSerializer(pages, many=True)
         return custom_response(200, "Get list page successfully", sz.data)
 
@@ -47,14 +47,16 @@ class FacebookViewSet(viewsets.ModelViewSet):
                     if  not data['data']:
                         return custom_response(400, "List Page Is Null", [])
                     else:
+                        
                         for item in data['data']:
+                            print(item)
                             page = FanPage.objects.filter(type='facebook',page_id=item['id'],user_id=user_header,fanpage_user_id=fb_user_id).first()
                             id.append(item['id'])
                             avt_id = item['id']
                             if page is None:
                                 FanPage.objects.create(
                                     page_id=item['id'], name=item['name'], access_token_page=item['access_token'],
-                                    avatar_url=f'{graph_api}/{avt_id}/picture',last_subscribe=timezone.now(),
+                                    avatar_url=f'{graph_api}/{avt_id}/picture',
                                     user_id=user_header,fanpage_user_id=fb_user_id
                                 )
                             else:
@@ -123,6 +125,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                                 data = response.json()
                                 if data['success']:
                                     page.is_active = False
+                                    page.last_subscribe = timezone.now()
                                     page.save()
                                 else:
                                     pass
