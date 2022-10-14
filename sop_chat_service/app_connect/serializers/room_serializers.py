@@ -30,7 +30,7 @@ class RoomSerializer(serializers.ModelSerializer):
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'room_id']
 
     def get_last_message(self, obj):
-        message = Message.objects.filter(room_id=obj).order_by('-id').first()
+        message = Message.objects.filter(room_id=obj, is_sender=False).order_by('-id').first()
         sz = GetMessageSerializer(message)
         return sz.data
 
