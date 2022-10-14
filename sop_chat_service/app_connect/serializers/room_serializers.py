@@ -7,7 +7,10 @@ class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
         fields = ['id', 'mid', 'type', 'url', 'name']
-
+class ServiceSurveytSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ['id', 'mid', 'name', 'value']
 class GetMessageSerializer(serializers.ModelSerializer):
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
 
