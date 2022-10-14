@@ -17,7 +17,7 @@ class LiveChatWebSocketHandler(BaseHandler):
         message_ws = format_receive_live_chat(room, data)
         data_ws = message_ws.json().encode()
         await self.manager.nats_client.publish(new_topic_publish, data_ws)
-        
+        print("=========================================")
         
     # async def room_events(self,user_id, room, message: CoreChatInputMessage, data: NatsChatMessage, *args, **kwargs):
     #     new_topic_publish = f'live-chat-action-room.{user_id}'

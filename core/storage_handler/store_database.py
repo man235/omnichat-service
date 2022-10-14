@@ -20,6 +20,5 @@ class StorageDataBase(BaseHandler):
             optionals: list[ChatOptional] = data.optionals
             await save_message_store_database_zalo(room, message_storage, optionals)
         elif data.typeChat == "livechat":
-            print("oke con ack")
             await live_chat_save_message_store_database(room,data)
         
