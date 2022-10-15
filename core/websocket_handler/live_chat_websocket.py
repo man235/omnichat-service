@@ -17,8 +17,12 @@ class LiveChatWebSocketHandler(BaseHandler):
         message_corechat_ws = format_message_from_corechat_to_websocket(room, data)
         message_corechat_webhook = format_message_from_corechat_to_webhook(room, data)
         # data_ws = message_corechat_ws.json().encode()
-        await self.manager.nats_client.publish_message_from_corechat_to_websocket_livechat(room_id = room.room_id, payload = message_corechat_ws.json().encode())
-        await self.manager.nats_client.publish_message_from_corechat_to_webhook_livechat(room_id = room.room_id, payload = message_corechat_webhook.json().encode())
+        await self.manager.nats_client.publish_message_from_corechat_to_websocket_livechat(
+            room_id = room.room_id, payload = message_corechat_ws.json().encode()
+        )
+        await self.manager.nats_client.publish_message_from_corechat_to_webhook_livechat(
+            room_id = room.room_id, payload = message_corechat_webhook.json().encode()
+        )
         logger.debug(f"LiveChatWebSocketHandler ------ ****************************************** ")
 
     # async def room_events(self,user_id, room, message: CoreChatInputMessage, data: Dict, *args, **kwargs):

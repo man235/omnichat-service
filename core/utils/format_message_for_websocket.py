@@ -1,7 +1,7 @@
 from django.utils import timezone
 import json
 from core.schema import NatsChatMessage, MessageWebSocket, ChatMessageAttachment
-from core import constants
+from core.schema.message_websocket import ChatMessageUserInfo
 
 
 def format_receive_message(data: NatsChatMessage):
@@ -28,8 +28,10 @@ def format_receive_message(data: NatsChatMessage):
 
 def format_message_from_corechat_to_websocket(room ,data: NatsChatMessage):
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
+    user_info = [ChatMessageUserInfo(title=user_info.title, value=user_info.value) for user_info in data.user_info]
     message_ws = MessageWebSocket(
         attachments = attachments,
+        user_info = user_info,
         created_at = str(timezone.now()),
         is_seen = "",
         is_sender = False,

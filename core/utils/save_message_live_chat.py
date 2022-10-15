@@ -1,5 +1,5 @@
 from core.schema.message_receive import NatsChatMessage
-from sop_chat_service.app_connect.models import Message, Attachment
+from sop_chat_service.app_connect.models import Message, Attachment, ServiceSurvey
 
 
 
@@ -25,6 +25,15 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
                     url = attachment.payloadUrl,
                     # name = attachment.name,
                     # size = attachment.size
+                )
+                
+        if data.user_info:
+            for item in data.user_info:
+                ServiceSurvey.objects.create(
+                    mid = message,
+                    name = item.title,
+                    value = item.value,
+                
                 )
 
         return
