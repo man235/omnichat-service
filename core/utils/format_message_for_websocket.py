@@ -2,6 +2,7 @@ from django.utils import timezone
 import json
 from core.schema import NatsChatMessage, MessageWebSocket, ChatMessageAttachment
 from core.schema.message_websocket import ChatMessageUserInfo
+from core import constants
 
 
 def format_receive_message(data: NatsChatMessage):
