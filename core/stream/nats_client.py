@@ -26,7 +26,8 @@ class NatsClient(BaseStreamClient):
         return self._client
 
     async def disconnect(self, *args, **kwargs):
-        return await super().disconnect(*args, **kwargs)
+        # return await super().disconnect(*args, **kwargs)
+        return await self._client.close()
 
     async def publish(
         self,
