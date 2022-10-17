@@ -19,3 +19,13 @@ SEND_MESSAGE_WEBSOCKET = 'send_message-websocket'
 
 
 REDIS_CONFIG_LIVECHAT = "live_chat-configs"
+
+LIVECHAT_NEW_MESSAGE = "live_chat_new_message"
+LIVECHAT_NEW_MESSAGE_ACK = "live_chat_new_message_ack"
+
+
+SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN = 'Customer.To.SaleMan'
+SIO_EVENT_ACK_MSG_CUSTOMER_TO_SALEMAN = 'Customer.To.SaleMan.ACK'
+
+SIO_EVENT_NEW_MSG_SALEMAN_TO_CUSTOMER = 'SaleMan.To.Customer'
+SIO_EVENT_ACK_MSG_SALEMAN_TO_CUSTOMER = 'SaleMan.To.Customer.ACK'

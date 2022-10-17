@@ -11,7 +11,9 @@ from rest_framework.decorators import action
 from sop_chat_service.app_connect.serializers.message_facebook_serializers import MessageFacebookSerializer
 from sop_chat_service.app_connect.models import Room
 from core.utils.api_facebook_app import api_send_message_text_facebook, api_send_message_file_facebook, get_message_from_mid
-from core.utils import send_and_save_message_store_database, format_data_from_facebook
+from core.utils import facebook_format_data_from_mid_facebook
+from sop_chat_service.facebook.utils import custom_response
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,23 +39,20 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             for file in data['files']:
                 res = api_send_message_file_facebook(room.page_id.access_token_page, data, file)
                 if not res:
-                    return Response(False, status=status.HTTP_400_BAD_REQUEST)
+                    return custom_response(400, "error", "Send message to Facebook error")
                 message_response = get_message_from_mid(room.page_id.access_token_page, res['message_id'])
                 _uuid = uuid.uuid4()
-                data_mid_json = format_data_from_facebook(room, message_response, _uuid)
+                data_mid_json = facebook_format_data_from_mid_facebook(room, message_response, _uuid)
                 
                 asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-                # logger.debug(f"{new_topic_publish} ------ {data_mid_json['uuid']}")
-                # send_and_save_message_store_database(room, data_mid_json,_uuid)
-            return Response(True, status=status.HTTP_200_OK)
+            return custom_response(200, "success", "Send message to Facebook success")
         else:
         # get message from mid
             res = api_send_message_text_facebook(room.page_id.access_token_page, data)
             if not res:
-                return Response(False, status=status.HTTP_400_BAD_REQUEST)
+                return custom_response(400, "error", "Send message to Facebook error")
             message_response = get_message_from_mid(room.page_id.access_token_page, res['message_id'])
             _uuid = uuid.uuid4()
-            data_mid_json = format_data_from_facebook(room, message_response, _uuid)
+            data_mid_json = facebook_format_data_from_mid_facebook(room, message_response, _uuid)
             asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-            # send_and_save_message_store_database(room, data_mid_json, _uuid)
-            return Response(True, status=status.HTTP_200_OK)
+            return custom_response(200, "success", "Send message to Facebook success")

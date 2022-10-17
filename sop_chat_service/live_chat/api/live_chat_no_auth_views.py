@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import json
 import os
 import uuid
-
+from core import constants
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.live_chat.utils import connect_nats_client_publish_websocket, format_message_room, format_new_room
 from core.utils import format_message
@@ -93,9 +93,9 @@ class ChatViewSet(viewsets.ModelViewSet):
             room_id = sz.data['room_id']
             room = Room.objects.filter(room_id = room_id).first()
             user_id = room.user_id
-            new_topic_publish = f'LiveChat.SaleMan.{room_id}'
+            new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_LIVECHAT}.{room_id}'
             
-            live_chat_action_room = f'LiveChat.SaleMan.{room_id}'
+            live_chat_action_room = f'{constants.CORECHAT_TO_WEBSOCKET_LIVECHAT}.{room_id}'
             # live_chat_action_room = f'live-chat-action-room.{user_id}'
             data_message={}
             if sz.data.get("mid"):

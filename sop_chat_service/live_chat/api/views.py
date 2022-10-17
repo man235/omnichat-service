@@ -8,9 +8,9 @@ from django.conf import settings
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
 
-from ..utils import  connect_nats_client_publish_websocket, format_message_room, format_room
+from ..utils import  connect_nats_client_publish_websocket, format_room, saleman_send_message_to_anonymous
 from ...app_connect.models import Attachment, Message, Room
-from core.utils import format_message
+from core.utils import format_message, format_message_to_nats_chat_message
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
 from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, LiveChatSerializer, MessageLiveChatSend, UpdateAvatarLiveChatSerializer
 from rest_framework import viewsets, permissions, status
@@ -21,13 +21,10 @@ import asyncio
 from sop_chat_service.utils.storages import upload_file_to_minio
 from core.stream.redis_connection import redis_client
 from core import constants
-
-
 from iteration_utilities import unique_everseen
-
 import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 
 class LiveChatViewSet(viewsets.ModelViewSet):
@@ -61,7 +58,14 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                         for item in data.get('registerinfo', None):
                             LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
                 sz = LiveChatSerializer(config, many=False)
-                redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(sz.data)))
+                data = {
+                    "user_info" : {
+                        "name":"SaleMan",
+                        "avatar":""
+                        },
+                    "config" : sz.data, 
+                }
+                redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
                 message= 'Update success'
                 return custom_response(200,message,sz.data['id'])
         else:
@@ -73,7 +77,14 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                         for item in data.get('registerinfo', None):
                             LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
                     sz = LiveChatSerializer(live_chat, many=False)
-                    redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(sz.data)))
+                    data = {
+                    "user_info" : {
+                        "name":"SaleMan",
+                        "avatar":""
+                        },
+                    "config" : sz.data,
+                    }
+                    redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
                     message= 'Create success'
                     return custom_response(200,message,sz.data)
         # except Exception:
@@ -90,7 +101,14 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 message= 'Update success'
             qs = LiveChat.objects.filter(id =pk).first()
             sz = LiveChatSerializer(qs, many=False)
-            redis_client.hset("live_chat-configs", sz.data['id'], str(sz.data))
+            data = {
+                    "user_info" : {
+                        "name":"SaleMan",
+                        "avatar":""
+                        },
+                    "config" : sz.data, 
+                }
+            redis_client.hset("live_chat-configs", sz.data['id'], str(data))
             return custom_response(200,message,sz.data)
         return Response(200, status=status.HTTP_200_OK)
 
@@ -137,9 +155,6 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         # try:
         room_id = sz.data['room_id']
         room = Room.objects.filter(room_id = room_id, external_id=sz.data.get("recipient_id")).first()
-        logger.debug(f"CHECK ROOM SEND MESSAGE LIVECHAT: {room} **************** ")
-        # new_topic_publish = f'AnonymousLiveChat.Core.{room_id}'
-        new_topic_publish = f'LiveChat.SaleMan.{room_id}'
         Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         data_message={}
         if sz.data.get("mid"):
@@ -150,8 +165,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             for attachment in attachments:
                 new_attachment = Attachment.objects.create(
                     file=attachment, type=attachment.content_type, mid=new_message)
-            logger.debug(f"SEND MESSAGE LIVECHAT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
-            data_message = format_message(new_message) 
+            data_message = format_message(new_message)
         else:
             new_message = Message.objects.create(room_id=room,is_sender=True, sender_id=user_header,
                 recipient_id=room.external_id, text=sz.data.get('message_text'), uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
@@ -160,17 +174,12 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
             for attachment in attachments:
                 data_upload_file = upload_file_to_minio(attachment, room_id)
-                logger.debug(f"ATTACHMENT {data_upload_file} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
-                new_attachment = Attachment.objects.create(
+                Attachment.objects.create(
                     file=data_upload_file, type=attachment.content_type,
                     mid=new_message, name=attachment.name,
                     url = str(domain+sub_url) + str(data_upload_file)
                 )
-            logger.debug(f"SEND MESSAGE LIVECHAT NOT WITH MID -> WS: {new_topic_publish} ****************  {new_message}")
-            data_message = format_message(new_message)
+            data_message = format_message_to_nats_chat_message(room, new_message)
+        asyncio.run(saleman_send_message_to_anonymous(room, data_message))
         logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
-        asyncio.run(connect_nats_client_publish_websocket(f'live-chat-room.{room_id}', json.dumps(data_message).encode()))
-        asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_message).encode()))
         return custom_response(200,"ok",data_message)
-        # except Exception:
-        #     return custom_response(500,"INTERNAL_SERVER_ERROR",[])

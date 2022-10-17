@@ -7,7 +7,9 @@ class NatsChatMessageAttachment(CustomBaseModel):
     type: Optional[str]
     payloadUrl: Optional[str]
 
-
+class NatsChatMessageUserInfo(CustomBaseModel):
+    title: Optional[str]
+    value: Optional[str]
 class ChatOptional(CustomBaseModel):
     chat_type: str
     data: Optional[Dict] = {}
@@ -20,6 +22,7 @@ class NatsChatMessage(CustomBaseModel):
     mid: str
     appId: str
     attachments: List[NatsChatMessageAttachment] = []
+    user_info: List[NatsChatMessageUserInfo] = []
     typeChat: str
     optionals: List[ChatOptional] = []
     uuid: Optional[str] = ""

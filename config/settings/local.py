@@ -83,7 +83,7 @@ CHANNELS_SUBSCRIBE = ["omniChat.message.receive.*"]
 WEBSOCKET_URL_CONNECTION = '' # wss://domain/
 
 REDIS_HOST = env(
-    "REDIS_HOST", default="172.24.22.112"
+    "REDIS_HOST", default="172.24.222.112"
 )
 REDIS_PORT = env(
     "REDIS_PORT", default="6379"

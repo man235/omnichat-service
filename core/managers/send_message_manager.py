@@ -18,8 +18,7 @@ class SendMessageManager(BaseManager):
         return self._handlers
 
     async def process_message(self, message: FormatSendMessage, *args, **kwargs):
-        room =  Room.objects.filter(id=message.room_id).first()
-
+        room =  Room.objects.filter(room_id=message.room_id).first()
         handler_ws: AbsHandler = self._handlers.get(constants.SEND_MESSAGE_WEBSOCKET)
         handler_storage: AbsHandler = self._handlers.get(constants.SEND_MESSAGE_STORAGE_DATABASE)
         # websocket handler

@@ -13,10 +13,11 @@ class BaseManager(SingletonClass, AbsManager):
             return
         self._handlers = await self._get_handlers()
         self._initialized = True
-        if self._is_connected:
-            return
-        self.nats_client = await self.nats_client.connect()
-        self._is_connected = True
+        # if self._is_connected:
+        #     return
+        # self.nats_client = await self.nats_client.connect()
+        await self.nats_client.connect()
+        # self._is_connected = True
 
     def _singleton_init(self, **kwargs):
         self._initialized: bool = False
