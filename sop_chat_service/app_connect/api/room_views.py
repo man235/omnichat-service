@@ -43,7 +43,6 @@ class RoomViewSet(viewsets.ModelViewSet):
         qs = Room.objects.filter(completed_date__isnull=True, user_id=user_header).order_by("-room_message__created_at").distinct()
         
         sz = RoomMessageSerializer(qs, many=True)
-        print(sz.data)
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
         limit_req = request.data.get('limit', 10)
