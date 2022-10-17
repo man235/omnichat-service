@@ -103,17 +103,25 @@ class ZaloViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         qs = FanPage.objects.filter(
             page_id=sz.data.get('oa_id'),
-            user_id=user_header,
         ).first()
-        if qs:
+        
+        if not qs:
+            return custom_response(
+                400,
+                'Failed to delete. OA id not found',
+            )
+        
+        if qs.user_id == user_header:
             qs.delete()
-            return custom_response(200, 'Delete Zalo OA successfully')
-        return custom_response(
-            400,
-            'Failed to delete. May be you are not the first admin connect to this OA',
-            []
-        )
-    
+            
+            return custom_response(200, 'Delete OA successfully')    
+        else:
+            return custom_response(
+                400,
+                'Failed to delete. May be you are not the first admin connect to this OA',
+                []
+            )   
+            
     @action(detail=False, methods=['post'], url_path='unsubscribe')
     def unsubscribe_oa(self, request, *args, **kwargs) -> Response:
         """
@@ -125,18 +133,26 @@ class ZaloViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         qs = FanPage.objects.filter(
             page_id=sz.data.get('oa_id'),
-            user_id=user_header,
         ).first()
-        if qs:
+        
+        if not qs:
+            return custom_response(
+                400,
+                'Failed to disconnect. OA id not found',
+            )
+        
+        if qs.user_id == user_header:
             qs.is_active = False
             qs.last_subscribe = timezone.now()
             qs.save()
-            return custom_response(200, 'Disconnect Zalo OA successfully')
-        return custom_response(
-            400,
-            'Failed to disconnect. May be you are not the first admin connect to this OA',
-            []
-        )      
+            
+            return custom_response(200, 'Disconnect OA successfully')    
+        else:
+            return custom_response(
+                400,
+                'Failed to disconnect. May be you are not the first admin connect to this OA',
+                []
+            )    
     
     @action(detail=False, methods=['post'], url_path='oa-list')
     def get_oa_list_v2(self, request, *args, **kwargs) -> Response:
