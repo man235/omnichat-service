@@ -135,7 +135,7 @@ def send_zalo_message(
         return None # BAD Request
 
 
-def upload_zalo_file(
+def upload_zalo_attachment(
     attachment_type: str = FILE_MESSAGE,
     access_token: str = None,
     file: Any = None,

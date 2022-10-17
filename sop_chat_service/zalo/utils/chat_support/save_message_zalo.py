@@ -34,7 +34,6 @@ async def save_message_store_database_zalo(
             if not optionals[index] and not optionals[index].data.get('attachments'):
                 attachment_name = None
                 attachment_size = None
-                pass
             else:
                 optional_attachment_payload = optionals[index].data.get('attachments')[index].get('payload')
                 attachment_name = optional_attachment_payload.get('name')
@@ -48,6 +47,7 @@ async def save_message_store_database_zalo(
                 name = attachment_name,
                 size = attachment_size
             )
+
 
 def store_sending_message_database_zalo(
     room: Room,
@@ -77,12 +77,12 @@ def store_sending_message_database_zalo(
         sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
         data_upload_file = upload_file_to_minio(attachment, room.id)
         logger.debug(f"ATTACHMENT {data_upload_file} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
-
         new_attachment = Attachment.objects.create(
             file=data_upload_file,
-            type=attachment.content_type,
-            name=attachment.name,
+            # type=attachment.content_type,
+            # name=attachment.name,
             url = str(domain+sub_url) + str(data_upload_file)
         )
         
     return new_attachment
+s
