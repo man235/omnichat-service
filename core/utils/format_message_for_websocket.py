@@ -5,7 +5,7 @@ from core.schema.message_websocket import ChatMessageUserInfo
 from core import constants
 
 
-def format_receive_message(room_id: str, data: NatsChatMessage):
+def format_receive_message(room, data: NatsChatMessage):
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
     message_ws = MessageWebSocket(
         attachments = attachments,
@@ -22,8 +22,9 @@ def format_receive_message(room_id: str, data: NatsChatMessage):
         text = data.text,
         uuid = data.uuid,
         mid = data.mid,
-        room_id = room_id,
-        created_time = None
+        room_id = room.room_id,
+        created_time = None,
+        user_id = room.user_id
     )
     return message_ws
 

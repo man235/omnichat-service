@@ -12,7 +12,7 @@ class StorageDataBase(BaseHandler):
     storage_type = constants.STORAGE_DATABASE
 
     async def handle_message(self, room, message: CoreChatInputMessage, data: NatsChatMessage, *args, **kwargs):            
-        message_storage = format_receive_message(room.room_id, data)
+        message_storage = format_receive_message(room, data)
         
         if data.typeChat == 'facebook':
             await facebook_save_message_store_databases(room, message_storage)
