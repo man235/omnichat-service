@@ -107,30 +107,33 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                     
                     saved_attachment = store_sending_message_database_zalo(
                         room=queryset,
+                        is_text_msg=is_text_msg,
                         mid=msg_id,
                         sender_id=queryset.page_id.page_id,
                         recipient_id=recipient_id,
+                        text=validated_data_sz.get('text'),
                         attachment=checked_attachment,
                         # attachment_type = file_type,
                     )
-
-                    logger.debug(f"AFTER STORE SENDED MESSAGE {saved_attachment} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
-
-                    # Emit sended message to websocket                                        
-                    socket_attachment = {
-                        "id": str(saved_attachment.id),
-                        "type": saved_attachment.type,
-                        "name": saved_attachment.name,
-                        "url": saved_attachment.url,
-                        "size": str(saved_attachment.size),
-                    }
+                                        
+                    # # Emit sended message to websocket
+                    if saved_attachment:                                        
+                        socket_attachment = {
+                            "id": str(saved_attachment.id),
+                            "type": saved_attachment.type,
+                            "name": saved_attachment.name,
+                            "url": saved_attachment.url,
+                            "size": str(saved_attachment.size),
+                        }
+                    else:
+                        socket_attachment = None
                                         
                     msg_socket_data_bundle = {
                         "mid": rp_send_data.get('data').get('message_id'),
                         "attachments": [socket_attachment],
                         "text": None,
                         "created_time": str(timezone.now()),
-                        "sender_id": queryset.page_id,
+                        "sender_id": queryset.page_id.page_id,
                         "recipient_id": rp_send_data.get('data').get('user_id'),
                         "room_id": queryset.room_id,
                         "is_sender": True,
@@ -156,10 +159,11 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                         rp_send_data.get('data')
                     )
             except Exception as e:
-                return custom_response(403, json.dumps(str(e)))
+                return custom_response(500, json.dumps(str(e)))
 
         else:
             return custom_response(
                 400,
                 'Zalo OA is not active',
             )
+            

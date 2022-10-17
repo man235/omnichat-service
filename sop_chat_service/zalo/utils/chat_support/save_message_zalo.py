@@ -56,14 +56,14 @@ async def save_message_store_database_zalo(
                             attachment_file_type
                         ])
                 else:
-                    reformatted_attachment_type = attachment.type   # except "file", such as: "image", "gif"
+                    reformatted_attachment_type = attachment.type   # except "file" such as: "image", "gif"
             else:
                 # Don't have optionals
                 reformatted_attachment_type,
                 attachment_name,
                 attachment_size,
                 attachment_id = None
-   
+                
             Attachment.objects.create(
                 mid=message,
                 type=reformatted_attachment_type,
@@ -75,6 +75,7 @@ async def save_message_store_database_zalo(
 
 def store_sending_message_database_zalo(
     room: Room,
+    is_text_msg: bool = False,
     mid: str = None,
     sender_id: str = None, 
     recipient_id: str = None,
@@ -96,16 +97,19 @@ def store_sending_message_database_zalo(
     )
     message.save()
     
-    if attachment:
-        domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
-        sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
-        data_upload_file = upload_file_to_minio(attachment, room.id)
-        logger.debug(f"ATTACHMENT {data_upload_file} +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
-        new_attachment = Attachment.objects.create(
-            file=data_upload_file,
-            # type=attachment.content_type,
-            # name=attachment.name,
-            url = str(domain+sub_url) + str(data_upload_file)
-        )
-        
-    return new_attachment
+    if not is_text_msg:
+        if attachment:
+            domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
+            sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
+            data_upload_file = upload_file_to_minio(attachment, room.id)
+            logger.debug(f"SENDED ATTACHMENT {data_upload_file} +++++++++++++++ ")
+            new_attachment = Attachment.objects.create(
+                file=data_upload_file,
+                type=attachment.content_type,
+                # name=attachment.name,
+                url = str(domain+sub_url) + str(data_upload_file)
+            )
+            
+            return new_attachment
+
+    return None
