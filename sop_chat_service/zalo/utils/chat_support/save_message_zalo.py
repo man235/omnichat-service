@@ -85,4 +85,3 @@ def store_sending_message_database_zalo(
         )
         
     return new_attachment
-s
