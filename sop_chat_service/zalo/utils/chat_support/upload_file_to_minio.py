@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def upload_file_to_minio_zalo(file, room_id):
     # basename, extension = splitext(file.name)
-    extension = 'default'
+    extension = file.name.split(".")[-1]
     file_directory_within_bucket = f'zalo_chat_room_{room_id}'
     name = f"{uuid.uuid4().hex}{extension}"
     file_path_within_bucket = os.path.join(
