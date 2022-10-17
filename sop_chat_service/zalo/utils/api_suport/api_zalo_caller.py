@@ -78,10 +78,11 @@ def send_zalo_message(
     msg_type: str = TEXT_MESSAGE,
     access_token: str = None,
     recipient_id: str = None,
-    text: str = "",
+    text: str = None,
     attachment_token: str = None,
     attachment_id: str = None,
 ) -> dict:
+    
     message = {}
     if msg_type == TEXT_MESSAGE:
         message: dict = {
@@ -130,7 +131,7 @@ def send_zalo_message(
         if rp_json.get('message') == 'Success':
             return json_response(True, rp_json.get('data'))
         else:
-            return json_response(False, rp_json)
+            return json_response(False, rp_json.get('message'))
     else:
         return None # BAD Request
 
@@ -138,7 +139,7 @@ def send_zalo_message(
 def upload_zalo_attachment(
     attachment_type: str = FILE_MESSAGE,
     access_token: str = None,
-    file: Any = None,
+    attachment: Any = None,
 ) -> dict:
         
     rp = requests.post(
@@ -148,7 +149,7 @@ def upload_zalo_attachment(
             'access_token': access_token
         },
         files = [
-            ('file', (file.name, file, file.content_type))
+            ('file', (attachment.name, attachment, attachment.content_type))
         ]
     )
     
@@ -158,7 +159,7 @@ def upload_zalo_attachment(
         if rp_json.get('message') == 'Success':
             return json_response(True, rp_json.get('data'))
         else:
-            return json_response(False, rp_json)
+            return json_response(False, rp_json.get('message'))
     else:
         return None # BAD Request
     
