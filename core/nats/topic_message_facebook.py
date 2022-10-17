@@ -40,7 +40,7 @@ async def subscribe_channels(topics):
             await app_context.run_send_message(_message)
             logger.debug(f'RECEIVE DATA chat_message_to_corechat ------------------------------------------------------- ')
         except Exception as e:
-            logger.debug(f'Exception subscribe ----------------- {e}')
+            logger.debug(f'Exception subscribe chat_message_to_corechat ----------------- {e}')
 
     # for topic in topics:
     #     await nats_client.subscribe(topic, topic, subscribe_handler)

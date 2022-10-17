@@ -134,6 +134,7 @@ def facebook_format_data_from_mid_facebook(room, message_response, uuid):
         "sender_id": message_response['from']['id'],
         "recipient_id": message_response['to']['data'][0]['id'],
         "room_id": room.room_id,
+        "id": room.id,
         "is_sender": True,
         "created_at": str(timezone.now()),
         "is_seen": None,
