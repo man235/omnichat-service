@@ -12,7 +12,7 @@ class FacebookWebSocketHandler(BaseHandler):
     ws_type: str = constants.FACEBOOK
 
     async def handle_message(self, room, message: CoreChatInputMessage, data: NatsChatMessage, *args, **kwargs):
-        message_ws = format_receive_message(data)
+        message_ws = format_receive_message(room.room_id, data)
         data_ws = message_ws.json().encode()
         await self.manager.nats_client.publish_message_from_corechat_to_websocket_facebook(room_id = room.room_id, payload = data_ws)
         logger.debug(f"FacebookWebSocketHandler------ {data.uuid}")
