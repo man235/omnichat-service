@@ -17,6 +17,7 @@ class LiveChatWebSocketHandler(BaseHandler):
         message_corechat_ws = livechat_format_message_from_corechat_to_websocket(room, data, constants.LIVECHAT_NEW_MESSAGE)
         message_corechat_webhook = livechat_format_message_from_corechat_to_webhook(room, data, constants.LIVECHAT_NEW_MESSAGE_ACK)
         # data_ws = message_corechat_ws.json().encode()
+        
         await self.manager.nats_client.publish_message_from_corechat_to_websocket_livechat(
             room_id = room.room_id, payload = message_corechat_ws.json().encode()
         )

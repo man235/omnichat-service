@@ -53,8 +53,11 @@ def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessa
 
 def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage, event: str):
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
+    user_info = [ChatMessageUserInfo(title=user_info.title, value=user_info.value) for user_info in data.user_info]
+
     message_ws = MessageWebSocket(
         attachments = attachments,
+        user_info = user_info,
         created_at = str(timezone.now()),
         is_seen = "",
         is_sender = False,
