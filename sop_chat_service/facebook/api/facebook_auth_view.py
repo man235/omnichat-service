@@ -105,13 +105,13 @@ class FacebookViewSet(viewsets.ModelViewSet):
                                 page.save()
                             else:
                                 pass
+                        message = "Subscribed successfully"
+                        sz = FanPageSerializer(page, many=False)
+                        return custom_response(200, message, sz.data)
                     else:
                         return custom_response(500, "INTERNAL_SERVER_ERROR", [])
                 except Exception:
                     return custom_response(500, 'INTERNAL_SERVER_ERROR', [])
-                message = "Subscribed successfully"
-
-                return custom_response(200, message, [])
             else:
                 page_id = request.data.get('page_id')
                 try:
@@ -129,6 +129,9 @@ class FacebookViewSet(viewsets.ModelViewSet):
                                     page.save()
                                 else:
                                     pass
+                                message = "Subscribed successfully"
+                                sz = FanPageSerializer(page, many=False)
+                                return custom_response(200, message, sz.data)
                             else:
 
                                 message = response.json().get('error').get('message')
@@ -147,8 +150,6 @@ class FacebookViewSet(viewsets.ModelViewSet):
                         pass
                 except Exception as e:
                     return custom_response(500, 'INTERNAL_SERVER_ERROR', [])
-            message = "Unsubscribed successfully"
-            return custom_response(200, message, [])
 
     @action(detail=False, methods=['POST'], url_path='delete')
     def delete(self, request, *args, **kwargs):

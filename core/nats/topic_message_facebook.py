@@ -44,7 +44,7 @@ async def subscribe_channels(topics):
 
     # for topic in topics:
     #     await nats_client.subscribe(topic, topic, subscribe_handler)
-    await nats_client.subscribe(constants.WEBHOOK_TO_CORECHAT_MESSAGE_OLD, constants.WEBHOOK_TO_CORECHAT_MESSAGE_OLD, subscribe_handler)
+    await nats_client.subscribe(constants.WEBHOOK_TO_CORECHAT_MESSAGE, constants.WEBHOOK_TO_CORECHAT_MESSAGE, subscribe_handler)
     await nats_client.subscribe(constants.CHAT_SERVICE_TO_CORECHAT_SUBSCRIBE, constants.CHAT_SERVICE_TO_CORECHAT_SUBSCRIBE, chat_message_to_corechat)
     logger.debug(f'After Subscribe natsUrl --------------------------------------------------- ')
 
