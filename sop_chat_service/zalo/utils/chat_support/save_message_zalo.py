@@ -5,8 +5,6 @@ from sop_chat_service.app_connect.models import Message, Attachment, Room
 from django.utils import timezone
 from core.schema import MessageWebSocket
 from sop_chat_service.utils.storages import upload_file_to_minio
-from sop_chat_service.zalo.utils.chat_support.format_message_zalo import format_attachment_type
-from sop_chat_service.zalo.utils.chat_support.upload_zalo_attachments import upload_file_to_minio_zalo
 from django.conf import settings
 import uuid
 import logging

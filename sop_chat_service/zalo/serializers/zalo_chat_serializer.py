@@ -1,7 +1,6 @@
 from pkg_resources import require
 from rest_framework import serializers
 from sop_chat_service.app_connect.models import Attachment, Message
-from sop_chat_service.zalo.utils.chat_support.format_message_zalo import format_attachment_type
 from sop_chat_service.zalo.utils.chat_support.type_constant import *
 
 
