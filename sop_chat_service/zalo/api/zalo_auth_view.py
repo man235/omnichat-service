@@ -1,4 +1,5 @@
 import json
+from time import time
 from django.utils import timezone
 import requests
 from rest_framework.response import Response
@@ -65,20 +66,25 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         'avatar_url': oa_data.get('avatar_url'),
                         'is_active': True,
                         'created_by': request.user.id,
+                        'last_subscribe': str(timezone.now())
                     }
                     oa_sz = FanPageSerializer(data=oa_data_bundle)
 
                     if oa_sz.is_valid(raise_exception=True):
                         # is_subscribed = oa_connection_sz.validated_data.get('is_subscribed')             
-                        oa_queryset = FanPage.objects.filter(page_id=
-                                                             oa_data.get('page_id')
-                                                            ).first()                                           
+                        oa_queryset = FanPage.objects.filter(
+                            page_id=oa_data.get('page_id')
+                        ).first()                                           
                         if not oa_queryset:
                             oa_model = oa_sz.create(oa_data_bundle)
                         else:
                             oa_model = oa_sz.update(oa_queryset, oa_data_bundle)
                         
-                        return custom_response(200, 'Connecto to Zalo OA successfully', FanPageSerializer(oa_model).data)
+                        return custom_response(
+                            200,
+                            'Connect to Zalo OA successfully',
+                            FanPageSerializer(oa_model).data
+                        )
                     else:
                         return custom_response(500, 'Failed to serialize data')
                 except Exception as e:
@@ -102,7 +108,11 @@ class ZaloViewSet(viewsets.ModelViewSet):
         if qs:
             qs.delete()
             return custom_response(200, 'Delete Zalo OA successfully')
-        return custom_response(400, 'Failed to delete Zalo OA', [])
+        return custom_response(
+            400,
+            'Failed to delete. May be you are not the first admin connect to this OA',
+            []
+        )
     
     @action(detail=False, methods=['post'], url_path='unsubscribe')
     def unsubscribe_oa(self, request, *args, **kwargs) -> Response:
@@ -119,9 +129,14 @@ class ZaloViewSet(viewsets.ModelViewSet):
         ).first()
         if qs:
             qs.is_active = False
+            qs.last_subscribe = timezone.now()
             qs.save()
             return custom_response(200, 'Disconnect Zalo OA successfully')
-        return custom_response(400, 'Failed to disconnect Zalo OA', [])      
+        return custom_response(
+            400,
+            'Failed to disconnect. May be you are not the first admin connect to this OA',
+            []
+        )      
     
     @action(detail=False, methods=['post'], url_path='oa-list')
     def get_oa_list_v2(self, request, *args, **kwargs) -> Response:
@@ -144,17 +159,25 @@ class ZaloViewSet(viewsets.ModelViewSet):
 
             if not oa_info or oa_info.get('message') != 'Success':
                 oa_model.is_active = False
+                oa_model.last_subscribe = timezone.now()
                 oa_model.save()
             else:
                 oa_data = oa_info.get('data')
                 oa_model.name = oa_data.get('name')
                 oa_model.avatar_url = oa_data.get('avatar_url')
-                oa_model.created_by = request.user.id,
+                oa_model.created_by = request.user.id
+                # oa_model.last_subscribe = timezone.now()
                 oa_model.save()
                 
         # Update FanPage Serializers
-        oa_updated_serializer = FanPageSerializer(FanPage.objects.filter(type='zalo'), many=True)
-        return custom_response(message='Request successfully', data=oa_updated_serializer.data)
+        oa_updated_serializer = FanPageSerializer(
+            FanPage.objects.filter(type='zalo'),
+            many=True
+        )
+        return custom_response(
+            message='Request successfully', 
+            data=oa_updated_serializer.data
+        )
     
     @action(detail=False, methods=['post'], url_path='refresh')
     def refresh_token(self, request, *args, **kwargs) -> Response:
@@ -174,6 +197,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 
                 if not oa_token or oa_token.get('message') == 'Failure':
                     queryset.is_active = False
+                    queryset.last_subscribe = timezone.now()
                     queryset.save()
                     return custom_response(401, 'Failed to authorize Zalo OA')
 
@@ -184,7 +208,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     queryset.access_token_page = access_token
                     queryset.refresh_token_page = refresh_token
                     queryset.is_active = True
-                    queryset.last_subscribe=timezone.now()
+                    queryset.last_subscribe = timezone.now()
                     queryset.save()
                     
                     return custom_response(200, 'Refresh Zalo access successfully')
