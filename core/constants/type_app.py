@@ -19,3 +19,6 @@ SEND_MESSAGE_WEBSOCKET = 'send_message-websocket'
 
 
 REDIS_CONFIG_LIVECHAT = "live_chat-configs"
+
+LIVECHAT_NEW_MESSAGE = "live_chat_new_message"
+LIVECHAT_NEW_MESSAGE_ACK = "live_chat_new_message_ack"
