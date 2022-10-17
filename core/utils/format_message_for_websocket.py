@@ -147,6 +147,7 @@ def facebook_format_data_from_mid_facebook(room, message_response, uuid):
         "reply_id": None,
         "sender_name": None,
         "uuid": str(uuid),
-        "msg_status": constants.SEND_MESSAGE_STATUS
+        "msg_status": constants.SEND_MESSAGE_STATUS,
+        "user_id": room.user_id
     }
     return data_mid_json
