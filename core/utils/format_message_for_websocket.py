@@ -48,6 +48,7 @@ def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessa
         mid = data.mid,
         room_id = room.room_id,
         event = event,
+        user_id = room.user_id
     )
     return message_ws
 
@@ -72,6 +73,7 @@ def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage
         uuid = data.uuid,
         mid = data.mid,
         room_id = room.room_id,
+        user_id = room.user_id,
         event = event,
     )
     return message_ws
