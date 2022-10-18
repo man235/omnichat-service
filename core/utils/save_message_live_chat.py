@@ -19,19 +19,15 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
             uuid = data.uuid
         )
         message.save()
+        if data.attachments:
+            for attachment in data.attachments:
+                Attachment.objects.create(
+                    mid = message,
+                    type = attachment.type,
+                    url = attachment.payloadUrl,
+                )
         if data.optionals:
-            if data.optionals[0].data.get("attachments"):
-                for attachment in data.optionals[0].data.get('attachments'):
-                    Attachment.objects.create(
-                        mid = message,
-                        type = attachment['type'],
-                        # attachment_id = attachment.id,
-                        # url = attachment.url if attachment.url else attachment.video_url,
-                        url = attachment['payloadUrl'],
-                        # name = attachment.name,
-                        # size = attachment.size
-                    )
-                    
+            
             if data.optionals[0].data.get("user_info"):
                 for item in data.optionals[0].data.get("user_info"):
                     ServiceSurvey.objects.create(
@@ -41,4 +37,3 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
                     )
 
         return
-    
