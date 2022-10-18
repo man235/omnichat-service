@@ -19,12 +19,12 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
             uuid = data.uuid
         )
         message.save()
-        if data.get("attachments"):
-            for attachment in data.get("attachments"):
+        if data.attachments:
+            for attachment in data.attachments:
                 Attachment.objects.create(
                     mid = message,
-                    type = attachment.get('type'),
-                    url = attachment.get('payloadUrl'),
+                    type = attachment.type,
+                    url = attachment.payloadUrl,
                 )
         if data.optionals:
             
@@ -37,4 +37,3 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
                     )
 
         return
-    
