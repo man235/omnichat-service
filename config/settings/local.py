@@ -95,7 +95,7 @@ REDIS_USER = env(
     "REDIS_USER", default=""
 )
 REDIS_DB = env(
-    "REDIS_DB", default=0
+    "REDIS_DB", default=1
 )
 
 
@@ -116,3 +116,14 @@ SITE_ID = 1
 NATS_URL = env(
     "NATS_URL", default="nats://172.24.222.112:4222"
 )
+
+
+# -----------------SENTINEL & REDIS-----------------
+SENTINEL_NAMESPACE = 'ThienHi'
+SENTINEL_URLS = [
+    ('172.24.222.112' , 6379, ),
+    # ('172.19.0.2' , 6379, ),
+]
+SENTINEL_PASSWORD = 'redisPassword'
+SENTINEL_DECODE_RESPONSE = True
+SENTINEL_DB = 1
