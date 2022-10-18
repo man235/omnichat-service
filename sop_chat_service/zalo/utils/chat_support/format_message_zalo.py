@@ -25,10 +25,9 @@ def format_sended_message_to_socket(
     room_id: str = None,
     user_id: str = None,    
 ) -> dict:
-    
     return {
         "mid": msg_id,
-        "attachments": attachments,
+        "attachments": [],
         "text": text,
         "created_time": str(timezone.now()),
         "sender_id": oa_id,
@@ -45,7 +44,8 @@ def format_sended_message_to_socket(
         "uuid": str(uuid.uuid4()),
         "msg_status": constants.SEND_MESSAGE_STATUS,
         "user_id": user_id,
-        "event": constants.SIO_EVENT_ACK_MSG_SALEMAN_TO_CUSTOMER
+        "event": constants.SIO_EVENT_ACK_MSG_SALEMAN_TO_CUSTOMER,
+        "type": constants.ZALO
     }
     
     
@@ -73,7 +73,6 @@ def reformat_attachment_type(attachment: Any):
     attachment_extension_type = attachment_content_type.split('/')[1]
     attachment_name: str = attachment.name
     attachment_extension_name = attachment_name.split('.')[-1]
-    print(f'attachment_extension_name  ------------- {attachment_extension_name}')
     
     if attachment_base_type == FILE_CONTENT_TYPE:    # application
         if attachment_extension_name in FILE_DOC_EXTENSION:     
@@ -85,5 +84,4 @@ def reformat_attachment_type(attachment: Any):
             reformatted_attachment_type = attachment_content_type
     elif attachment_base_type == IMAGE_MESSAGE:
         reformatted_attachment_type = IMAGE_MESSAGE # image
-
     return reformatted_attachment_type
