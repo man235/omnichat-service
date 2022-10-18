@@ -17,7 +17,7 @@ async def check_room_live_chat(data: NatsChatMessage):
         return None
     start_date=datetime.strptime(str(datetime.today() - timedelta(days=1)).split(".")[0],'%Y-%m-%d %H:%M:%S')
     end_date=datetime.today()
-    check_room = Room.objects.filter(type='livechat',external_id=data.senderId,user_id=live_chat.user_id).order_by("-created_at").first()
+    check_room = Room.objects.filter(type='livechat',external_id=data.senderId).order_by("-created_at").first().update(user_id = live_chat.user_id)
     if check_room and (end_date - check_room.created_at).total_seconds()/3600 < 24:
         count_message = Message.objects.filter(room_id = check_room)
         if count_message == 0:
