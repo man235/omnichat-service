@@ -167,27 +167,27 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                         
                         print(f'reformatted_attachment_type ------------- {reformatted_attachment_type}')
                         
-                        # stored_attachment = store_sending_message_database_zalo(
-                        #     room=queryset,
-                        #     mid=rp_msg_id,
-                        #     sender_id=queryset.page_id.page_id,
-                        #     recipient_id=validated_recipient_id,
-                        #     text=validated_data_sz.get('text'),
-                        #     attachment=validated_attachment,
-                        #     attachment_type=reformatted_attachment_type,
-                        # )
+                        stored_attachment = store_sending_message_database_zalo(
+                            room=queryset,
+                            mid=rp_msg_id,
+                            sender_id=queryset.page_id.page_id,
+                            recipient_id=validated_recipient_id,
+                            text=validated_data_sz.get('text'),
+                            attachment=validated_attachment,
+                            attachment_type=reformatted_attachment_type,
+                        )
                                             
-                        # # Emit sended message to websocket
-                        # if stored_attachment:                                        
-                        #     socket_attachment = {
-                        #         "id": str(stored_attachment.id),
-                        #         "type": stored_attachment.type,
-                        #         "name": stored_attachment.name,
-                        #         "url": stored_attachment.url,
-                        #         "size": str(stored_attachment.size),
-                        #     }
-                        # else:   # Failed to upload minio
-                        socket_attachment = None                       
+                        # Emit sended message to websocket
+                        if stored_attachment:                                        
+                            socket_attachment = {
+                                "id": str(stored_attachment.id),
+                                "type": stored_attachment.type,
+                                "name": stored_attachment.name,
+                                "url": stored_attachment.url,
+                                "size": str(stored_attachment.size),
+                            }
+                        else:   # Failed to upload minio
+                            socket_attachment = None                       
                                                 
                         msg_socket_data_bundle = format_sended_message_to_socket(
                             attachments=[].append(validated_attachment)
