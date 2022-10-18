@@ -154,7 +154,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         # try:
         room_id = sz.data['room_id']
-        room = Room.objects.filter(room_id = room_id, external_id=sz.data.get("recipient_id")).first()
+        room = Room.objects.filter(room_id = room_id).first()
         Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         data_message={}
         if sz.data.get("mid"):
