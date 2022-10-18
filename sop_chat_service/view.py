@@ -6,7 +6,7 @@ from sop_chat_service.facebook.utils import custom_response
 
 class ServiceInfoView(generics.GenericAPIView):
     permission_classes = (AllowAny, )
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         data = {
             "status":"running",
             "info":{
