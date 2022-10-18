@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-from .base import BaseStreamClient
+from .sentinel import SentinelClient
+from core.abstractions import SingletonClass
 
+class RedisClient(SingletonClass):
 
-class RedisClient(BaseStreamClient):
-    def __init__(self) -> None:
-        super().__init__()
+    def _singleton_init(self, **kwargs):
+        self._initialized()
 
-    async def connect(self, *args, **kwargs):
-        return await super().connect(*args, **kwargs)
+    def reset_client(self):
+        self._initialized()
 
-    async def disconnect(self, *args, **kwargs):
-        return await super().disconnect(*args, **kwargs)
+    def _initialized(self, *args, **kwargs):
+        self.client = SentinelClient()
+        self.client.initialize_sentinel()
 
-    async def publish(self, *args, **kwargs):
-        return await super().publish(*args, **kwargs)
-
-    async def subscribe(self, *args, **kwargs):
-        return await super().subscribe(*args, **kwargs)
+    async def add_test_redis(self, data, **kwargs) -> bool:
+        keyT = f"add_test_redis"
+        return await self.client.set(keyT, data)
