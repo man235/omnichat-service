@@ -25,3 +25,5 @@ FILE_MSWORD_EXTENSION = 'msword'
 FILE_DOC_EXTENSION = 'doc', 'docx'
 FILE_PDF_TYPE = 'pdf'
 FILE_CSV_TYPE = 'csv'
+
+SUPPORTED_FILE_EXTENSION_ZALO = ('pdf, doc, docx, csv')

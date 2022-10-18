@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, UserApp, Label
+from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, ServiceSurvey, UserApp, Label
 from django.db.models import Q
 
 
@@ -9,7 +9,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
         fields = ['id', 'mid', 'type', 'url', 'name']
 class ServiceSurveytSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Attachment
+        model = ServiceSurvey
         fields = ['id', 'mid', 'name', 'value']
 class GetMessageSerializer(serializers.ModelSerializer):
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
