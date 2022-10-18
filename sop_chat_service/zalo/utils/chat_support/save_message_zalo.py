@@ -19,7 +19,6 @@ async def save_message_store_database_zalo(
     msg: MessageWebSocket,
     optionals: list[ChatOptional] = None
 ) -> None:
-    
     message = Message(
         room_id = room,
         fb_message_id = msg.mid,
@@ -56,14 +55,33 @@ async def save_message_store_database_zalo(
                             attachment_file_type
                         ])
                 else:
-                    reformatted_attachment_type = attachment.type   # except "file" such as: "image", "gif"
+                    reformatted_attachment_type = attachment.type   # except "file", such as: "image", "gif"
             else:
                 # Don't have optionals
                 reformatted_attachment_type,
                 attachment_name,
                 attachment_size,
                 attachment_id = None
-                
+            
+            # Download and upload to minio
+            # try:
+            #     rp = requests.get(
+            #         url=attachment.url,
+            #         timeout=60
+            #     )   # the timeout-second for both connecting and reading
+            #     if rp.status_code == 200:
+            #         attachment = rp.content
+            #     else:
+            #         rp.raise_for_status('Failed to download file from zalo url')
+            #     domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
+            #     sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
+            #     stream_file_url = ''.join([domain, sub_url])
+            #     data_upload_file = upload_file_to_minio(attachment, room.id)
+            #     logger.debug(f' DOWN AND UP RECEIVED ZALO ATTACHMENT ---------- {data_upload_file}')
+            #     attachment_url = ''.join([stream_file_url, data_upload_file])
+            # except Exception as e:
+            #     attachment_url = attachment.url     # url from zalo
+
             Attachment.objects.create(
                 mid=message,
                 type=reformatted_attachment_type,
@@ -73,9 +91,9 @@ async def save_message_store_database_zalo(
                 size=attachment_size
             )
 
+
 def store_sending_message_database_zalo(
     room: Room,
-    is_text_msg: bool = False,
     mid: str = None,
     sender_id: str = None, 
     recipient_id: str = None,
@@ -83,33 +101,33 @@ def store_sending_message_database_zalo(
     attachment: Any = None,
     attachment_type: str = None,
 ) -> None:
-        
     message = Message(
-        room_id = room,
-        fb_message_id = mid,
-        sender_id = sender_id,
-        recipient_id = recipient_id,
-        text = text,
-        is_sender= True,
-        is_seen = str(timezone.now()),
-        uuid = str(uuid.uuid4()),
-        created_at = str(timezone.now()),
+        room_id=room,
+        fb_message_id=mid,
+        sender_id=sender_id,
+        recipient_id=recipient_id,
+        text=text,
+        is_sender=True,
+        is_seen=str(timezone.now()),
+        uuid=str(uuid.uuid4()),
+        created_at=str(timezone.now()),
     )
     message.save()
     
-    if not is_text_msg:
-        if attachment:
+    if attachment:
+        try:
             domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
             sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
-            data_upload_file = upload_file_to_minio(attachment, room.id)
-            logger.debug(f"SENDED ATTACHMENT {data_upload_file} +++++++++++++++ ")
+            data_upload_file = upload_file_to_minio(attachment, room.id)    # may be 70 second timeout
+            logger.debug(f"SENDED ATTACHMENTS {data_upload_file} +++++++++++++++ ")
             new_attachment = Attachment.objects.create(
                 file=data_upload_file,
-                type=attachment.content_type,
-                # name=attachment.name,
-                url = str(domain+sub_url) + str(data_upload_file)
+                type=attachment_type,
+                name=attachment.name,
+                url=str(domain+sub_url)+str(data_upload_file)
             )
-            
             return new_attachment
+        except Exception as e:
+            return None
 
     return None
