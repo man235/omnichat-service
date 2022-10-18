@@ -30,8 +30,12 @@ def format_receive_message(room, data: NatsChatMessage):
     return message_ws
 
 def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessage, event: str):
-    attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
-    user_info = [ChatMessageUserInfo(title=user_info.title, value=user_info.value) for user_info in data.user_info]
+    attachments= []
+    user_info=[]
+    if data.optionals[0].data.get("attachments"):
+        attachments = [ChatMessageAttachment(url=attachment['payloadUrl'], type=attachment['type']) for attachment in data.optionals[0].data.get("attachments")]
+    if data.optionals[0].data.get("user_info"):
+        user_info = [ChatMessageUserInfo(title=user_info['title'], value=user_info['value']) for user_info in data.optionals[0].data.get("user_info")]
     message_ws = MessageWebSocket(
         attachments = attachments,
         user_info = user_info,
@@ -55,9 +59,12 @@ def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessa
 
 
 def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage, event: str):
-    attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
-    user_info = [ChatMessageUserInfo(title=user_info.title, value=user_info.value) for user_info in data.user_info]
-
+    attachments= []
+    user_info=[]
+    if data.optionals[0].data.get("attachments"):
+        attachments = [ChatMessageAttachment(url=attachment['payloadUrl'], type=attachment['type']) for attachment in data.optionals[0].data.get("attachments")]
+    if data.optionals[0].data.get("user_info"):
+        user_info = [ChatMessageUserInfo(title=user_info['title'], value=user_info['value']) for user_info in data.optionals[0].data.get("user_info")]
     message_ws = MessageWebSocket(
         attachments = attachments,
         user_info = user_info,
