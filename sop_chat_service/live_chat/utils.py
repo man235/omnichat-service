@@ -44,7 +44,7 @@ async def saleman_send_message_to_anonymous(room, message: NatsChatMessage):
     nats_client = NatsClient()
     await nats_client.connect()
     message_corechat_ws = livechat_format_message_from_corechat_to_websocket(room, message, constants.SIO_EVENT_ACK_MSG_SALEMAN_TO_CUSTOMER, True)
-    message_corechat_webhook = livechat_format_message_from_corechat_to_webhook(room, message, constants.SIO_EVENT_NEW_MSG_SALEMAN_TO_CUSTOMER, False)
+    message_corechat_webhook = livechat_format_message_from_corechat_to_webhook(room, message, constants.SIO_EVENT_NEW_MSG_SALEMAN_TO_CUSTOMER, True)
     await nats_client.publish_message_from_corechat_to_websocket_livechat(
         room_id = room.room_id, payload = message_corechat_ws.json().encode()
     )

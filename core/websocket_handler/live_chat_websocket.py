@@ -15,7 +15,7 @@ class LiveChatWebSocketHandler(BaseHandler):
 
     async def handle_message(self, room, message: CoreChatInputMessage, data: NatsChatMessage, *args, **kwargs):
         message_corechat_ws = livechat_format_message_from_corechat_to_websocket(room, data, constants.SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN, False)
-        message_corechat_webhook = livechat_format_message_from_corechat_to_webhook(room, data, constants.SIO_EVENT_ACK_MSG_CUSTOMER_TO_SALEMAN, True)
+        message_corechat_webhook = livechat_format_message_from_corechat_to_webhook(room, data, constants.SIO_EVENT_ACK_MSG_CUSTOMER_TO_SALEMAN, False)
         # data_ws = message_corechat_ws.json().encode()
         
         await self.manager.nats_client.publish_message_from_corechat_to_websocket_livechat(
