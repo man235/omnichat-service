@@ -5,6 +5,7 @@ from sop_chat_service.app_connect.models import Message, Attachment, ServiceSurv
 
 
 async def live_chat_save_message_store_database(room, data: NatsChatMessage):
+
     if room.type =="livechat":
         message = Message(
             room_id = room,
@@ -16,13 +17,13 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
         )
         message.save()
         if data.optionals[0].data.get("attachments"):
-            for attachment in data.optionals[0].data.get("attachments"):
+            for attachment in data.optionals[0].data['attachments']:
                 Attachment.objects.create(
                     mid = message,
-                    type = attachment.type,
+                    type = attachment['type'],
                     # attachment_id = attachment.id,
                     # url = attachment.url if attachment.url else attachment.video_url,
-                    url = attachment.payloadUrl,
+                    url = attachment['payloadUrl'],
                     # name = attachment.name,
                     # size = attachment.size
                 )
@@ -31,8 +32,8 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
             for item in data.optionals[0].data.get("user_info"):
                 ServiceSurvey.objects.create(
                     mid = message,
-                    name = item.title,
-                    value = item.value,
+                    name = item['title'],
+                    value = item['value'],
                 )
 
         return
