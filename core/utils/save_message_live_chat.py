@@ -17,7 +17,7 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
         )
         message.save()
         if data.optionals[0].data.get("attachments"):
-            for attachment in data.optionals[0].data['attachments']:
+            for attachment in data.optionals[0].data.get('attachments'):
                 Attachment.objects.create(
                     mid = message,
                     type = attachment['type'],
