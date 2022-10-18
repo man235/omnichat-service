@@ -37,3 +37,4 @@ class FormatSendMessage(CustomBaseModel):
     msg_status: Optional[str] = constants.SEND_MESSAGE_STATUS
     type : Optional[str] = constants.FACEBOOK
     user_id: Optional[str]
+    event: Optional[str]
