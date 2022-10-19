@@ -54,16 +54,15 @@ def format_attachment_type(attachment: Any):
     
     if attachment_content_type:
         attachment_base_type = attachment_content_type.split('/')[0]
-
         if attachment_base_type:
-            if attachment_base_type == FILE_CONTENT_TYPE:
+            if attachment_base_type in FILE_CONTENT_TYPE:
                 attachment_type = FILE_MESSAGE
             elif attachment_base_type == IMAGE_MESSAGE:
                 attachment_type = IMAGE_MESSAGE
+        return attachment_type
     else:
         return IMAGE_MESSAGE
         
-    return attachment_type
 
 
 def reformat_attachment_type(attachment: Any):
