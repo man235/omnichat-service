@@ -84,6 +84,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                     'error',
                     'Failed to send message to Zalo'  
                 )
+            
             message_data_to_socket = format_sended_message_to_socket(
                 text=validated_data_sz.get('message_text'),
                 msg_id=rp_send_data.get('message_id'),
@@ -91,7 +92,14 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                 recipient_id=validated_recipient_id,
                 room_room_id=qs_room_id,
                 room_id=queryset.id,
-                user_id=queryset.user_id                    
+                user_id=queryset.user_id
+            )
+            store_sending_message_database_zalo(
+                room = queryset,
+                mid = rp_send_data.get('message_id'),
+                sender_id = queryset.page_id.page_id,
+                recipient_id = validated_recipient_id,
+                text = validated_data_sz.get('message_text')
             )
             asyncio.run(connect_nats_client_publish_websocket(
                 new_topic_publish,
