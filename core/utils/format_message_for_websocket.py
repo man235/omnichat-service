@@ -124,7 +124,7 @@ def facebook_format_mid(room, message_response):
     return data_mid_json
 
 
-def facebook_format_mid_to_nats_message(room, message_response):
+def facebook_format_mid_to_nats_message(room, message_response, uuid):
     attachments = []
     data_attachment = message_response.get('attachments')
     if data_attachment:
@@ -159,7 +159,8 @@ def facebook_format_mid_to_nats_message(room, message_response):
         "sender_name": None,
         "timestamp": int(time.time()),
         "appId": message_response['from']['id'],
-        "typeChat": "facebook"
+        "typeChat": constants.FACEBOOK,
+        "uuid": uuid
     }
     return data_mid_json
 
