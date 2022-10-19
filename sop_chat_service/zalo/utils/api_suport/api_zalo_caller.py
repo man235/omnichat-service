@@ -165,7 +165,6 @@ def upload_zalo_attachment(
         if rp.status_code == 200:
             rp_json = rp.json()
             logger.debug(f'RESPONSE ZALO {rp_json} *********************************************************** ')
-            
             if rp_json.get('message') == 'Success':
                 return json_response(True, rp_json.get('data'))
             else:
