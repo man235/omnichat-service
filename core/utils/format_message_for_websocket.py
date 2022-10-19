@@ -6,7 +6,7 @@ from core import constants
 
 
 def format_receive_message(room, data: NatsChatMessage):
-    attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type) for attachment in data.attachments]
+    attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type, name=attachment.name, size=attachment.size) for attachment in data.attachments]
     message_ws = MessageWebSocket(
         attachments = attachments,
         # attachments = data.attachments,

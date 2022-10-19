@@ -1,12 +1,13 @@
 
 
-from typing import Any
+from typing import Any, List
 from django.utils import timezone
 import uuid
 
 from core import constants
 from sop_chat_service.zalo.utils.chat_support.type_constant import (
     FILE_CONTENT_TYPE,
+    FILE_CONTENT_TYPE_TEXT,
     FILE_CSV_TYPE,
     FILE_DOC_EXTENSION,
     FILE_MESSAGE,
@@ -17,7 +18,7 @@ from sop_chat_service.zalo.utils.chat_support.type_constant import (
 
 def format_sended_message_to_socket(
     text: str = None,
-    attachments: list[Any] = [],
+    attachments: List[Any] = [],
     msg_id: str = None,
     oa_id: str = None,
     recipient_id: str = None,
@@ -55,7 +56,7 @@ def format_attachment_type(attachment: Any):
     if attachment_content_type:
         attachment_base_type = attachment_content_type.split('/')[0]
         if attachment_base_type:
-            if attachment_base_type in FILE_CONTENT_TYPE:
+            if attachment_base_type == FILE_CONTENT_TYPE or attachment_base_type == FILE_CONTENT_TYPE_TEXT:
                 attachment_type = FILE_MESSAGE
             elif attachment_base_type == IMAGE_MESSAGE:
                 attachment_type = IMAGE_MESSAGE
@@ -73,7 +74,7 @@ def reformat_attachment_type(attachment: Any):
     attachment_name: str = attachment.name
     attachment_extension_name = attachment_name.split('.')[-1]
     
-    if attachment_base_type == FILE_CONTENT_TYPE:    # application
+    if attachment_base_type == FILE_CONTENT_TYPE or attachment_base_type == FILE_CONTENT_TYPE_TEXT:    # application
         if attachment_extension_name in FILE_DOC_EXTENSION:     
             reformatted_attachment_type = '/'.join([
                 FILE_CONTENT_TYPE,

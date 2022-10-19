@@ -126,7 +126,7 @@ def store_sending_message_database_zalo(
                 name=attachment.name,
                 url=str(domain+sub_url)+str(data_upload_file)
             )
-            logger.debug(f"SENDED ATTACHMENTS {new_attachment} ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
+            logger.debug(f"SENDED ATTACHMENTS {new_attachment.name} ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
             return new_attachment
         except Exception as e:
             return None

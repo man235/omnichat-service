@@ -186,6 +186,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                             room_id=queryset.id,
                             user_id=queryset.user_id
                         )
+                        logger.debug(f'{socket_attachment} ********************************************************************* ')
                         asyncio.run(connect_nats_client_publish_websocket(
                             new_topic_publish,
                             json.dumps(msg_socket_data_bundle).encode()
