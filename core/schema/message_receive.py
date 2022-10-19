@@ -4,8 +4,10 @@ from .base_model import CustomBaseModel
 
 
 class NatsChatMessageAttachment(CustomBaseModel):
+    name:Optional[str]
     type: Optional[str]
     payloadUrl: Optional[str]
+    size: Optional[str]
 
 class NatsChatMessageUserInfo(CustomBaseModel):
     title: Optional[str]
