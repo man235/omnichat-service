@@ -26,9 +26,9 @@ def upload_image_to(instance, filename):
     return f'{uuid.uuid4().hex}{extension}'
 
 
-def upload_file_to_minio(file, room_id):
+def upload_file_to_minio(file, room_id, path_minio):
     basename, extension = splitext(file.name)
-    file_directory_within_bucket = f'live_chat_room_{room_id}'
+    file_directory_within_bucket = f'{path_minio}_{room_id}'
     name = f"{uuid.uuid4().hex}{extension}"
     file_path_within_bucket = os.path.join(
         file_directory_within_bucket,

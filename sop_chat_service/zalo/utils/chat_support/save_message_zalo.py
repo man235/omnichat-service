@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Any
+from typing import Any, List
 from core.schema.message_receive import ChatOptional
 from sop_chat_service.app_connect.models import Message, Attachment, Room
 from django.utils import timezone
@@ -7,7 +7,7 @@ from core.schema import MessageWebSocket
 from sop_chat_service.utils.storages import upload_file_to_minio
 from sop_chat_service.zalo.utils.chat_support.type_constant import FILE_CONTENT_TYPE, FILE_DOC_EXTENSION, FILE_MESSAGE, FILE_MSWORD_EXTENSION
 from django.conf import settings
-import requests
+from core import constants
 import uuid
 import logging
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 async def save_message_store_database_zalo(
     room,
     msg: MessageWebSocket,
-    optionals: list[ChatOptional] = None
+    optionals: List[ChatOptional] = None
 ) -> None:
     message = Message(
         room_id = room,
@@ -117,8 +117,8 @@ def store_sending_message_database_zalo(
     if attachment:
         try:
             domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
-            sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
-            data_upload_file = upload_file_to_minio(attachment, room.id)    # may be 70 second timeout
+            sub_url = f"api/live_chat/chat_media/get_chat_media?name={constants.ZALO_ROOM_MINIO}_{room.room_id}/"
+            data_upload_file = upload_file_to_minio(attachment, room.id, constants.ZALO_ROOM_MINIO)    # may be 70 second timeout
             new_attachment = Attachment.objects.create(
                 mid = message,
                 file=data_upload_file,

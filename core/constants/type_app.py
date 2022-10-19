@@ -2,6 +2,9 @@ FACEBOOK = "facebook"
 ZALO = "zalo"
 LIVECHAT = "livechat"
 
+ZALO_ROOM_MINIO = "zalo_room"
+LIVECHAT_ROOM_MINIO = "livechat_room"
+
 MESSAGE_TEXT = "text"
 MESSAGE_EMOJI = "emoji"
 

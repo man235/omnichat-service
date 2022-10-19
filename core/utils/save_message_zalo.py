@@ -6,6 +6,7 @@ from sop_chat_service.zalo.utils.chat_support.type_constant import FILE_CONTENT_
 from django.conf import settings
 import logging
 from core.schema import FormatSendMessage
+from core import constants
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ async def zalo_send_message_store_database(room: Room, _message: FormatSendMessa
         try:
             domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
             sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
-            data_upload_file = upload_file_to_minio(_message.attachments, room.id)    # may be 70 second timeout
+            data_upload_file = upload_file_to_minio(_message.attachments, room.id, constants.ZALO_ROOM_MINIO)    # may be 70 second timeout
             logger.debug(f"SENDED ATTACHMENTS {data_upload_file} +++++++++++++++ ")
             new_attachment = Attachment.objects.create(
                 mid = message,
