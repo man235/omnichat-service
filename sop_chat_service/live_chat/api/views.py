@@ -173,7 +173,6 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
             sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
             for attachment in attachments:
-                print(attachment.size,"==============================================")
                 data_upload_file = upload_file_to_minio(attachment, room_id)
                 Attachment.objects.create(
                     file=data_upload_file, type=attachment.content_type,
