@@ -6,6 +6,8 @@ from django.conf import settings
 from sop_chat_service.zalo.utils.chat_support.type_constant import *
 import requests
 from .response_templates import json_response
+import logging
+logger = logging.getLogger(__name__)
 
 
 def get_oa_follower(user_id: Any=None, access_token: str=None) -> Any:
@@ -162,6 +164,7 @@ def upload_zalo_attachment(
         
         if rp.status_code == 200:
             rp_json = rp.json()
+            logger.debug(f'RESPONSE ZALO {rp_json} *********************************************************** ')
             
             if rp_json.get('message') == 'Success':
                 return json_response(True, rp_json.get('data'))
