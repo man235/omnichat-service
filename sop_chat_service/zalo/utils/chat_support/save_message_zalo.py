@@ -118,7 +118,7 @@ def store_sending_message_database_zalo(
         try:
             domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
             sub_url = f"api/live_chat/chat_media/get_chat_media?name={constants.ZALO_ROOM_MINIO}_{room.room_id}/"
-            data_upload_file = upload_file_to_minio(attachment, room.id, constants.ZALO_ROOM_MINIO)    # may be 70 second timeout
+            data_upload_file = upload_file_to_minio(attachment, room.room_id, constants.ZALO_ROOM_MINIO)    # may be 70 second timeout
             new_attachment = Attachment.objects.create(
                 mid = message,
                 file=data_upload_file,
