@@ -179,7 +179,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                         else:   # Failed to upload minio
                             socket_attachment = None
                         msg_socket_data_bundle = format_sended_message_to_socket(
-                            attachments = [socket_attachment]   # get attachment from request instead of saved attachment
+                            attachments = [socket_attachment],   # get attachment from request instead of saved attachment
                             msg_id=rp_msg_id,
                             oa_id=qs_oa_id,
                             recipient_id=validated_recipient_id,
