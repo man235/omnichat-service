@@ -92,12 +92,14 @@ def facebook_format_mid(room, message_response):
     if data_attachment:
         attachment_data =data_attachment.get('data')
         for attachment in attachment_data:
+            att = attachment.get('image_data')['url'] if attachment.get('image_data') else attachment.get('file_url')
             dt_attachment = {
                 "id": attachment['id'],
                 "type": attachment['mime_type'],
                 "name": attachment['name'],
                 # "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
-                "url": attachment.get('image_data')['url'] if attachment.get('image_data') else attachment.get('file_url'),
+                "url": att if att else attachment.get('video_data').get('url'),
+                "payloadUrl": att if att else attachment.get('video_data').get('url'),
                 "size": attachment.get('size'),
                 "video_url": attachment['video_data']['url'] if attachment.get('video_data') else None
             }
