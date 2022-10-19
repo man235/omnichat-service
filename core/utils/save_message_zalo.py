@@ -10,7 +10,7 @@ from core.schema import FormatSendMessage
 logger = logging.getLogger(__name__)
 
 
-def zalo_send_message_store_database(room: Room, _message: FormatSendMessage):
+async def zalo_send_message_store_database(room: Room, _message: FormatSendMessage):
     message = Message(
         room_id=room,
         fb_message_id=_message.mid,
