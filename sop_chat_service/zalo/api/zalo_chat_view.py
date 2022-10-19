@@ -124,7 +124,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                     access_token=qs_oa_access_token,
                     attachment=attachment
                 )
-                logger.debug("Uploading attachment *********************************************** {rp_upload_data}")
+                logger.debug(f"Uploading attachment *********************************************** {rp_upload_data}")
                 if not rp_upload_data or rp_upload_data.get('message') == 'Failure':
                     return custom_response(
                         400,
