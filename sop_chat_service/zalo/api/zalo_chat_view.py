@@ -167,8 +167,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                                 "size": str(stored_attachment.size),
                             }
                         else:   # Failed to upload minio
-                            socket_attachment = None                       
-
+                            socket_attachment = None
                         msg_socket_data_bundle = format_sended_message_to_socket(
                             attachments=[].append(attachment)
                                 if not socket_attachment 

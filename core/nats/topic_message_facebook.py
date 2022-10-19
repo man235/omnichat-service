@@ -37,8 +37,8 @@ async def subscribe_channels(topics):
         try:
             data = json.loads(msg.data.decode("utf-8"))
             _message = parse_obj_as(FormatSendMessage, data)
+            logger.debug(f'RECEIVE DATA chat_message_to_corechat ------------------------------------------------------- {_message}')
             await app_context.run_send_message(_message)
-            logger.debug(f'RECEIVE DATA chat_message_to_corechat ------------------------------------------------------- ')
         except Exception as e:
             logger.debug(f'Exception subscribe chat_message_to_corechat ----------------- {e}')
 

@@ -27,7 +27,7 @@ def format_sended_message_to_socket(
 ) -> dict:
     return {
         "mid": msg_id,
-        "attachments": [],
+        "attachments": attachments,
         "text": text,
         "created_time": str(timezone.now()),
         "sender_id": oa_id,

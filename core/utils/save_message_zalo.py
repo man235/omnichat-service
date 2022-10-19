@@ -30,6 +30,7 @@ async def zalo_send_message_store_database(room: Room, _message: FormatSendMessa
             data_upload_file = upload_file_to_minio(_message.attachments, room.id)    # may be 70 second timeout
             logger.debug(f"SENDED ATTACHMENTS {data_upload_file} +++++++++++++++ ")
             new_attachment = Attachment.objects.create(
+                mid = message,
                 file=data_upload_file,
                 type=_message.attachments.type,
                 name=_message.attachments.name,
