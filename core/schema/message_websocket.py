@@ -5,8 +5,10 @@ from .base_model import CustomBaseModel
 
 
 class ChatMessageAttachment(CustomBaseModel):
+    name:Optional[str]
     type: Optional[str]
     url: Optional[str]
+    size:Optional[str]
 
 class ChatMessageUserInfo(CustomBaseModel):
     title: Optional[str]

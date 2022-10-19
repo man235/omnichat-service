@@ -177,6 +177,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 Attachment.objects.create(
                     file=data_upload_file, type=attachment.content_type,
                     mid=new_message, name=attachment.name,
+                    size= attachment.size,
                     url = str(domain+sub_url) + str(data_upload_file)
                 )
             data_message = format_message_to_nats_chat_message(room, new_message)

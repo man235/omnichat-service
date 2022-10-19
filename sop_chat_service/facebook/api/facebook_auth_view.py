@@ -49,7 +49,6 @@ class FacebookViewSet(viewsets.ModelViewSet):
                     else:
                         
                         for item in data['data']:
-                            print(item)
                             page = FanPage.objects.filter(type='facebook',page_id=item['id'],user_id=user_header,fanpage_user_id=fb_user_id).first()
                             id.append(item['id'])
                             avt_id = item['id']

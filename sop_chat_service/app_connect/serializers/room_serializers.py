@@ -26,12 +26,17 @@ class GetMessageSerializer(serializers.ModelSerializer):
 
 class RoomSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
+    unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
 
     class Meta:
         model = Room
         fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
-                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'room_id']
-
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'room_id',"unseen_message_count"]
+        
+    def get_unseen_message_count(self, obj):
+        count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
+        return count
+    
     def get_last_message(self, obj):
         message = Message.objects.filter(room_id=obj, is_sender=False).order_by('-id').first()
         sz = GetMessageSerializer(message)

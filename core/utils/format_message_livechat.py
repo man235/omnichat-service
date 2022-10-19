@@ -58,8 +58,10 @@ def format_message_to_nats_chat_message(room, data):
         for attachment in data_attachment:
             file = Attachment.objects.filter(id = attachment.get("id")).first()
             message_att = NatsChatMessageAttachment(
+                name = file.name,
                 type = file.type,
                 payloadUrl = file.url,
+                size = file.size
             )
             attachments.append(message_att)
     message_user_info = NatsChatMessageUserInfo(

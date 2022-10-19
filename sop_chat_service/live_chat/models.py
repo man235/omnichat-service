@@ -42,7 +42,6 @@ class LiveChat(models.Model):
    
     def save(self, *args, **kwargs):
         if self.avatar:
-            print(self.avatar.name)
             domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
             sub_url = f"api/live_chat/chat_media/get_chat_media?name="
             # This code only happens if the objects is not in the database yet. Otherwise it would have pk
