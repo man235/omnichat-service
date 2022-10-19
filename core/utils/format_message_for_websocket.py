@@ -1,5 +1,6 @@
 from django.utils import timezone
 import json
+import time
 from core.schema import NatsChatMessage, MessageWebSocket, ChatMessageAttachment
 from core.schema.message_websocket import ChatMessageUserInfo
 from core import constants
@@ -119,6 +120,46 @@ def facebook_format_mid(room, message_response):
         "reaction": None,
         "reply_id": None,
         "sender_name": None
+    }
+    return data_mid_json
+
+
+def facebook_format_mid_to_nats_message(room, message_response):
+    attachments = []
+    data_attachment = message_response.get('attachments')
+    if data_attachment:
+        attachment_data =data_attachment.get('data')
+        for attachment in attachment_data:
+            att = attachment.get('image_data')['url'] if attachment.get('image_data') else attachment.get('file_url')
+            dt_attachment = {
+                "id": attachment['id'],
+                "type": attachment['mime_type'],
+                "name": attachment['name'],
+                # "url": attachment['image_data']['url'] if attachment.get('image_data') else None,
+                "url": att if att else attachment.get('video_data').get('url'),
+                "payloadUrl": att if att else attachment.get('video_data').get('url'),
+                "size": attachment.get('size'),
+                "video_url": attachment['video_data']['url'] if attachment.get('video_data') else None
+            }
+            attachments.append(dt_attachment)
+    data_mid_json = {
+        "mid": message_response['id'],
+        "attachments": attachments,
+        "text": message_response['message'],
+        "created_time": message_response['created_time'],
+        "senderId": message_response['from']['id'],
+        "recipientId": message_response['to']['data'][0]['id'],
+        "room_id": room.id,
+        "is_sender": True,
+        "created_at": str(timezone.now()),
+        "is_seen": None,
+        "message_reply": None,
+        "reaction": None,
+        "reply_id": None,
+        "sender_name": None,
+        "timestamp": int(time.time()),
+        "appId": message_response['from']['id'],
+        "typeChat": "facebook"
     }
     return data_mid_json
 
