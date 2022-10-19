@@ -16,7 +16,7 @@ class MessageTextRouter(BaseRouter):
         room: Room = await self.run_check_data_message(message, data)
         if not room:
             return
-        if message.type == constants.FACEBOOK:
+        if message.msg_type == constants.FACEBOOK:
             msg = get_message_from_mid(room.page_id.access_token_page, data.mid)
             fb_msg = facebook_format_mid(room, msg)
             data = parse_obj_as(NatsChatMessage, fb_msg)
