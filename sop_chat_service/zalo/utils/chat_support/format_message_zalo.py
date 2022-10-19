@@ -17,7 +17,7 @@ from sop_chat_service.zalo.utils.chat_support.type_constant import (
 
 def format_sended_message_to_socket(
     text: str = None,
-    attachments: list[Any] = None,
+    attachments: list[Any] = [],
     msg_id: str = None,
     oa_id: str = None,
     recipient_id: str = None,

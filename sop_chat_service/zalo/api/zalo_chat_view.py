@@ -138,6 +138,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                         attachment_token=attachment_token,
                         attachment_id=attachment_id
                     )
+                    logger.debug(f'SEND MESSAGE ZALO ATTACHMENT {rp_send_data}')
                     if not rp_send_data or rp_send_data.get('message') == 'Failure':
                         return custom_response(
                             400,
