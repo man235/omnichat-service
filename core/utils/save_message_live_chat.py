@@ -6,14 +6,17 @@ from sop_chat_service.app_connect.models import Message, Attachment, Room, Servi
 
 
 async def live_chat_save_message_store_database(room, data: NatsChatMessage):
-
+    is_sender = False
+    if data.optionals:
+        if data.optionals[0].data.get("is_sender"):
+            is_sender = data.optionals[0].data.get("is_sender")
     if room.type =="livechat":
         # live_chat = LiveChat.objects.filter(id = data.recipientId).first()
         # room = Room.objects.filter(room_id = room).first().update(user_id = live_chat.user_id)
         message = Message(
             room_id = room,
             fb_message_id = data.mid,
-            sender_id = data.senderId,
+            sender_id = is_sender,
             recipient_id = data.recipientId,
             text = data.text,
             uuid = data.uuid
