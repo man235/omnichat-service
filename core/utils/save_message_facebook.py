@@ -3,6 +3,7 @@ from core.utils.api_facebook_app import get_message_from_mid
 from core.utils.format_message_for_websocket import facebook_format_mid
 from django.utils import timezone
 from core.schema import MessageWebSocket
+from core.schema import NatsChatMessage
 from core.schema import FormatSendMessage
 
 
@@ -29,6 +30,30 @@ async def facebook_save_message_store_databases(room, msg: MessageWebSocket):
                 size = attachment.get('size')
             )
     return
+
+
+async def facebook_save_message_store_database(room, msg: NatsChatMessage):
+    message = Message(
+        room_id = room,
+        fb_message_id = msg.mid,
+        sender_id = msg.senderId,
+        recipient_id = msg.recipientId,
+        text = msg.text,
+        uuid = msg.uuid
+    )
+    message.save()
+    if msg.attachments:
+        for attachment in msg.attachments:
+            Attachment.objects.create(
+                mid = message,
+                type = attachment.type,
+                # attachment_id = attachment.get('id'),
+                url = attachment.payloadUrl,
+                name = attachment.name,
+                size = attachment.size
+            )
+    return
+
 
 async def facebook_send_message_store_database(room, _message: FormatSendMessage):
     message = Message(
