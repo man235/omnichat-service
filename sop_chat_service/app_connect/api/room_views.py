@@ -140,7 +140,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         data = {
             "customer_info": sz_customer.data,
             "label": sz_label.data,
-            "room_info":room_sz.data
+            "room_info":room_sz.data,
+            "fanpage_id": room.page_id.page_id if room.page_id else None,
+            "external_id": sz_customer.data.get("external_id")
         }
         return custom_response(200,"User Info",data)
 
