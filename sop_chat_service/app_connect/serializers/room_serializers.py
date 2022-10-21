@@ -2,6 +2,8 @@ from rest_framework import serializers
 from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, ServiceSurvey, UserApp, Label
 from django.db.models import Q
 
+from sop_chat_service.utils.request_headers import get_user_from_header
+
 
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -131,6 +133,16 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
 
 class SearchMessageSerializer(serializers.Serializer):
     search = serializers.CharField(required=False)
+class RoomInfoSerializer(serializers.Serializer):
+    room_id = serializers.CharField(required=False)
+    def validate(self, request, attrs):
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.filter(room_id=attrs.get("room_id"), user_id=user_header).first()
+        if not room:
+            raise serializers.ValidationError({"room": "Room Invalid"})
+        
+        return room
+       
 
 class SortMessageSerializer(serializers.Serializer):
     sort = serializers.CharField(required=False)
@@ -197,6 +209,45 @@ class FormatRoomSerializer(serializers.ModelSerializer):
     def get_unseen_message_count(self, obj):
         count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
         return count
-    
-   
+class InfoSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
+    unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
+    user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
+    fanpage = serializers.SerializerMethodField(source='get_fanpage', read_only=True)
+    label = serializers.SerializerMethodField(source='get_label', read_only=True)
 
+    class Meta:
+        model = Room
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
+
+    def get_last_message(self, obj):
+        if obj.type.lower() == "facebook":
+            message = Message.objects.filter(room_id=obj, is_sender=False).order_by('-id').first()
+            sz = GetMessageSerializer(message)
+            return sz.data
+        else:
+            message = Message.objects.filter(room_id=obj).order_by('-id').first()
+            sz = GetMessageSerializer(message)
+            return sz.data
+
+    def get_unseen_message_count(self, obj):
+        count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
+        return count
+    
+    def get_user_info(self, obj):
+        user_info = UserApp.objects.filter(external_id=obj.external_id).first()
+        sz_user_info = UserInfoSerializer(user_info)
+        return sz_user_info.data
+    
+    def get_fanpage(self, obj):
+        if not obj.page_id:
+            return None
+        fanpage_info = FanPage.objects.filter(id=obj.page_id.id).first()
+        sz_fanpage_info = FanpageInfoSerializer(fanpage_info)
+        return sz_fanpage_info.data
+
+    def get_label(self, obj):
+        message = Label.objects.filter(room_id=obj)
+        sz = LabelSerializer(message, many=True)
+        return sz.data
