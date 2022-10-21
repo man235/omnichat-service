@@ -71,16 +71,37 @@ FACEBOOK_APP_SECRET = '14999c82309aff7a760b509c96c16b00'    # 316f7035fded8674d7
 FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v14.0'
 URL_FACEBOOK_GRAPH_API_SEND_MESSAGE = 'https://graph.facebook.com/me/messages'
 
+
+# ZALO_APP_ID = '1910014910662737087'
+# ZALO_APP_SECRET_KEY = 'C88Hy3I4wq4CSAC2H3bU'
+# ZALO_OA_OAUTH_API = 'https://oauth.zaloapp.com/v4/oa'
+# ZALO_OA_OPEN_API = 'https://openapi.zalo.me/v2.0/oa'
+# OA_ACCESS_EXPIRED_IN = 90000      # 25h
+# OA_REFRESH_EXPIRED_IN = 7889238    # 3m
+
+
 # Zalo OA
-ZALO_APP_ID = '1910014910662737087'
-ZALO_APP_SECRET_KEY = 'C88Hy3I4wq4CSAC2H3bU'
-ZALO_OA_OAUTH_API = 'https://oauth.zaloapp.com/v4/oa'
-ZALO_OA_OPEN_API = 'https://openapi.zalo.me/v2.0/oa'
-OA_ACCESS_EXPIRED_IN = 90000      # 25h
-OA_REFRESH_EXPIRED_IN = 7889238    # 3m
+ZALO_APP_ID = env(
+    "ZALO_APP_ID", default="1910014910662737087"
+)
+ZALO_APP_SECRET_KEY = env(
+    "ZALO_APP_SECRET_KEY", default="C88Hy3I4wq4CSAC2H3bU"
+)
+ZALO_OA_OAUTH_API = env(
+    "ZALO_OA_OAUTH_API", default="https://oauth.zaloapp.com/v4/oa"
+)
+ZALO_OA_OPEN_API = env(
+    "ZALO_OA_OPEN_API", default="https://openapi.zalo.me/v2.0/oa"
+)
+OA_ACCESS_EXPIRED_IN = env(
+    "OA_ACCESS_EXPIRED_IN", default = 90000
+)      # 25h
+OA_REFRESH_EXPIRED_IN = env(
+    "OA_REFRESH_EXPIRED_IN", default = 7889238
+)    # 3m
+
 
 CHANNELS_SUBSCRIBE = ["omniChat.message.receive.*"]
-WEBSOCKET_URL_CONNECTION = '' # wss://domain/
 
 REDIS_HOST = env(
     "REDIS_HOST", default="172.24.222.112"
