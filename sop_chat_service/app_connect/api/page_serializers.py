@@ -18,5 +18,6 @@ class FanPageSerializer(serializers.ModelSerializer):
         instance.is_active = validated_data.get('is_active')
         instance.created_by = validated_data.get('created_by')
         instance.type = validated_data.get('type')
+        instance.last_subscribe = validated_data.get('last_subscribe')
         instance.save()
         return instance

@@ -5,13 +5,20 @@ from .base_model import CustomBaseModel
 
 
 class ChatMessageAttachment(CustomBaseModel):
+    name:Optional[str]
     type: Optional[str]
     url: Optional[str]
+    size:Optional[str]
+
+class ChatMessageUserInfo(CustomBaseModel):
+    title: Optional[str]
+    value: Optional[str]
 
 class MessageWebSocket(CustomBaseModel):
     mid: Optional[str]
     room_id: Optional[str]
     attachments: List[ChatMessageAttachment] = []
+    user_info: List[ChatMessageUserInfo] = []
     created_at: str
     is_seen: Optional[str]
     is_sender: bool = False
@@ -25,3 +32,4 @@ class MessageWebSocket(CustomBaseModel):
     uuid: Optional[str]
     created_time: Optional[str]
     event: Optional[str]
+    user_id: Optional[str]

@@ -76,3 +76,4 @@ boto3
 boto
 pydantic==1.10.2
 ujson
+aioredis==2.0.0

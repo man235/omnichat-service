@@ -19,7 +19,7 @@ class FanPage(models.Model):
     app_secret_key = models.CharField(max_length=255, null=True, blank=True)
     created_by = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    last_subscribe = models.DateTimeField(auto_now=True, null=True, blank=True)
+    last_subscribe = models.DateTimeField(null=True, blank=True)
     user_id = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=30, default=Type.FACEBOOK,
                             choices=Type.choices)
@@ -144,3 +144,10 @@ class Attachment(models.Model):
     url = models.CharField(max_length=500, null=True, blank=True)      # url of attachment
     name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
     size = models.IntegerField(null=True, blank=True)
+
+class ServiceSurvey(models.Model):
+    mid = models.ForeignKey(Message, related_name='service_message_id', null=True, blank=True,
+                            on_delete=models.SET_NULL)     # foreign key with message
+    
+    name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
+    value = models.CharField(max_length=500, null=True, blank=True)

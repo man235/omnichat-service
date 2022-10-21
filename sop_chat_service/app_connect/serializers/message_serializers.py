@@ -1,11 +1,13 @@
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Attachment, Message, Room
-from sop_chat_service.app_connect.serializers.room_serializers import AttachmentSerializer
+from sop_chat_service.app_connect.models import Attachment, Message, Room, ServiceSurvey
+from sop_chat_service.app_connect.serializers.room_serializers import AttachmentSerializer, ServiceSurveytSerializer
 
 
 class MessageSerializer(serializers.ModelSerializer):
     message_reply = serializers.SerializerMethodField(source='get_message_reply',read_only=True)
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
+    service_survey = serializers.SerializerMethodField(source='get_service_survey', read_only=True)
+
     count_message_unseen = serializers.SerializerMethodField(source='get_count_message_unseen', read_only=True)
     def get_count_message_unseen(self,obj):
         count = Message.objects.filter(room_id=obj.room_id, is_seen__isnull=True).count()
@@ -33,8 +35,12 @@ class MessageSerializer(serializers.ModelSerializer):
         # for attachment in attachments:
         #     id.append(attachment.id)
         # return id
+    def get_service_survey(self,obj):
+        service_survey = ServiceSurvey.objects.filter(mid=obj.id)
+        sz= ServiceSurveytSerializer(service_survey,many=True)
+        return sz.data
     class Meta: 
         model= Message
         fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id',
-            'text','message_reply','sender_name','is_sender','created_at', 'is_seen',"uuid",'count_message_unseen']
+            'text','message_reply','sender_name','is_sender','created_at', 'is_seen',"uuid",'count_message_unseen',"service_survey"]
         
