@@ -16,7 +16,8 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
         message = Message(
             room_id = room,
             fb_message_id = data.mid,
-            sender_id = is_sender,
+            sender_id = data.senderId,
+            is_sender =is_sender,
             recipient_id = data.recipientId,
             text = data.text,
             uuid = data.uuid
