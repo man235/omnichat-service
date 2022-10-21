@@ -13,11 +13,11 @@ from sop_chat_service.app_connect.models import Message, Room
 from core.utils.api_facebook_app import api_send_message_text_facebook, api_send_message_file_facebook, get_message_from_mid
 from core.utils import facebook_format_data_from_mid_facebook
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer, ResultMessageSerializer
-from sop_chat_service.app_connect.serializers.room_serializers import SearchMessageSerializer, SortMessageSerializer
+from sop_chat_service.app_connect.serializers.room_serializers import SearchMessageSerializer
 from sop_chat_service.facebook.utils import custom_response
 from django.utils import timezone
 
-from sop_chat_service.utils.pagination_data import pagination_list_data, pagination_message
+from sop_chat_service.utils.pagination_data import pagination_list_data
 
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 data_mid_json = facebook_format_data_from_mid_facebook(room, message_response, _uuid)
                 
                 asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-            room.is_seen = timezone.now()
+            msg = Message.objects.filter(room_id = room,is_seen__isnull = True).update(is_seen=timezone.now())
             return custom_response(200, "success", "Send message to Facebook success")
         else:
         # get message from mid
@@ -61,7 +61,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             _uuid = uuid.uuid4()
             data_mid_json = facebook_format_data_from_mid_facebook(room, message_response, _uuid)
             asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
-            room.is_seen = timezone.now()
+            msg = Message.objects.filter(room_id = room,is_seen__isnull = True).update(is_seen=timezone.now())
             return custom_response(200, "success", "Send message to Facebook success")
     @action(detail=False, methods=["POST"], url_path="search")
     def search_message(self, request,*args, **kwargs):
