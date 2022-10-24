@@ -6,6 +6,34 @@ from core.schema.message_websocket import ChatMessageUserInfo
 from core import constants
 
 
+def format_receive_message_zalo(room, data: NatsChatMessage):
+    list_msg = []
+    attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type, name=attachment.name, size=attachment.size) for attachment in data.attachments]
+    for _room in room:
+        message_ws = MessageWebSocket(
+            attachments = attachments,
+            # attachments = data.attachments,
+            created_at = str(timezone.now()),
+            is_seen = False,
+            is_sender = False,
+            message_reply = None,
+            reaction = None,
+            recipient_id = data.recipientId,
+            reply_id = None,
+            sender_id = data.senderId,
+            sender_name = None,
+            text = data.text,
+            uuid = data.uuid,
+            mid = data.mid,
+            room_id = _room.room_id,
+            created_time = None,
+            user_id = _room.user_id,
+            event = constants.SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN
+        )
+        list_msg.append(message_ws)
+    return list_msg
+
+
 def format_receive_message(room, data: NatsChatMessage):
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type, name=attachment.name, size=attachment.size) for attachment in data.attachments]
     message_ws = MessageWebSocket(
@@ -33,8 +61,6 @@ def format_receive_message(room, data: NatsChatMessage):
 def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessage, event: str, is_sender: bool):
     attachments= []
     user_info=[]
-        
-    
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type,name=attachment.name,size=attachment.size) for attachment in data.attachments]
     if data.optionals:
         if data.optionals[0].data.get("user_info"):
