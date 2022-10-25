@@ -1,13 +1,9 @@
-import json
-from time import time
 from django.utils import timezone
-import requests
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework import permissions, status
-from config.settings.local import ZALO_APP_SECRET_KEY, ZALO_OA_OPEN_API
-from sop_chat_service.app_connect.models import FanPage
+from sop_chat_service.app_connect.models import FanPage, Room
 from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
@@ -40,14 +36,14 @@ class ZaloViewSet(viewsets.ModelViewSet):
             
             # Verify the first Zalo OA owner
             if queryset:
-                is_oa_exists = True
+                is_existing_oa = True
                 if not queryset.user_id == user_header:
                     return custom_response(
                         400,
                         'Available Zalo OA. May be you are not the first admin connect to this OA',
                     )
             else:
-                is_oa_exists = False
+                is_existing_oa = False
                 
             oa_auth_sz = ZaloAuthenticationSerializer(data=request.data)
             oa_auth_sz.is_valid(raise_exception=True)
@@ -88,7 +84,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     oa_sz = FanPageSerializer(data=oa_data_bundle)
 
                     if oa_sz.is_valid(raise_exception=True):                                        
-                        if not is_oa_exists:
+                        if not is_existing_oa:
                             oa_model = oa_sz.create(oa_data_bundle)
                         else:
                             oa_model = oa_sz.update(queryset, oa_data_bundle)
@@ -137,7 +133,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='unsubscribe')
     def unsubscribe_oa(self, request, *args, **kwargs) -> Response:
         """
-        API delete Zalo OA
+        API disconnect Zalo OA
         """
         logger.debug(f'headers ----------------- {request.headers}')
         user_header = get_user_from_header(request.headers)
@@ -172,20 +168,42 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         logger.debug(f'headers ----------------- {request.headers}')
         user_header = get_user_from_header(request.headers)
-        oa_queryset = FanPage.objects.filter(
-            user_id=user_header,
-            type='zalo'
+        
+        # The list uses for gathering all oa_id that request user is a owner
+        oa_id_owner_list = []
+        
+        oa_queryset_by_user_id = FanPage.objects.filter(
+            type='zalo',
+            user_id=user_header
         )
-        oa_serializer = FanPageSerializer(oa_queryset, many=True)
-
-        for item in oa_serializer.data:
+        if oa_queryset_by_user_id.exists():
+            for oa in oa_queryset_by_user_id:
+                oa_id_owner_list.append(oa.page_id)
+                    
+        room_queryset_by_user_id = Room.objects.filter(
+            type='zalo',
+            user_id=user_header
+        )
+        if room_queryset_by_user_id.exists():
+            for room in room_queryset_by_user_id:
+                if room.page_id:
+                    oa_id_owner_list.append(room.page_id.page_id)
+        
+        oa_owner_queryset = FanPage.objects.filter(
+            type='zalo',
+            page_id__in=oa_id_owner_list
+        )
+        oa_owner_serializers = FanPageSerializer(oa_owner_queryset, many=True)
+        
+        # Verify access token expiration of active Zalo OA  
+        for item in oa_owner_serializers.data:
             data = dict(item)
-            
+
             if not data.get('is_active'):
                 continue
             
             oa_id = data.get('page_id')
-            oa_model = FanPage.objects.filter(page_id=oa_id).first()
+            oa_model = FanPage.objects.filter(type='zalo', page_id=oa_id).first()
             access_token = oa_model.access_token_page
             oa_info = zalo_oa_auth.get_oa_info(access_token)
 
@@ -199,14 +217,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 oa_model.avatar_url = oa_data.get('avatar_url')
                 oa_model.save()
                 
-        # Update FanPage Serializers
-        oa_updated_serializer = FanPageSerializer(
-            FanPage.objects.filter(type='zalo'),
-            many=True
-        )
         return custom_response(
-            message='Request successfully', 
-            data=oa_updated_serializer.data
+            message='Get OA list successfully', 
+            data=oa_owner_serializers.data
         )
     
     @action(detail=False, methods=['post'], url_path='refresh')
