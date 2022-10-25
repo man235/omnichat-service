@@ -1,9 +1,10 @@
 from typing import Tuple
-from core.stream.redis_client import RedisClient
+# from core.stream.redis_client import RedisClient
+from core.stream.redis_connection import redis_client
 import ast
 from core import constants
 
-redis_client  = RedisClient()
+# redis_client  = RedisClient()
 
 
 async def get_users_from_noc(zalo_page_id: str):
@@ -12,17 +13,17 @@ async def get_users_from_noc(zalo_page_id: str):
     # user = list api user from NOC subtract list redis ---> list user
     list_user_new_chat = []
     list_admin_new_chat = ['bd944e75-30fb-11ed-9394-0242c0a80103']
-    get_list_user_noc = ['8dcfb82e-43e8-11ed-9394-0242c0a80103', 'b1f2b07e-2e00-11ed-9394-0242c0a80103', 'bd944e75-30fb-11ed-9394-0242c0a80103']      # call api NOC
-    get_list_user_redis = await redis_client.client.get(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}')
+    get_list_user_noc = ['3955e0be-1a2b-11ed-b8db-0242c0a80103', 'b1f2b07e-2e00-11ed-9394-0242c0a80103', 'bd944e75-30fb-11ed-9394-0242c0a80103']      # call api NOC
+    get_list_user_redis = redis_client.get(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}')
     if not get_list_user_redis:
         list_user_new_chat = get_list_user_noc
-        await redis_client.client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_user_new_chat))
+        redis_client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_user_new_chat))
 
     else:
         list_user_redis = ast.literal_eval(get_list_user_redis)
         if not set(get_list_user_noc) == set(list_user_redis):
             list_user_new_chat = get_list_user_noc
-            await redis_client.client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_user_new_chat))
+            redis_client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_user_new_chat))
         else:
             list_user_new_chat = list_user_redis
     # list_new_user = [user for user in get_list_user_noc if not user in list_user_redis]y
@@ -40,7 +41,7 @@ async def distribute_new_chat(zalo_page_id, admins: Tuple[str], staffs: Tuple[st
     select_staff = list_staff.pop(0)
 
     list_staff.append(select_staff)
-    await redis_client.client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_staff))
+    redis_client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_staff))
     # return admins and selected staff
     return admins[0], select_staff
 
