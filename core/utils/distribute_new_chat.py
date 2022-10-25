@@ -20,7 +20,7 @@ async def get_users_from_noc(zalo_page_id: str):
         redis_client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_user_new_chat))
 
     else:
-        list_user_redis = ast.literal_eval(get_list_user_redis)
+        list_user_redis = ast.literal_eval(str(get_list_user_redis))
         if not set(get_list_user_noc) == set(list_user_redis):
             list_user_new_chat = get_list_user_noc
             redis_client.set(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}', str(list_user_new_chat))
