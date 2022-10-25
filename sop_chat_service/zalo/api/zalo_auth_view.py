@@ -26,12 +26,29 @@ class ZaloViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='subscribe')
     def connect_oa(self, request, *args, **kwargs) -> Response:
         """
-        API connect/reconnect to Zalo OA
+        API connect to Zalo OA
         """
         logger.debug(f'headers ----------------- {request.headers}')
         user_header = get_user_from_header(request.headers)
         oa_connection_sz = ZaloConnectPageSerializer(data=request.data)
+
         if oa_connection_sz.is_valid(raise_exception=True):
+            queryset = FanPage.objects.filter(
+                page_id=oa_connection_sz.data.get('oa_id'),
+                type='zalo'
+            ).first()
+            
+            # Verify the first Zalo OA owner
+            if queryset:
+                is_oa_exists = True
+                if not queryset.user_id == user_header:
+                    return custom_response(
+                        400,
+                        'Available Zalo OA. May be you are not the first admin connect to this OA',
+                    )
+            else:
+                is_oa_exists = False
+                
             oa_auth_sz = ZaloAuthenticationSerializer(data=request.data)
             oa_auth_sz.is_valid(raise_exception=True)
             oa_token = zalo_oa_auth.get_oa_token(
@@ -52,7 +69,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
             if not oa_info:
                 return custom_response(403, 'Failed to get Zalo OA infomation')
             elif oa_info.get('message') != 'Success':
-                return custom_response(400, oa_info.get('eror'))
+                return custom_response(400, oa_info.get('error'))
             else:
                 oa_data = oa_info.get('data')
                 try:                  
@@ -65,20 +82,16 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         'refresh_token_page': refresh_token,
                         'avatar_url': oa_data.get('avatar_url'),
                         'is_active': True,
-                        'created_by': request.user.id,
+                        'created_by': user_header,
                         'last_subscribe': str(timezone.now())
                     }
                     oa_sz = FanPageSerializer(data=oa_data_bundle)
 
-                    if oa_sz.is_valid(raise_exception=True):
-                        # is_subscribed = oa_connection_sz.validated_data.get('is_subscribed')             
-                        oa_queryset = FanPage.objects.filter(
-                            page_id=oa_data.get('page_id')
-                        ).first()                                           
-                        if not oa_queryset:
+                    if oa_sz.is_valid(raise_exception=True):                                        
+                        if not is_oa_exists:
                             oa_model = oa_sz.create(oa_data_bundle)
                         else:
-                            oa_model = oa_sz.update(oa_queryset, oa_data_bundle)
+                            oa_model = oa_sz.update(queryset, oa_data_bundle)
                         
                         return custom_response(
                             200,
@@ -119,7 +132,6 @@ class ZaloViewSet(viewsets.ModelViewSet):
             return custom_response(
                 400,
                 'Failed to delete. May be you are not the first admin connect to this OA',
-                []
             )   
             
     @action(detail=False, methods=['post'], url_path='unsubscribe')
@@ -151,7 +163,6 @@ class ZaloViewSet(viewsets.ModelViewSet):
             return custom_response(
                 400,
                 'Failed to disconnect. May be you are not the first admin connect to this OA',
-                []
             )    
     
     @action(detail=False, methods=['post'], url_path='oa-list')
@@ -159,7 +170,12 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API get Zalo OA list
         """
-        oa_queryset = FanPage.objects.filter(type='zalo')
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
+        oa_queryset = FanPage.objects.filter(
+            user_id=user_header,
+            type='zalo'
+        )
         oa_serializer = FanPageSerializer(oa_queryset, many=True)
 
         for item in oa_serializer.data:
@@ -181,8 +197,6 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 oa_data = oa_info.get('data')
                 oa_model.name = oa_data.get('name')
                 oa_model.avatar_url = oa_data.get('avatar_url')
-                oa_model.created_by = request.user.id
-                # oa_model.last_subscribe = timezone.now()
                 oa_model.save()
                 
         # Update FanPage Serializers
@@ -200,12 +214,20 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         API refresh tokens
         """
+        logger.debug(f'headers ----------------- {request.headers}')
+        user_header = get_user_from_header(request.headers)
         serializer = ZaloConnectPageSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         oa_id = serializer.data.get('oa_id')
         queryset = FanPage.objects.filter(page_id=oa_id).first()
         
         if queryset:
+            if not queryset.user_id == user_header:
+                return custom_response(
+                    400,
+                    'Failed to reconnect. May be you are not the first admin connect to this OA',
+                )
+
             refresh_token_page = queryset.refresh_token_page
 
             if refresh_token_page:
