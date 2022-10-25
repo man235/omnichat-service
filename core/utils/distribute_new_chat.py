@@ -11,8 +11,8 @@ async def get_users_from_noc(zalo_page_id: str):
     # get list user from redis
     # user = list api user from NOC subtract list redis ---> list user
     list_user_new_chat = []
-    list_admin_new_chat = ['admin_01']
-    get_list_user_noc = ['staff_01', 'staff_02', 'staff_03', 'staff_04', 'staff_05', 'staff_06']      # call api NOC
+    list_admin_new_chat = ['bd944e75-30fb-11ed-9394-0242c0a80103']
+    get_list_user_noc = ['8dcfb82e-43e8-11ed-9394-0242c0a80103', 'b1f2b07e-2e00-11ed-9394-0242c0a80103', 'bd944e75-30fb-11ed-9394-0242c0a80103']      # call api NOC
     get_list_user_redis = await redis_client.client.get(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{zalo_page_id}')
     if not get_list_user_redis:
         list_user_new_chat = get_list_user_noc
