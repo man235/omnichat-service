@@ -108,7 +108,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                         },
                     "config" : sz.data, 
                 }
-            redis_client.hset("live_chat-configs", sz.data['id'], str(data))
+            redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
             return custom_response(200,message,sz.data)
         return Response(200, status=status.HTTP_200_OK)
 
