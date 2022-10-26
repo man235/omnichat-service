@@ -18,19 +18,26 @@ class LiveChatSerializer(serializers.ModelSerializer):
         return sz.data
 
 class CreateLiveChatSerializer(serializers.ModelSerializer):
-    user_id = serializers.CharField(required=True),
-    name =serializers.CharField(max_length=50,required=True)
-    name_agent =serializers.CharField(max_length=50,required=True)
-    color = serializers.CharField(max_length=10,required=True)
-    icon_content= serializers.CharField(max_length=50,required=False)
-    start_btn = serializers.CharField(max_length=50,required=False)
-    introduce_message = serializers.CharField(max_length=300,required=False)
-    start_message =serializers.CharField(max_length=300,required=False)
-    offline_message =serializers.CharField(max_length=300,required=False)
+    # user_id = serializers.CharField(required=True),
+    # name =serializers.CharField(max_length=70,required=True)
+    # name_agent =serializers.CharField(max_length=50,required=True)
+    # color = serializers.CharField(max_length=10,required=True)
+    # icon_content= serializers.CharField(max_length=50,required=False)
+    # start_btn = serializers.CharField(max_length=50,required=False)
+    # introduce_message = serializers.CharField(max_length=300,required=False)
+    # start_message =serializers.CharField(max_length=300,required=False)
+    # offline_message =serializers.CharField(max_length=300,required=False)
     class Meta:
         model = LiveChat
         fields = '__all__'
-
+        
+    def validate(self,attrs):
+        mes=[]
+        if not attrs.get('live_chat').get("name") or len(attrs.get('live_chat').get('name')) > 30:
+            mes.append({"name": "name is valid"})
+        if not attrs.get('live_chat').get("name_agent") or len(attrs.get('live_chat').get('name_agent')) > 30:
+            mes.append({"name_agent": "name_agent is valid"})
+        return  mes
 class UpdateAvatarLiveChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = LiveChat

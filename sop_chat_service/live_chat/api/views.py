@@ -50,8 +50,9 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             if data:
                 data_config = data.get('live_chat', None)
                 update_config = CreateLiveChatSerializer(config, data=data_config, partial=True)
-                update_config.is_valid(raise_exception=True)
-                update_config.save()
+                msg= update_config.validate(request.data)
+                if msg:
+                    return custom_response(400 ,msg,"oke")
                 if data_config:
                     LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
                     if data.get('registerinfo', None):
@@ -73,7 +74,8 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 data_config = data.get('live_chat', None)
                 if data_config:
                     live_chat = CreateLiveChatSerializer(data=data_config)
-                    live_chat.is_valid(raise_exception=True)
+                    msg= live_chat.validate()
+                    print(msg)
                     live_chat.save(user_id=user_header)
                     data_live_chat = LiveChat.objects.filter(id = live_chat.data['id']).first()
                     if data.get('registerinfo', None):
