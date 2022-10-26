@@ -12,17 +12,18 @@ class StorageDataBase(BaseHandler):
     storage_type = constants.STORAGE_DATABASE
 
     async def handle_message(self, room, message: CoreChatInputMessage, data: NatsChatMessage, *args, **kwargs):            
-        # message_storage = format_receive_message(room, data)
+        message_storage = format_receive_message(room, data)
         
         if data.typeChat == 'facebook':
             # await facebook_save_message_store_databases(room, message_storage)
             await facebook_save_message_store_database(room, data)
         elif data.typeChat == 'zalo':
             optionals: list[ChatOptional] = data.optionals
-            msg_storages = format_receive_message_zalo(room, data)
+            await save_message_store_database_zalo(room, message_storage, optionals)
+            # msg_storages = format_receive_message_zalo(room, data)
             # for msg_storage in msg_storages:
                 # await save_message_store_database_zalo(room, msg_storage, optionals)
-            await save_msg_store_database_zalo(room, msg_storages[0], optionals)
+            # await save_msg_store_database_zalo(room, msg_storages[0], optionals)
         elif data.typeChat == "livechat":
             await live_chat_save_message_store_database(room,data)
         
