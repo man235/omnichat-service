@@ -12,7 +12,7 @@ from ..utils import  connect_nats_client_publish_websocket, format_room, saleman
 from ...app_connect.models import Attachment, Message, Room
 from core.utils import format_message, format_message_to_nats_chat_message
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
-from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, LiveChatSerializer, MessageLiveChatSend, UpdateAvatarLiveChatSerializer
+from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, CreateLiveChatSerializer, LiveChatSerializer, MessageLiveChatSend, UpdateAvatarLiveChatSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -49,7 +49,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         if config:
             if data:
                 data_config = data.get('live_chat', None)
-                update_config = LiveChatSerializer(config, data=data_config, partial=True)
+                update_config = CreateLiveChatSerializer(config, data=data_config, partial=True)
                 update_config.is_valid(raise_exception=True)
                 update_config.save()
                 if data_config:
@@ -72,11 +72,14 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             if data:
                 data_config = data.get('live_chat', None)
                 if data_config:
-                    live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
+                    live_chat = CreateLiveChatSerializer(data=data_config)
+                    live_chat.is_valid(raise_exception=True)
+                    live_chat.save(user_id=user_header)
+                    data_live_chat = LiveChat.objects.filter(id = live_chat.data['id']).first()
                     if data.get('registerinfo', None):
                         for item in data.get('registerinfo', None):
-                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
-                    sz = LiveChatSerializer(live_chat, many=False)
+                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=data_live_chat)
+                    sz = LiveChatSerializer(data_live_chat, many=False)
                     data = {
                     "user_info" : {
                         "name":"SaleMan",

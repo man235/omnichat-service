@@ -16,8 +16,20 @@ class LiveChatSerializer(serializers.ModelSerializer):
         sz = RegisterInfoSerializer(data=register_info, many=True)
         sz.is_valid()
         return sz.data
-    
 
+class CreateLiveChatSerializer(serializers.ModelSerializer):
+    user_id = serializers.CharField(required=True),
+    name =serializers.CharField(max_length=50,required=True)
+    name_agent =serializers.CharField(max_length=50,required=True)
+    color = serializers.CharField(max_length=10,required=True)
+    icon_content= serializers.CharField(max_length=50,required=False)
+    start_btn = serializers.CharField(max_length=50,required=False)
+    introduce_message = serializers.CharField(max_length=300,required=False)
+    start_message =serializers.CharField(max_length=300,required=False)
+    offline_message =serializers.CharField(max_length=300,required=False)
+    class Meta:
+        model = LiveChat
+        fields = '__all__'
 
 class UpdateAvatarLiveChatSerializer(serializers.ModelSerializer):
     class Meta:
