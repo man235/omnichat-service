@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, ServiceSurvey, UserApp, Label
 from django.db.models import Q
+from sop_chat_service.utils.remove_accent import remove_accent
 
 from sop_chat_service.utils.request_headers import get_user_from_header
 
@@ -141,7 +142,7 @@ class SearchMessageSerializer(serializers.Serializer):
         if not room:
             raise serializers.ValidationError({"room": "Room Invalid"})
         
-        return room,attrs.get('search')
+        return room,remove_accent(attrs.get('search'))
 class RoomInfoSerializer(serializers.Serializer):
     room_id = serializers.CharField(required=False)
     def validate(self, request, attrs):

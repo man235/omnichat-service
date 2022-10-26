@@ -90,10 +90,11 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             pagi=[]
             for item in result:
                 count_msg=  Message.objects.filter(id__range=[1,item[0]],room_id=room).count()
-                if isinstance((count_msg/limit_req),int):
-                    offset_req = count_msg/limit_req
+                current_rank= all_message - count_msg
+                if isinstance((current_rank/limit_req),int):
+                    offset_req = current_rank/limit_req
                 else:
-                    offset_req = (count_msg// limit_req)+1
+                    offset_req = (current_rank// limit_req)+1
                 if offset_req == 0:
                     offset_req = offset_req                
                 search_data = {
@@ -142,10 +143,11 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             pagi =[]
             for item_id  in ids :
                 count_msg=  Message.objects.filter(id__range=[1,item_id],room_id=room).count()
-                if isinstance((count_msg/limit_req),int):
-                    offset_req = count_msg/limit_req
+                current_rank= all_message - count_msg
+                if isinstance((current_rank/limit_req),int):
+                    offset_req = current_rank/limit_req
                 else:
-                    offset_req = (count_msg// limit_req)+1
+                    offset_req = (current_rank// limit_req)+1
                 if offset_req == 0:
                     offset_req = offset_req                
                 search_data = {
