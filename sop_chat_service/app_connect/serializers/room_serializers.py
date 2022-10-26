@@ -129,8 +129,9 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
         if not page:
             return None
         return page.avatar_url
-    
-
+class SearchRoomSerializer(serializers.Serializer):
+    search = serializers.CharField(required=True)
+  
 class SearchMessageSerializer(serializers.Serializer):
     room_id= serializers.CharField(required=True)
     search = serializers.CharField(required=True)

@@ -5,10 +5,9 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     InfoSerializer,
     RoomInfoSerializer,
     RoomMessageSerializer,
-    SearchMessageSerializer,
     RoomSerializer,
-    SearchMessageSerializer,
     ResponseSearchMessageSerializer,
+    SearchRoomSerializer,
     SortMessageSerializer,
     UserInfoSerializer,
     CountAttachmentRoomSerializer,
@@ -38,7 +37,7 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         pass
-    @action(detail=False, methods=["POST"], url_path="room_info")
+    @action(detail=False, methods=["POST"], url_path="room-info")
     def room_info(self, request, *args, **kwargs):
         sz = RoomInfoSerializer(data= request.data,many=False)
         room = sz.validate(request ,request.data)
@@ -81,7 +80,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="search")
     def search_for_room(self, request, pk=None, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        sz = SearchMessageSerializer(data=request.data)
+        sz = SearchRoomSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
         data = {}
         if sz.data.get('search'):
