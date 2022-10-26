@@ -16,8 +16,9 @@ from sop_chat_service.app_connect.serializers.message_serializers import Message
 from sop_chat_service.app_connect.serializers.room_serializers import RoomInfoSerializer, SearchMessageSerializer
 from sop_chat_service.facebook.utils import custom_response
 from django.utils import timezone
-
+from django.db import connection
 from sop_chat_service.utils.pagination_data import pagination_list_data
+from sop_chat_service.utils.remove_accent import remove_accent
 
 
 logger = logging.getLogger(__name__)
@@ -65,22 +66,30 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             return custom_response(200, "success", "Send message to Facebook success")
     @action(detail=False, methods=["POST"], url_path="search")
     def search_message(self, request,*args, **kwargs):
-        sz = SearchMessageSerializer(data=request.data,many=False)
+        sz = SearchMessageSerializer(data=request.data)
         room,search = sz.validate(request ,request.data)
         limit_req = 20
         offset_req = 0
         list_data= []
-        if search and len(search) == 1:
+        result=[]
+        if search and len(search.split(" ")) == 1:
+            cursor = connection.cursor()
+            cursor.execute('''
+                    SELECT id
+                    FROM  public.app_connect_message mes
+                    WHERE un_accent(mes.text) ~* '\y%s\y' and mes.room_id_id = '%s'
+            '''%(search,room.id))
+            rows = cursor.fetchall()
+            for row in rows:
+                result.append(row)
             all_message = Message.objects.filter(room_id = room).count()
-            message = Message.objects.filter(text__icontains= search,room_id = room)
-            if isinstance((message.count()/limit_req),int):
-                max_page =message.count()/limit_req
+            if isinstance((all_message/limit_req),int):
+                max_page =all_message/limit_req
             else:
                 max_page = (all_message// limit_req)+1
-            message_sz = ResultMessageSerializer(message,many=True)
-            pagi = []
-            for item in message_sz.data:
-                count_msg=  Message.objects.filter(id__range=[1,item.get('id')],room_id=room).count()
+            pagi=[]
+            for item in result:
+                count_msg=  Message.objects.filter(id__range=[1,item[0]],room_id=room).count()
                 if isinstance((count_msg/limit_req),int):
                     offset_req = count_msg/limit_req
                 else:
@@ -88,29 +97,42 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 if offset_req == 0:
                     offset_req = offset_req                
                 search_data = {
-                    "mid":item.get('id'),
+                    "mid":item[0],
                     "page_size":limit_req,
                     "page":offset_req,
                 }
                 pagi.append(search_data)
             list_data= {
-                "count": message.count(),
+                "count": len(result),
                 "max_page":max_page,
                 "search_data":pagi
             }
         else:
             all_message = Message.objects.filter(room_id = room).count()
             id = []
-            message = Message.objects.filter(text__icontains= search,room_id = room)
-            message_sz = ResultMessageSerializer(message,many=True)
-            for message_sz_item in message_sz.data:
-                id.append(message_sz_item.get('id'))
+            cursor = connection.cursor()
+            cursor.execute('''
+                    SELECT id
+                    FROM  public.app_connect_message mes
+                    WHERE un_accent(mes.text) ~* '\y%s\y' and mes.room_id_id = '%s'
+            '''%(search,room.id))
+            rows = cursor.fetchall()
+            for row in rows:
+                result.append(row)
+            for item in result:
+                id.append(item[0])
             for item in search.split(" "):
-                message = Message.objects.filter(text__icontains= item,room_id = room)
-                
-                message_sz = ResultMessageSerializer(message,many=True)
-                for message_sz_item in message_sz.data:
-                    id.append(message_sz_item.get('id'))
+                cursor = connection.cursor()
+                cursor.execute('''
+                        SELECT id
+                        FROM  public.app_connect_message mes
+                        WHERE un_accent(mes.text) ~* '\y%s\y' and mes.room_id_id = '%s'
+                '''%(item,room.id))
+                rows = cursor.fetchall()
+                for row in rows:
+                    result.append(row)
+                for item in result:
+                    id.append(item[0])
             ids = set(id)
             if isinstance((all_message/limit_req),int):
                 max_page =  all_message/limit_req
@@ -133,7 +155,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 }
                 pagi.append(search_data)
             list_data= {
-                "count": message.count(),
+                "count": len(ids),
                 "max_page":max_page,
                 "search_data":pagi
             }     
