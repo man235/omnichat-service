@@ -9,7 +9,8 @@ from rest_framework import permissions, status
 from sop_chat_service.app_connect.models import Attachment, FanPage, Message, Room
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
-from sop_chat_service.zalo.serializers.zalo_chat_serializer import ZaloChatSerializer
+from sop_chat_service.zalo.serializers.zalo_chat_serializer import ZaloChatSerializer, ZaloQuotaSerializer
+from sop_chat_service.zalo.utils.api_suport.quota import get_zalo_command_quota
 from sop_chat_service.zalo.utils.chat_support.format_message_zalo import format_attachment_type, format_sended_message_to_socket, reformat_attachment_type
 from sop_chat_service.zalo.utils.chat_support.save_message_zalo import store_sending_message_database_zalo
 from django.conf import settings
@@ -199,3 +200,42 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                     'successful_sending': successful_attachment_sending
                 }
             )
+
+    @action(detail=False, methods=['post'], url_path='quota')
+    def get_message_quota(self, request, *args, **kwargs) -> Response:
+        serializer = ZaloQuotaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data_sz = serializer.data
+        room_queryset = serializer.check_validated_data(validated_data_sz)
+                
+        if not room_queryset:
+            return custom_response(400, 'Invalid Room')
+        if not room_queryset.page_id or not room_queryset.page_id.is_active:
+            return custom_response(
+                400,
+                'Invalid Zalo OA',
+            )
+            
+        oa_access_token = room_queryset.page_id.access_token_page
+        zalo_user = room_queryset.external_id
+        last_message_id_from_zalo_user = Message.objects.filter(
+            is_sender=False,    # is message from Zalo
+            sender_id=zalo_user,    # zalo user id
+        ).last().fb_message_id
+                
+        quota_rp_json = get_zalo_command_quota(
+            oa_access_token,
+            last_message_id_from_zalo_user
+        )
+        
+        if not quota_rp_json:
+            return custom_response(
+                400,
+                'Failed to get zalo command quota'
+            )
+        else:
+            return custom_response(
+                200,
+                'Get Zalo OA message quota successfully',
+                quota_rp_json.get('data')
+            ) 

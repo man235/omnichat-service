@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from sop_chat_service.app_connect.models import Room
 from sop_chat_service.zalo.utils.chat_support.type_constant import *  
 
 
@@ -23,3 +24,15 @@ class ZaloChatSerializer(serializers.Serializer):
                     'message': 'Attachments is required'
                 })
             return False, attachments
+
+class ZaloQuotaSerializer(serializers.Serializer):
+    room_id = serializers.CharField(required=True)
+    
+    def check_validated_data(self, data):
+        room_queryset = Room.objects.filter(room_id=data.get('room_id')).first()
+        if not room_queryset:
+            raise serializers.ValidationError({
+                'message': 'Invalid Room'
+            })
+
+        return room_queryset
