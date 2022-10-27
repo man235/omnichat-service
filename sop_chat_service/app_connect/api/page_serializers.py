@@ -12,6 +12,7 @@ class FanPageSerializer(serializers.ModelSerializer):
     
     def update(self, instance: FanPage, validated_data: dict):
         instance.name = validated_data.get('name')
+        instance.page_id = validated_data.get('page_id')
         instance.access_token_page = validated_data.get('access_token_page')
         instance.refresh_token_page = validated_data.get('refresh_token_page')
         instance.avatar_url = validated_data.get('avatar_url')
