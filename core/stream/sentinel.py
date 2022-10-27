@@ -29,7 +29,6 @@ def reconnect(func):
 
 class SentinelClient(SingletonClass):
     def _singleton_init(self, **kwargs):
-        self._log_set_prefix_by_class_name(self)
         self.sentinel_namespace = settings.SENTINEL_NAMESPACE
         self.sentinel = None
         self.master_client: Redis = None
@@ -54,9 +53,6 @@ class SentinelClient(SingletonClass):
         )
         self.master_client: Redis = self.sentinel.master_for(self.sentinel_namespace)
         self.slave_client: Redis = self.sentinel.slave_for(self.sentinel_namespace)
-
-        self.log_info(f'got master {self.master_client}')
-        self.log_info(f'got slave  {self.slave_client}')
         # self.master_client.hdel()
         # self.master_client.rpush()
 

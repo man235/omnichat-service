@@ -2,11 +2,12 @@ from crypt import methods
 from rest_framework import viewsets, permissions
 from django.db import connection
 from sop_chat_service.app_connect.serializers.room_serializers import (
+    InfoSerializer,
+    RoomInfoSerializer,
     RoomMessageSerializer,
-    SearchMessageSerializer,
     RoomSerializer,
-    SearchMessageSerializer,
     ResponseSearchMessageSerializer,
+    SearchRoomSerializer,
     SortMessageSerializer,
     UserInfoSerializer,
     CountAttachmentRoomSerializer,
@@ -36,7 +37,13 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         pass
-
+    @action(detail=False, methods=["POST"], url_path="room-info")
+    def room_info(self, request, *args, **kwargs):
+        sz = RoomInfoSerializer(data= request.data,many=False)
+        room = sz.validate(request ,request.data)
+        sz = InfoSerializer(room, many=False)
+        return custom_response(200,"success",sz.data)
+    
     @action(detail=False, methods=["POST"], url_path="list-room")
     def list_room(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
@@ -73,7 +80,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="search")
     def search_for_room(self, request, pk=None, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        sz = SearchMessageSerializer(data=request.data)
+        sz = SearchRoomSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
         data = {}
         if sz.data.get('search'):

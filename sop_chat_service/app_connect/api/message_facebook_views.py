@@ -9,10 +9,16 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from sop_chat_service.app_connect.serializers.message_facebook_serializers import MessageFacebookSerializer
-from sop_chat_service.app_connect.models import Room
+from sop_chat_service.app_connect.models import Message, Room
 from core.utils.api_facebook_app import api_send_message_text_facebook, api_send_message_file_facebook, get_message_from_mid
 from core.utils import facebook_format_data_from_mid_facebook
+from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer, ResultMessageSerializer
+from sop_chat_service.app_connect.serializers.room_serializers import RoomInfoSerializer, SearchMessageSerializer
 from sop_chat_service.facebook.utils import custom_response
+from django.utils import timezone
+from django.db import connection
+from sop_chat_service.utils.pagination_data import pagination_list_data
+from sop_chat_service.utils.remove_accent import remove_accent
 
 
 logger = logging.getLogger(__name__)
@@ -45,6 +51,7 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
                 data_mid_json = facebook_format_data_from_mid_facebook(room, message_response, _uuid)
                 
                 asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
+            msg = Message.objects.filter(room_id = room,is_seen__isnull = True).update(is_seen=timezone.now())
             return custom_response(200, "success", "Send message to Facebook success")
         else:
         # get message from mid
@@ -55,4 +62,128 @@ class MessageFacebookViewSet(viewsets.ModelViewSet):
             _uuid = uuid.uuid4()
             data_mid_json = facebook_format_data_from_mid_facebook(room, message_response, _uuid)
             asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(data_mid_json).encode()))
+            msg = Message.objects.filter(room_id = room,is_seen__isnull = True).update(is_seen=timezone.now())
             return custom_response(200, "success", "Send message to Facebook success")
+    @action(detail=False, methods=["POST"], url_path="search")
+    def search_message(self, request,*args, **kwargs):
+        sz = SearchMessageSerializer(data=request.data)
+        room,search = sz.validate(request ,request.data)
+        limit_req = 20
+        offset_req = 0
+        list_data= []
+        result=[]
+        if search and len(search.split(" ")) == 1:
+            cursor = connection.cursor()
+            cursor.execute('''
+                    SELECT id
+                    FROM  public.app_connect_message mes
+                    WHERE un_accent(mes.text) ~* '\y%s\y' and mes.room_id_id = '%s'
+            '''%(search,room.id))
+            rows = cursor.fetchall()
+            for row in rows:
+                result.append(row)
+            all_message = Message.objects.filter(room_id = room).count()
+            if isinstance((all_message/limit_req),int):
+                max_page =all_message/limit_req
+            else:
+                max_page = (all_message// limit_req)+1
+            pagi=[]
+            for item in result:
+                count_msg=  Message.objects.filter(id__range=[1,item[0]],room_id=room).count()
+                current_rank= all_message - count_msg
+                if isinstance((current_rank/limit_req),int):
+                    offset_req = current_rank/limit_req
+                else:
+                    offset_req = (current_rank// limit_req)+1
+                if offset_req == 0:
+                    offset_req = offset_req                
+                search_data = {
+                    "mid":item[0],
+                    "page_size":limit_req,
+                    "page":offset_req,
+                }
+                pagi.append(search_data)
+            list_data= {
+                "count": len(result),
+                "max_page":max_page,
+                "search_data":pagi
+            }
+        else:
+            all_message = Message.objects.filter(room_id = room).count()
+            id = []
+            cursor = connection.cursor()
+            cursor.execute('''
+                    SELECT id
+                    FROM  public.app_connect_message mes
+                    WHERE un_accent(mes.text) ~* '\y%s\y' and mes.room_id_id = '%s'
+            '''%(search,room.id))
+            rows = cursor.fetchall()
+            for row in rows:
+                result.append(row)
+            for item in result:
+                id.append(item[0])
+            for item in search.split(" "):
+                cursor = connection.cursor()
+                cursor.execute('''
+                        SELECT id
+                        FROM  public.app_connect_message mes
+                        WHERE un_accent(mes.text) ~* '\y%s\y' and mes.room_id_id = '%s'
+                '''%(item,room.id))
+                rows = cursor.fetchall()
+                for row in rows:
+                    result.append(row)
+                for item in result:
+                    id.append(item[0])
+            ids = set(id)
+            if isinstance((all_message/limit_req),int):
+                max_page =  all_message/limit_req
+            else:
+                max_page = (all_message// limit_req)+1
+            
+            pagi =[]
+            for item_id  in ids :
+                count_msg=  Message.objects.filter(id__range=[1,item_id],room_id=room).count()
+                current_rank= all_message - count_msg
+                if isinstance((current_rank/limit_req),int):
+                    offset_req = current_rank/limit_req
+                else:
+                    offset_req = (current_rank// limit_req)+1
+                if offset_req == 0:
+                    offset_req = offset_req                
+                search_data = {
+                    "mid":item_id,
+                    "page_size":limit_req,
+                    "page":offset_req,
+                }
+                pagi.append(search_data)
+            list_data= {
+                "count": len(ids),
+                "max_page":max_page,
+                "search_data":pagi
+            }     
+        return custom_response(200,"success",list_data)
+    
+    # def retrieve(self, request, pk=None):
+    #     message=Message.objects.filter(id=pk).first()
+    #     result = Message.objects.filter(room_id=message.room_id).order_by("-created_at")
+    #     count_msg=  Message.objects.filter(id__range=[1,pk],room_id=message.room_id).count()
+    #     sz= MessageSerializer(result, many=True)
+    #     limit_req = 20
+    #     offset_req = 0
+    #     if isinstance((count_msg/limit_req),int):
+    #         offset_req = count_msg/limit_req
+    #     else:
+    #         offset_req = (count_msg// limit_req)+1
+    #     if offset_req == 0:
+    #         offset_req = offset_req
+    #     if isinstance((len(sz.data)/limit_req),int):
+    #         max_page = len(sz.data)/limit_req
+    #     else:
+    #         max_page = (len(sz.data)// limit_req)+1
+    #     list_data = {
+    #         "page_size":limit_req,
+    #         "page":offset_req,
+    #         "max_page":max_page,
+    #         "count": len(sz.data),
+    #     }
+    #     return custom_response(200,"ok",list_data)
