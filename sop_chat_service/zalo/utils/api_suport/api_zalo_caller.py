@@ -80,6 +80,7 @@ def request_shared_info(user_id: str, access_token: str, message: Any = None) ->
 
 def send_zalo_message(
     msg_type: str = TEXT_MESSAGE,
+    last_message_zalo_id: str = None,
     access_token: str = None,
     recipient_id: str = None,
     text: str = None,
@@ -123,11 +124,12 @@ def send_zalo_message(
             },
             data = json.dumps({
                 "recipient": {
-                    "user_id": str(recipient_id),
+                    # "user_id": str(recipient_id),
+                    "message_id": last_message_zalo_id,
                 },
                 "message": message,
             }),
-            timeout=60,
+            timeout=30,
         )
         
         if rp.status_code == 200:
@@ -138,7 +140,7 @@ def send_zalo_message(
             else:
                 return json_response(False, rp_json.get('message'))
         else:
-            return None # BAD Request
+            return None     # BAD Request
         
     except Exception as e:
         return None
@@ -159,7 +161,7 @@ def upload_zalo_attachment(
             files = [
                 ('file', (attachment.name, attachment, attachment.content_type))
             ],
-            timeout=60,
+            timeout=30,
         )
         
         if rp.status_code == 200:
@@ -170,7 +172,7 @@ def upload_zalo_attachment(
             else:
                 return json_response(False, rp_json.get('message'))
         else:
-            return None # BAD Request
+            return None     # BAD Request
         
     except Exception as e:
         return None
@@ -189,28 +191,78 @@ def get_message_data_of_zalo_user(
         - `count`: amount of messages want to get
     """
     
-    rp = requests.get(
-        url = f'{settings.ZALO_OA_OPEN_API}/conversation',
-        headers = {
-            'access_token': access_token,
-        },
-        params = {
-            'data': {
-                'user_id': user_id,
-                'offset': offset,
-                'count': count,
+    try:
+        rp = requests.get(
+            url = f'{settings.ZALO_OA_OPEN_API}/conversation',
+            headers = {
+                'access_token': access_token,
+            },
+            params = {
+                'data': {
+                    'user_id': user_id,
+                    'offset': offset,
+                    'count': count,
+                }
             }
-        }
-    )
-    
-    if rp.status_code == 200:
-        rp_json = rp.json()
+        )
         
-        if rp_json.get('message') == 'Success':
-            return json_response(True, rp_json.get('data'))
+        if rp.status_code == 200:
+            rp_json = rp.json()
+            
+            if rp_json.get('message') == 'Success':
+                return json_response(True, rp_json.get('data'))
+            else:
+                return json_response(False, rp_json)
         else:
-            return json_response(False, rp_json)
-    else:
-        return None # BAD Request
+            return None     # BAD Request
+        
+    except Exception as e:
+        return None
 
-    
+
+def send_zalo_reply_message(
+    access_token: str,
+    msg_id: str,
+    text: str,
+) -> Any:
+    """ Send message with reply message type to Zalo User (Anonymous or Followers).
+        This will be counted on reply command amount from Zalo.
+
+    Args:
+        `access_token` (str): OA's access token
+        `msg_id` (str): message id from Zalo User
+        `text` (str): content of reply message
+
+    Returns:
+        `Any`: json reponse
+    """
+    try:
+        rp = requests.post(
+            url= f'{settings.ZALO_OA_OPEN_API}/message',
+            headers={
+                'Content-Type': 'application/json',
+                'access_token': access_token,
+            },
+            data={
+                "recipient":{
+                    "message_id": msg_id
+                },
+                "message":{
+                    "text": text
+                }
+            }
+        )
+        
+        if rp.status_code == 200:
+            rp_json = rp.json()
+            
+            if rp_json.get('message') == 'Success':
+                return json_response(True, rp_json.get('data'))
+            else:
+                return json_response(False, rp_json)
+        else:
+            return None     # BAD request
+        
+    except Exception as e:
+        return None
+

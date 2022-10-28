@@ -54,6 +54,7 @@ def format_receive_message(room, data: NatsChatMessage):
         room_id = room.room_id,
         created_time = None,
         user_id = room.user_id,
+        timestamp = data.timestamp,
         event = constants.SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN
     )
     return message_ws
