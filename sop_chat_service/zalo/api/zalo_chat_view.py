@@ -17,17 +17,6 @@ import asyncio
 import json
 import logging
 
-from sop_chat_service.zalo.utils.chat_support.type_constant import (
-    FILE_CONTENT_TYPE,
-    FILE_CSV_TYPE,
-    FILE_DOC_EXTENSION,
-    FILE_MESSAGE,
-    FILE_MSWORD_EXTENSION,
-    FILE_PDF_TYPE,
-    IMAGE_MESSAGE,
-    
-)
-
 logger = logging.getLogger(__name__)
 
 
@@ -67,14 +56,14 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
         qs_oa_access_token = queryset.page_id.access_token_page
         qs_oa_id = queryset.page_id.page_id
         qs_room_id = queryset.room_id
-        qs_last_message_zalo_id = get_last_message_from_zalo_user(queryset)
+        qs_last_message_zalo = get_last_message_from_zalo_user(queryset)
         validated_recipient_id = validated_data_sz.get('recipient_id')
         new_topic_publish = f'{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{queryset.room_id}'
-            
+                        
         if is_text_msg: # Send text message
             rp_send_data = send_zalo_message(
                 access_token=qs_oa_access_token,
-                last_message_zalo_id=qs_last_message_zalo_id,
+                last_message_zalo_id=qs_last_message_zalo.fb_message_id,
                 recipient_id=validated_recipient_id,
                 text=validated_data_sz.get('message_text'),
             )
@@ -142,7 +131,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                     rp_send_data = send_zalo_message(
                         msg_type=checked_attachment_type,     # file, image
                         access_token=qs_oa_access_token,
-                        last_message_zalo_id=qs_last_message_zalo_id,
+                        last_message_zalo_id=qs_last_message_zalo.fb_message_id,
                         recipient_id=validated_recipient_id,
                         attachment_token=attachment_token,
                         attachment_id=attachment_id
