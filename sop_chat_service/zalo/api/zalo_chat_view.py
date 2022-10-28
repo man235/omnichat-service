@@ -184,10 +184,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
             return custom_response(
                 200, 
                 'Send message successfully',
-                {
-                    'successful_uploading': successful_attachment_uploading,
-                    'successful_sending': successful_attachment_sending
-                }
+                rp_send_data.get('data'),
             )
 
     @action(detail=False, methods=['post'], url_path='quota')
