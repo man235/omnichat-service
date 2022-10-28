@@ -80,14 +80,15 @@ async def save_message_store_database_zalo(
     optionals: List[ChatOptional] = None
 ) -> None:
     message = Message(
-        room_id = room,
-        fb_message_id = msg.mid,
-        sender_id = msg.sender_id,
-        recipient_id = msg.recipient_id,
-        text = msg.text,
-        sender_name = room.name,
-        created_at = str(timezone.now()),
-        uuid = msg.uuid,
+        room_id=room,
+        fb_message_id=msg.mid,
+        sender_id=msg.sender_id,
+        recipient_id=msg.recipient_id,
+        text=msg.text,
+        sender_name=room.name,
+        created_at=str(timezone.now()),
+        uuid=msg.uuid,
+        timestamp=msg.timestamp
     )
     message.save()
     

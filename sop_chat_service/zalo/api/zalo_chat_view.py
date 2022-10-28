@@ -70,7 +70,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
         qs_last_message_zalo = get_last_message_from_zalo_user(queryset)
         validated_recipient_id = validated_data_sz.get('recipient_id')
         new_topic_publish = f'{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{queryset.room_id}'
-            
+                        
         if is_text_msg: # Send text message
             rp_send_data = send_zalo_message(
                 access_token=qs_oa_access_token,
@@ -142,7 +142,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                     rp_send_data = send_zalo_message(
                         msg_type=checked_attachment_type,     # file, image
                         access_token=qs_oa_access_token,
-                        last_message_zalo_id=qs_last_message_zalo_id,
+                        last_message_zalo_id=qs_last_message_zalo.fb_message_id,
                         recipient_id=validated_recipient_id,
                         attachment_token=attachment_token,
                         attachment_id=attachment_id
