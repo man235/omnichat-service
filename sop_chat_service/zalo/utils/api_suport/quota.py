@@ -3,8 +3,23 @@ from typing import Any
 from django.conf import settings
 import requests
 import json
+from sop_chat_service.app_connect.models import Message, Room
 
 from sop_chat_service.zalo.utils.api_suport.response_templates import json_response
+
+
+def get_last_message_from_zalo_user(
+    room_queryset: Room,
+) -> Message:
+    if not room_queryset:
+        raise ValueError('room_queryset must not be None')
+    
+    zalo_user_id = room_queryset.external_id
+    
+    return Message.objects.filter(
+        is_sender=False,    # is message from Zalo
+        sender_id=zalo_user_id,    # zalo user id
+    ).last()
 
     
 def get_zalo_command_quota(

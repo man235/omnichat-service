@@ -33,3 +33,4 @@ class MessageWebSocket(CustomBaseModel):
     created_time: Optional[str]
     event: Optional[str]
     user_id: Optional[str]
+    timestamp: Optional[float]

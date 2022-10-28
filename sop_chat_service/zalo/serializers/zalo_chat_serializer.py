@@ -1,5 +1,6 @@
+from attr import field, fields_dict
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Room
+from sop_chat_service.app_connect.models import Message, Room
 from sop_chat_service.zalo.utils.chat_support.type_constant import *  
 
 
@@ -8,7 +9,6 @@ class ZaloChatSerializer(serializers.Serializer):
     recipient_id = serializers.CharField(required=True)
     is_text = serializers.BooleanField(required=True)
     message_text = serializers.CharField(required=False)
-    # attachment = serializers.FileField(required=False)
     
     def check_validated_data(self, request, data):
         if data.get('is_text'):
@@ -27,6 +27,7 @@ class ZaloChatSerializer(serializers.Serializer):
 
 class ZaloQuotaSerializer(serializers.Serializer):
     room_id = serializers.CharField(required=True)
+    is_active_quota = serializers.BooleanField(required=True)
     
     def check_validated_data(self, data):
         room_queryset = Room.objects.filter(room_id=data.get('room_id')).first()

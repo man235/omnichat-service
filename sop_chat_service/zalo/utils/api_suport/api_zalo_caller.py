@@ -80,6 +80,7 @@ def request_shared_info(user_id: str, access_token: str, message: Any = None) ->
 
 def send_zalo_message(
     msg_type: str = TEXT_MESSAGE,
+    last_message_zalo_id: str = None,
     access_token: str = None,
     recipient_id: str = None,
     text: str = None,
@@ -123,7 +124,8 @@ def send_zalo_message(
             },
             data = json.dumps({
                 "recipient": {
-                    "user_id": str(recipient_id),
+                    # "user_id": str(recipient_id),
+                    "message_id": last_message_zalo_id,
                 },
                 "message": message,
             }),
