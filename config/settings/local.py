@@ -135,7 +135,7 @@ DOMAIN_MINIO_SAVE_ATTACHMENT = "https://webhook.minhhv11.xyz/"
 PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email'
 SITE_ID = 1
 NATS_URL = env(
-    "NATS_URL", default="nats://172.27.230.14:4222"
+    "NATS_URL", default="nats://172.24.222.112:4222"
 )
 
 

@@ -9,10 +9,6 @@ FROM python as python-build-stage
 
 ENV PYTHONDONTWRITEBYTECODE 1
 
-ENV http_proxy http://proxy.hcm.fpt.vn:80
-ENV https_proxy http://proxy.hcm.fpt.vn:80
-ENV no_proxy oauth.zaloapp.com:443, openapi.zalo.me:443
-
 RUN apt-get update && apt-get install --no-install-recommends -y \
   # dependencies for building Python packages
   build-essential \
@@ -37,10 +33,6 @@ FROM python as python-run-stage
 ARG BUILD_ENVIRONMENT
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
-
-ENV http_proxy http://proxy.hcm.fpt.vn:80
-ENV https_proxy http://proxy.hcm.fpt.vn:80
-ENV no_proxy oauth.zaloapp.com:443, openapi.zalo.me:443
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
   # To run the Makefile
