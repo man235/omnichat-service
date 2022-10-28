@@ -1,4 +1,6 @@
 from crypt import methods
+from datetime import datetime
+import uuid
 from rest_framework import viewsets, permissions
 from sop_chat_service.app_connect.serializers.room_serializers import (
     InfoSerializer,
@@ -12,9 +14,11 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     CountAttachmentRoomSerializer,
     LabelSerializer
 )
+import time
+from django.utils import timezone
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
-from sop_chat_service.app_connect.models import Room, Message, UserApp, Label
+from sop_chat_service.app_connect.models import Log, Room, Message, UserApp, Label
 from sop_chat_service.facebook.utils import custom_response
 from rest_framework.decorators import action
 from django.db.models import Q
@@ -121,7 +125,18 @@ class RoomViewSet(viewsets.ModelViewSet):
             return custom_response(400,"Invalid room",[])  
         room.completed_date =timezone.now()
         room.save()
+        # msg= Message.objects.create(room_id = room, sender_id = user_header, uuid=uuid.uuid4(),created_at=datetime.now(),timestamp=int(time.time()))
+        # log = Log.objects.create(mid=msg,text= "")
         return custom_response(200,"Completed Room Successfully",[])
+    @action(detail=True, methods=["POST"], url_path="re-open")
+    def complete_room(self, request, pk=None, *args, **kwargs):
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.get(room_id=pk, user_id=user_header)
+        if not room:
+            return custom_response(400,"Invalid room",[])  
+        room.completed_date =None
+        room.save()
+        return custom_response(200,"Open Room Successfully",[])
 
     def retrieve(self, request, pk=None):
         user_header = get_user_from_header(request.headers)
