@@ -5,11 +5,11 @@ import requests
 from .response_templates import json_response
 
 
-def get_oa_token(oa_id: Union[int, str] = None, 
-                 authorization_code: str = None, 
-                 code_verifier: str = None,
-                 refresh_token: str = None,
-                ) -> Any:
+def get_oa_token(
+    authorization_code: str = None, 
+    code_verifier: str = None,
+    refresh_token: str = None,
+) -> Any:
     """
     Get OA token
     """

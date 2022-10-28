@@ -48,7 +48,6 @@ class ZaloViewSet(viewsets.ModelViewSet):
             oa_auth_sz = ZaloAuthenticationSerializer(data=request.data)
             oa_auth_sz.is_valid(raise_exception=True)
             oa_token = zalo_oa_auth.get_oa_token(
-                oa_auth_sz.data.get('oa_id'),
                 oa_auth_sz.data.get('authorization_code'),
                 oa_auth_sz.data.get('code_verifier')
             )
@@ -183,7 +182,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         room_queryset_by_user_id = Room.objects.filter(
             type='zalo',
             user_id=user_header
-        )
+        ).distinct()
         if room_queryset_by_user_id.exists():
             for room in room_queryset_by_user_id:
                 if room.page_id:
@@ -244,7 +243,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
             refresh_token_page = queryset.refresh_token_page
 
             if refresh_token_page:
-                oa_token = zalo_oa_auth.get_oa_token(oa_id=oa_id, refresh_token=refresh_token_page)
+                oa_token = zalo_oa_auth.get_oa_token(refresh_token=refresh_token_page)
                 
                 if not oa_token or oa_token.get('message') == 'Failure':
                     queryset.is_active = False
