@@ -47,7 +47,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     def list_room(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
         qs = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),
-            completed_date__isnull=True, room_message__is_sender=False).distinct().order_by("-room_message__created_at")
+            completed_date__isnull=True).distinct().order_by("-room_message__created_at")
         
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)

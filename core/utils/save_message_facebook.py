@@ -39,7 +39,8 @@ async def facebook_save_message_store_database(room, msg: NatsChatMessage):
         sender_id = msg.senderId,
         recipient_id = msg.recipientId,
         text = msg.text,
-        uuid = msg.uuid
+        uuid = msg.uuid,
+        timestamp = msg.timestamp
     )
     message.save()
     if msg.attachments:

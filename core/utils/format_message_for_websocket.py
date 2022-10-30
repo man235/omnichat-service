@@ -85,7 +85,8 @@ def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessa
         mid = data.mid,
         room_id = room.room_id,
         event = event,
-        user_id = room.user_id
+        user_id = room.user_id,
+        timestamp = data.timestamp
     )
     return message_ws
 
@@ -117,6 +118,7 @@ def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage
         room_id = room.room_id,
         user_id = room.user_id,
         event = event,
+        timestamp = data.timestamp
     )
     return message_ws
 
@@ -157,7 +159,7 @@ def facebook_format_mid(room, message_response):
     return data_mid_json
 
 
-def facebook_format_mid_to_nats_message(room, message_response, uuid):
+def facebook_format_mid_to_nats_message(room, message_response, data: NatsChatMessage):
     attachments = []
     data_attachment = message_response.get('attachments')
     if data_attachment:
@@ -190,10 +192,10 @@ def facebook_format_mid_to_nats_message(room, message_response, uuid):
         "reaction": None,
         "reply_id": None,
         "sender_name": None,
-        "timestamp": int(time.time()),
+        "timestamp": data.timestamp,
         "appId": message_response['from']['id'],
         "typeChat": constants.FACEBOOK,
-        "uuid": uuid
+        "uuid": data.uuid
     }
     return data_mid_json
 

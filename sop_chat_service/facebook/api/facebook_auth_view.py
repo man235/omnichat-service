@@ -88,7 +88,9 @@ class FacebookViewSet(viewsets.ModelViewSet):
             if sz.data.get('is_subscribe') == True:
                 page_id = sz.data.get('page_id')
                 try:
-                    page = FanPage.objects.filter(type='facebook',page_id=page_id, user_id=user_header).first()
+                    page = FanPage.objects.filter(type=constants.FACEBOOK, page_id=page_id, user_id=user_header).first()
+                    if page.is_active:
+                        return custom_response(400, "Error: This Fanpage Have Been Subscribe!!!", [])
                     query_field = {'subscribed_fields': settings.SUBCRIBE_FIELDS,
                                    'access_token': page.access_token_page}
                     response = requests.post(f'{graph_api}/{page_id}/subscribed_apps', data=query_field)

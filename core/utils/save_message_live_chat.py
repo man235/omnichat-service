@@ -20,7 +20,8 @@ async def live_chat_save_message_store_database(room, data: NatsChatMessage):
             is_sender =is_sender,
             recipient_id = data.recipientId,
             text = data.text,
-            uuid = data.uuid
+            uuid = data.uuid,
+            timestamp = data.timestamp
         )
         message.save()
         if data.attachments:
