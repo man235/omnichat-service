@@ -8,6 +8,6 @@ class CheckDataMessageZalo(BaseCheckDataMessageManager):
     chat_type: str = constants.ZALO
 
     async def check_data_message(self, data: NatsChatMessage, *args, **kwargs):
-        room = await check_room_zalo(data)
-        # room = await distribute_new_room_zalo(data)
+        # room = await check_room_zalo(data)
+        room = await distribute_new_room_zalo(data)
         return room

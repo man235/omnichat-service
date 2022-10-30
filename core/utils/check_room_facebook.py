@@ -8,16 +8,16 @@ logger = logging.getLogger(__name__)
 
 @sync_to_async
 def check_room_facebook(data: NatsChatMessage):
-    check_fanpage = FanPage.objects.filter(page_id=data.recipientId).first()
+    check_fanpage = FanPage.objects.filter(page_id=data.recipientId, is_active=True).first()
+    # check_fanpage = FanPage.objects.filter(page_id=data.recipientId).first()
     if not check_fanpage or not check_fanpage.is_active:
         logger.debug(f' NOT FIND FANPAGE FROM DATABASE -------------------------')
         return None
     user_app = UserApp.objects.filter(external_id=data.senderId).first()
     if not user_app:
-        logger.debug(f' NOT FIND USER APP FROM DATABASE ------------------------- ')
         res_user_app = get_user_info(data.senderId, check_fanpage.access_token_page)
         if not res_user_app:
-            logger.debug(f' NOT FIND USER APP FROM FACEBOOK ------------------------- ')
+            logger.debug(f' NOT FIND USER APP FROM FACEBOOK ------------------------- {res_user_app}')
             return
         user_app = UserApp.objects.create(
             # user_id = res_user_app.get('profile_pic'),

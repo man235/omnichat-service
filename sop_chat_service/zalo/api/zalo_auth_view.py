@@ -4,11 +4,12 @@ from rest_framework import serializers, viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework import permissions, status
 from sop_chat_service.app_connect.models import FanPage, Room
-from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer
+from sop_chat_service.app_connect.api.page_serializers import FanPageSerializer, SettingChatZaloSerializer
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
 from sop_chat_service.zalo.serializers.zalo_auth_serializers import ZaloAuthenticationSerializer, ZaloConnectPageSerializer
 from sop_chat_service.zalo.utils.api_suport import zalo_oa_auth
+from core import constants
 import logging
 
 logger = logging.getLogger(__name__)
@@ -267,3 +268,23 @@ class ZaloViewSet(viewsets.ModelViewSet):
             return custom_response(400, 'Can not refresh Zalo OA')
         else:
             return custom_response(400, 'Zalo OA not found')
+
+    @action(detail=False, methods=['post'], url_path='setting-chat')
+    def setting_chat_zalo(self, request, *args, **kwargs) -> Response:
+        sz = SettingChatZaloSerializer(data = request.data)
+        sz.is_valid(raise_exception=True)
+        user_header = get_user_from_header(request.headers)
+        find_page = FanPage.objects.filter(page_id=sz.data.get('page_id')).first()
+        if not find_page:
+            return custom_response(400, 'Not Find Zalo OA', [])
+        if find_page.user_id != user_header:
+            return custom_response(400, 'User Does Not Permission Setting Zalo OA', [])
+        if sz.data.get('setting_chat') == constants.SETTING_CHAT_ONLY_ME:
+            find_page.setting_chat = constants.SETTING_CHAT_ONLY_ME
+        elif sz.data.get('setting_chat') != constants.SETTING_CHAT_ONLY_ME:
+            find_page.setting_chat = sz.data.get('setting_chat')
+            if not sz.data.get('group_user'):
+                return custom_response(400, 'Group User Is Not Valid', [])
+            find_page.group_user = sz.data.get('group_user')
+        find_page.save()
+        return custom_response(200, 'Setting Chat Zalo Success', [])

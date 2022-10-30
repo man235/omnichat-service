@@ -22,3 +22,9 @@ class FanPageSerializer(serializers.ModelSerializer):
         instance.last_subscribe = validated_data.get('last_subscribe')
         instance.save()
         return instance
+
+
+class SettingChatZaloSerializer(serializers.Serializer):
+    page_id = serializers.CharField(required=True)
+    setting_chat = serializers.CharField(required=True)
+    group_user = serializers.ListField(child=serializers.CharField(required=False), required=False)

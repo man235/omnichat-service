@@ -130,16 +130,15 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             user_app = UserApp.objects.create(
                 external_id = data.senderId,
                 name = f'Anonymous-{data.senderId}',
-            ) 
+            )
     
     check_room = Room.objects.filter(
         page_id=check_fanpage,
         external_id=data.senderId
-    )
-    # find_admin, find_user = await find_user_new_chat(data.recipientId)
-    
+    ).first()
+
     if not check_room:
-        find_admin, find_user = await find_user_new_chat(data.recipientId)
+        result_new_user = await find_user_new_chat(data, check_fanpage)
         new_room_user = Room.objects.create(
             page_id = check_fanpage,
             external_id = data.senderId,
@@ -149,35 +148,9 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             conversation_id = "",
             completed_date = None,
             room_id = f'{check_fanpage.id}{data.senderId}',
-            user_id=find_user,
+            user_id = result_new_user.get('staff'),
+            admin_room_id = result_new_user.get('admin') if check_fanpage.setting_chat != constants.SETTING_CHAT_ONLY_ME else None
         )
-        new_room_admin = Room.objects.create(
-            page_id = check_fanpage,
-            external_id = data.senderId,
-            name = user_app.name,
-            approved_date = timezone.now(),
-            type = constants.ZALO,
-            conversation_id = "",
-            completed_date = None,
-            room_id = f'{check_fanpage.id}{data.senderId}',
-            user_id=find_admin,
-        )
-        check_room = Room.objects.filter(page_id=check_fanpage, external_id=data.senderId)
-        return check_room
+        return new_room_user
     else:
-        for room_chat in check_room:
-            if room_chat.completed_date:
-                new_room = Room.objects.create(
-                    page_id = check_fanpage,
-                    external_id = data.senderId,
-                    name = user_app.name,
-                    approved_date = timezone.now(),
-                    type = constants.ZALO,
-                    conversation_id = "",
-                    completed_date = None,
-                    room_id = f'{check_fanpage.id}{data.senderId}',
-                    user_id=check_fanpage.user_id,
-                )
-                return new_room
-        check_room = Room.objects.filter(page_id=check_fanpage, external_id=data.senderId)
         return check_room

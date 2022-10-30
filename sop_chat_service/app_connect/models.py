@@ -1,8 +1,10 @@
 from statistics import mode
 from django.utils.translation import gettext_lazy as _
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from sop_chat_service.utils.storages import upload_image_to
 import time
+from core import constants
 
 
 class FanPage(models.Model):
@@ -24,6 +26,10 @@ class FanPage(models.Model):
     type = models.CharField(max_length=30, default=Type.FACEBOOK,
                             choices=Type.choices)
     fanpage_user_id = models.CharField(max_length=255, null=True, blank=True)
+    is_deleted = models.BooleanField(null=True)
+    group_user = ArrayField(models.CharField(max_length=200, null=True), blank=True, null=True)
+    setting_chat = models.CharField(max_length=255, default=constants.SETTING_CHAT_ONLY_ME)
+
     def __str__(self):
         return str(self.id) + '-' + self.name+'-'+self.access_token_page
 
@@ -72,13 +78,11 @@ class Room(models.Model):
     room_id = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=30, default=Status.PROCESSING,
                             choices=Status.choices)
-   
-    # @property
-    # def room_id(self):
-    #     return f'{self.page_id.id}{self.external_id}'
+    admin_room_id = models.CharField(max_length=255, null=True, blank=True)
+    block_admin = models.BooleanField(null=True)
+
     def __str__(self):
         return str(self.id) + '-' + self.name
-
 
 
 class Reminder(models.Model):

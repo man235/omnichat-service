@@ -16,6 +16,17 @@ import nats
 import asyncio
 import json
 import logging
+from django.db.models import Q
+
+from sop_chat_service.zalo.utils.chat_support.type_constant import (
+    FILE_CONTENT_TYPE,
+    FILE_CSV_TYPE,
+    FILE_DOC_EXTENSION,
+    FILE_MESSAGE,
+    FILE_MSWORD_EXTENSION,
+    FILE_PDF_TYPE,
+    IMAGE_MESSAGE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,16 +54,15 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
             validated_data_sz
         )
         queryset = Room.objects.filter(
-            room_id=validated_data_sz.get('room_id'),
-            user_id=user_header
+            (Q(user_id=user_header) | Q(admin_room_id=user_header)),
+            room_id=validated_data_sz.get('room_id')
         ).first()
         if not queryset or not queryset.page_id:
             return custom_response(400, 'Invalid Room')
-        if not queryset.page_id.is_active:
-            return custom_response(
-                400,
-                'Zalo OA is not active',
-            )
+        elif queryset.block_admin and queryset.admin_room_id == user_header:
+            return custom_response(400, 'Admin: This Room Is Only View', [])
+        elif not queryset.page_id.is_active:
+            return custom_response(400, 'Zalo OA is not active',)
         qs_oa_access_token = queryset.page_id.access_token_page
         qs_oa_id = queryset.page_id.page_id
         qs_room_id = queryset.room_id
@@ -71,9 +81,15 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                 return custom_response(
                     400,
                     'error',
-                    'Failed to send message to Zalo'  
+                    'Failed to send message to Zalo'
                 )
-            
+            if not queryset.block_admin:
+                if queryset.admin_room_id == user_header:
+                    queryset.user_id == user_header
+                    queryset.save()
+                elif queryset.user_id == user_header:
+                    queryset.user_id == user_header
+                    queryset.save()
             message_data_to_socket = format_sended_message_to_socket(
                 text=validated_data_sz.get('message_text'),
                 msg_id=rp_send_data.get('message_id'),
