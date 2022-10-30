@@ -88,8 +88,7 @@ class RoomViewSet(viewsets.ModelViewSet):
                 name__icontains=sz.data.get('search'), room_message__is_sender=False).distinct()
             serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
             data['contact'] = serializer_contact.data
-            qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search'),
-                user_id=user_header, room_message__is_sender=False).distinct()
+            qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search'),user_id=user_header).distinct()
             serializer_message = []
             for qs_message in qs_messages:
                 count_mess = Message.objects.filter(text__icontains=sz.data.get('search'), room_id=qs_message).count()
