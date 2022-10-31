@@ -68,6 +68,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                 page_remove = FanPage.objects.filter(user_id=user_header,fanpage_user_id=fb_user_id,type='facebook').exclude(page_id__in=id )
                 for item in page_remove:
                     item.is_active = False
+                    page.is_deleted=True
                     item.access_token_page = ''
                     item.save()
                     
