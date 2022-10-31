@@ -68,7 +68,7 @@ class FacebookViewSet(viewsets.ModelViewSet):
                 page_remove = FanPage.objects.filter(user_id=user_header,fanpage_user_id=fb_user_id,type='facebook').exclude(page_id__in=id )
                 for item in page_remove:
                     item.is_active = False
-                    item.is_deleted= True
+                    page.is_deleted=True
                     item.access_token_page = ''
                     item.save()
                     
@@ -171,12 +171,15 @@ class FacebookViewSet(viewsets.ModelViewSet):
                     data = response.json()
                     if data['success']:
                         page.is_deleted= True
+                        page.is_active = False
                     else:
                         pass
                 else:
                     page.is_deleted= True
+                    page.is_active = False
             else :
                 page.is_deleted= True
+                page.is_active = False
             page.save() 
         return custom_response(200,'Delete Pages Successfully',[])
 
