@@ -41,7 +41,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 if not queryset.user_id == user_header:
                     return custom_response(
                         400,
-                        'Available Zalo OA. May be you are not the first admin connect to this OA',
+                        'Zalo OA is connected. May be you are not the first admin connect to this OA',
                     )
             else:
                 is_existing_oa = False
@@ -78,6 +78,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         'refresh_token_page': refresh_token,
                         'avatar_url': oa_data.get('avatar_url'),
                         'is_active': True,
+                        'is_deleted': False,
                         'created_by': user_header,
                         'last_subscribe': str(timezone.now())
                     }
@@ -112,23 +113,25 @@ class ZaloViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         qs = FanPage.objects.filter(
             page_id=sz.data.get('oa_id'),
+            is_deleted=False
         ).first()
         
         if not qs:
             return custom_response(
                 400,
-                'Failed to delete. OA id not found',
+                'Failed to delete. Zalo OA not found',
             )
         
         if qs.user_id == user_header:
-            qs.delete()
-            
+            qs.is_deleted = True
+            qs.is_active = False
+            qs.save()
             return custom_response(200, 'Delete OA successfully')    
         else:
             return custom_response(
                 400,
                 'Failed to delete. May be you are not the first admin connect to this OA',
-            )   
+            )
             
     @action(detail=False, methods=['post'], url_path='unsubscribe')
     def unsubscribe_oa(self, request, *args, **kwargs) -> Response:
@@ -141,12 +144,13 @@ class ZaloViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         qs = FanPage.objects.filter(
             page_id=sz.data.get('oa_id'),
+            is_deleted=False
         ).first()
         
         if not qs:
             return custom_response(
                 400,
-                'Failed to disconnect. OA id not found',
+                'Failed to disconnect. Zalo OA not found',
             )
         
         if qs.user_id == user_header:
@@ -174,6 +178,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         
         oa_queryset_by_user_id = FanPage.objects.filter(
             type='zalo',
+            is_deleted=False,
             user_id=user_header
         )
         if oa_queryset_by_user_id.exists():
@@ -199,7 +204,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         for item in oa_owner_serializers.data:
             data = dict(item)
 
-            if not data.get('is_active'):
+            if not data.get('is_active') and data.get('is_deleted'):
                 continue
             
             oa_id = data.get('page_id')
@@ -232,7 +237,10 @@ class ZaloViewSet(viewsets.ModelViewSet):
         serializer = ZaloConnectPageSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         oa_id = serializer.data.get('oa_id')
-        queryset = FanPage.objects.filter(page_id=oa_id).first()
+        queryset = FanPage.objects.filter(
+            page_id=oa_id,
+            is_deleted=False,                               
+        ).first()
         
         if queryset:
             if not queryset.user_id == user_header:

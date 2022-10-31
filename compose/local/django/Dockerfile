@@ -8,6 +8,10 @@ FROM python as python-build-stage
 
 ARG BUILD_ENVIRONMENT=local
 
+ENV http_proxy http://proxy.hcm.fpt.vn:80
+ENV https_proxy http://proxy.hcm.fpt.vn:80
+ENV no_proxy oauth.zaloapp.com:443, openapi.zalo.me:443
+
 # Install apt packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
   # dependencies for building Python packages
@@ -32,6 +36,10 @@ ARG APP_HOME=/app
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
+
+ENV http_proxy http://proxy.hcm.fpt.vn:80
+ENV https_proxy http://proxy.hcm.fpt.vn:80
+ENV no_proxy oauth.zaloapp.com:443, openapi.zalo.me:443
 
 WORKDIR ${APP_HOME}
 
