@@ -151,7 +151,8 @@ class RoomViewSet(viewsets.ModelViewSet):
             "label": sz_label.data,
             "room_info":room_sz.data,
             "fanpage_id": room.page_id.page_id if room.page_id else None,
-            "external_id": sz_customer.data.get("external_id")
+            "external_id": sz_customer.data.get("external_id"),
+            "block_room": True if user_header == room.admin_room_id else False
         }
         return custom_response(200,"User Info",data)
 
