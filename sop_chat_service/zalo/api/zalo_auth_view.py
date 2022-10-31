@@ -10,6 +10,7 @@ from sop_chat_service.utils.request_headers import get_user_from_header
 from sop_chat_service.zalo.serializers.zalo_auth_serializers import ZaloAuthenticationSerializer, ZaloConnectPageSerializer
 from sop_chat_service.zalo.utils.api_suport import zalo_oa_auth
 from core import constants
+from django.db.models import Q
 import logging
 
 logger = logging.getLogger(__name__)
@@ -186,8 +187,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 oa_id_owner_list.append(oa.page_id)
                     
         room_queryset_by_user_id = Room.objects.filter(
-            type='zalo',
-            user_id=user_header
+            Q(type='zalo') &
+            Q(page_id__is_deleted=False) &
+            (Q(user_id=user_header) | Q(admin_room_id=user_header)),
         ).distinct()
         if room_queryset_by_user_id.exists():
             for room in room_queryset_by_user_id:
@@ -204,7 +206,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         for item in oa_owner_serializers.data:
             data = dict(item)
 
-            if not data.get('is_active') and data.get('is_deleted'):
+            if not data.get('is_active') or data.get('is_deleted'):
                 continue
             
             oa_id = data.get('page_id')
