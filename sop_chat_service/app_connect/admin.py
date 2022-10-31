@@ -19,7 +19,7 @@ class RoomAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ["id", "room_id", "text", "sender_id", "recipient_id", "created_at","is_seen"]
+    list_display = ["id", "room_id", "text", "sender_id", "recipient_id", "created_at","is_seen","is_sender"]
     search_fields = ["text", "id"]
     actions = ['check_is_seen']
     def check_is_seen(self, request, queryset):

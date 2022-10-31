@@ -46,9 +46,10 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="list-room")
     def list_room(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        qs = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),
-            completed_date__isnull=True).distinct().order_by("-room_message__created_at")
-        
+        qs = Room.objects.filter(
+            (Q(user_id=user_header) | Q(admin_room_id=user_header)),
+            completed_date__isnull=True,
+            room_message__is_sender=False).distinct().order_by("-room_message__created_at")
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
@@ -68,11 +69,11 @@ class RoomViewSet(viewsets.ModelViewSet):
             }
             qs = filter_room(data_filter, qs)
             sz = RoomMessageSerializer(qs, many=True)
-        list_data = sz.data
+        list_data = list(unique_everseen(sz.data))
         #   sort by room message
         if ser_sort.data.get('sort'):
             if ser_sort.data.get('sort').lower() == "old":
-                list_data = sorted((sz.data), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
+                list_data = sorted(list(unique_everseen(sz.data)), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
 
         data_result = pagination_list_data(list_data, limit_req, offset_req)
         return custom_response(200,"success",data_result)
@@ -88,7 +89,7 @@ class RoomViewSet(viewsets.ModelViewSet):
                 name__icontains=sz.data.get('search'), room_message__is_sender=False).distinct()
             serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
             data['contact'] = serializer_contact.data
-            qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search'),user_id=user_header).distinct()
+            qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search'),user_id=user_header,room_message__is_sender=False).distinct()
             serializer_message = []
             for qs_message in qs_messages:
                 count_mess = Message.objects.filter(text__icontains=sz.data.get('search'), room_id=qs_message).count()
