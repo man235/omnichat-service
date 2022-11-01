@@ -64,8 +64,17 @@ class RegisterInfoSerializer(serializers.ModelSerializer):
         for item in attrs:
             if item.get('type') == "text" and (len(item.get('value')) > 1000 or not item.get("value")):
                 mes="survey value is valid"
+                
                 return  mes
-
+            if item.get('type') == "menu":
+                if len(item.get('value')) > 10 :
+                    mes=" in_valid total of survey (max_value = 10)"
+                    return mes
+                for value in item.get('value'):
+                    if len(value) >1000:
+                        mes=" in_valid value in register_info(max_lenght = 1000)"
+                        return mes
+  
 
 
 class MessageLiveChatSend(serializers.Serializer):
