@@ -1,7 +1,7 @@
 from django.utils import timezone
 import json
 import time
-from core.schema import NatsChatMessage, Message, ChatMessageAttachment, MessageToWebSocket
+from core.schema import NatsChatMessage, MessageChat, ChatMessageAttachment, MessageToWebSocket
 from core.schema.message_websocket import ChatMessageUserInfo
 from core import constants
 
@@ -10,7 +10,7 @@ def format_receive_message_zalo(room, data: NatsChatMessage):
     list_msg = []
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type, name=attachment.name, size=attachment.size) for attachment in data.attachments]
     for _room in room:
-        message_ws = Message(
+        message_ws = MessageChat(
             attachments = attachments,
             # attachments = data.attachments,
             created_at = str(timezone.now()),
@@ -36,7 +36,7 @@ def format_receive_message_zalo(room, data: NatsChatMessage):
 
 def format_receive_message(room, data: NatsChatMessage):
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type, name=attachment.name, size=attachment.size) for attachment in data.attachments]
-    message_ws = Message(
+    message_ws = MessageChat(
         attachments = attachments,
         # attachments = data.attachments,
         created_at = str(timezone.now()),
@@ -100,7 +100,7 @@ def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage
             is_sender = data.optionals[0].data.get("is_sender")
         if data.optionals[0].data.get("user_info"):
             user_info = [ChatMessageUserInfo(title=user_info['title'], value=user_info['value']) for user_info in data.optionals[0].data.get("user_info")]
-    message_ws = Message(
+    message_ws = MessageChat(
         attachments = attachments,
         user_info = user_info,
         created_at = str(timezone.now()),
@@ -261,7 +261,7 @@ def format_receive_message_to_websocket(room, data: NatsChatMessage):
         mid = data.mid,
         room_id = room.room_id,
         created_time = None,
-        user_id = [room.user_id, room.admin_room_id],
+        user_id = [room.user_id, room.admin_room_id if room.admin_room_id else ""],
         timestamp = data.timestamp,
         event = constants.SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN
     )

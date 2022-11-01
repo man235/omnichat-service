@@ -14,7 +14,7 @@ class ChatMessageUserInfo(CustomBaseModel):
     title: Optional[str]
     value: Optional[str]
 
-class Message(CustomBaseModel):
+class MessageChat(CustomBaseModel):
     mid: Optional[str]
     room_id: Optional[str]
     attachments: List[ChatMessageAttachment] = []
