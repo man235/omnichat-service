@@ -171,7 +171,6 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         room_id = sz.data['room_id']
         room = Room.objects.filter(room_id = room_id).first()
-        Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         data_message={}
         if sz.data.get("mid"):
             message = Message.objects.get(id = sz.data.get("mid"))
@@ -197,6 +196,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     url = str(domain+sub_url) + str(data_upload_file)
                 )
             data_message = format_message_to_nats_chat_message(room, new_message)
+        Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         asyncio.run(saleman_send_message_to_anonymous(room, data_message))
         logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
         return custom_response(200,"ok",data_message)

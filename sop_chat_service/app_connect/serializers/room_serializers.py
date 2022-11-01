@@ -113,6 +113,16 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
     def get_user_info(self, obj):
         if not obj:
             return None
+        if obj.type == "livechat":
+            return {
+                "avatar":None,
+                "name": obj.name,
+                "external_id":obj.external_id,
+                "email":None,
+                "gender":None,
+                "id":None,
+                "phone":None
+            }
         user_info = UserApp.objects.filter(external_id=obj.external_id).first()
         sz_user_info = UserInfoSerializer(user_info)
         return sz_user_info.data
