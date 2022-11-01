@@ -175,6 +175,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             "external_id": sz_customer.data.get("external_id"),
             "block_room": True if user_header == room.admin_room_id else False
         }
+        Message.objects.filter(room_id=room).update(is_seen=timezone.now())
         return custom_response(200,"User Info",data)
 
     @action(detail=True, methods=["GET"], url_path="count-attachment")
