@@ -34,11 +34,7 @@ async def check_room_live_chat(data: NatsChatMessage):
         #     ).first().update(user_id = live_chat.user_id)
     if not data.room_id:
         logger.debug("MISSING ROOM_ID OF LIVE CHAT ********************** ")
-    if  check_room.completed_date:
-        check_room.completed_date = None
-        check_room.save()
-        return check_room
-    if not check_room:
+    if not check_room or check_room.completed_date:
         new_room = Room(
             external_id = data.senderId,
             name = "unknown",
