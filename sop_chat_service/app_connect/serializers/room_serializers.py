@@ -271,3 +271,7 @@ class InfoSerializer(serializers.ModelSerializer):
         message = Label.objects.filter(room_id=obj)
         sz = LabelSerializer(message, many=True)
         return sz.data
+    
+    
+class CompleteRoomSerializer(serializers.Serializer):
+    is_complete = serializers.BooleanField(required=True)
