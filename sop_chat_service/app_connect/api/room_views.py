@@ -67,6 +67,9 @@ class RoomViewSet(viewsets.ModelViewSet):
                 "phone" : filter_request.get('phone',None),
                 "label" : filter_request.get('label',None)
             }
+            qs = Room.objects.filter(
+                (Q(user_id=user_header) | Q(admin_room_id=user_header)),
+                room_message__is_sender=False).distinct().order_by("-room_message__created_at")
             qs = filter_room(data_filter, qs)
             sz = RoomMessageSerializer(qs, many=True)
         list_data = list(unique_everseen(sz.data))
@@ -89,7 +92,8 @@ class RoomViewSet(viewsets.ModelViewSet):
                 name__icontains=sz.data.get('search'), room_message__is_sender=False).distinct()
             serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
             data['contact'] = serializer_contact.data
-            qs_messages = Room.objects.filter(room_message__text__icontains=sz.data.get('search'),user_id=user_header,room_message__is_sender=False).distinct()
+            qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False).distinct()
+            qs_messages = qs_messages.filter(room_message__text__icontains=sz.data.get('search')).distinct()
             serializer_message = []
             for qs_message in qs_messages:
                 count_mess = Message.objects.filter(text__icontains=sz.data.get('search'), room_id=qs_message).count()
@@ -151,7 +155,8 @@ class RoomViewSet(viewsets.ModelViewSet):
             "label": sz_label.data,
             "room_info":room_sz.data,
             "fanpage_id": room.page_id.page_id if room.page_id else None,
-            "external_id": sz_customer.data.get("external_id")
+            "external_id": sz_customer.data.get("external_id"),
+            "block_room": True if user_header == room.admin_room_id else False
         }
         return custom_response(200,"User Info",data)
 

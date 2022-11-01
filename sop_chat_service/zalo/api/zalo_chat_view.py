@@ -85,10 +85,12 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                 )
             if not queryset.block_admin:
                 if queryset.admin_room_id == user_header:
-                    queryset.user_id == user_header
+                    queryset.user_id = user_header
+                    queryset.admin_room_id = None
                     queryset.save()
                 elif queryset.user_id == user_header:
-                    queryset.user_id == user_header
+                    queryset.user_id = user_header
+                    queryset.block_admin = True
                     queryset.save()
             message_data_to_socket = format_sended_message_to_socket(
                 text=validated_data_sz.get('message_text'),

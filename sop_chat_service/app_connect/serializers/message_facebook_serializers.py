@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from sop_chat_service.app_connect.models import Room
 from sop_chat_service.utils.request_headers import get_user_from_header
+from core import constants
 
 
 class MessageFacebookSerializer(serializers.Serializer):
@@ -38,6 +39,10 @@ class MessageFacebookSerializer(serializers.Serializer):
             files_data = []
             for file in files:
                 content_type = file.content_type.split('/')[0]
+                if file.size >= constants.MAX_SIZE_FACEBOOK_UPLOAD:
+                    raise serializers.ValidationError({"file": "File size exceeds maximum allowed 25mb"})
+                elif file.content_type == constants.FILE_ZIP or file.content_type == constants.FILE_RAR:
+                    raise serializers.ValidationError({"file": "Compressed file: 'zip', 'rar' unsupported"})
                 types = ''
                 if content_type == "application":
                     types = 'file'

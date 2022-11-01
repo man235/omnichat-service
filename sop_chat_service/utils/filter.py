@@ -22,7 +22,9 @@ def filter_room(data, room : Room):
             if time == 'today':
                 pass
             elif time == 'yesterday':
+                end_date=datetime.today().replace(hour=0, minute=0, second=0)
                 start_date = start_date - timedelta(days=1)
+                
             elif time =='a_week_ago':
                 start_date = start_date - timedelta(days=7)
             elif time =='a_month_ago':
@@ -33,19 +35,20 @@ def filter_room(data, room : Room):
             room = room.filter(room_message__created_at__range = [start_date, end_date])
         if status:
             if status == "all":
-                room = room.filter(Q(status="processing") | Q(status="completed"))
+                room = room.filter(Q(status="processing") | Q(status="complete"))
             elif status == "processing":
                 room = room.filter(status="processing")
-            elif status == 'completed':
-                room = room.filter(status="completed")
+            elif status == 'complete':
+                room = room.filter(status="complete")
         if state:
-            if state == 'unread':
-                room = room.filter(room_message__is_seen__isnull =True)
-            if state == 'not_answer':
-                room = room.filter(room_message__is_sender = False, room_message__is_seen__isnull=True)
-                # room = room.filter((Q(room_message__is_sender = False) & Q(room_message__is_seen__isnull=True)))
-            if state == 'remind':
-                room = room.filter(room_reminder__isnull=False)
+            for item in state :
+                if item == 'unread':
+                    room = room.filter(room_message__is_seen__isnull =True)
+                if item == 'not_answer':
+                    room = room.filter(room_message__is_sender = False, room_message__is_seen__isnull=True)
+                    # room = room.filter((Q(room_message__is_sender = False) & Q(room_message__is_seen__isnull=True)))
+                if item == 'remind':
+                    room = room.filter(room_reminder__isnull=False)
         return room
     else:
         return room
