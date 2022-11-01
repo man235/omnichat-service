@@ -40,15 +40,16 @@ class LiveChat(models.Model):
     def __str__(self):
         return str(self.id)
    
-    # def save(self, *args, **kwargs):
-    #     if self.avatar:
-    #         domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
-    #         sub_url = f"api/live_chat/chat_media/get_chat_media?name="
-    #         # This code only happens if the objects is not in the database yet. Otherwise it would have pk
-    #         self.avatar_url = str(domain)+str(sub_url)+str((self.avatar.name).replace(" ", "_"))
-    #     else:
-    #         self.avatar_url=None
-    #     super(LiveChat, self).save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        if self.avatar:
+            domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
+            sub_url = f"api/live_chat/chat_media/get_chat_media?name="
+            # This code only happens if the objects is not in the database yet. Otherwise it would have pk
+            self.avatar_url = str(domain)+str(sub_url)+str((self.avatar.name).replace(" ", "_"))
+        else:
+            self.avatar_url=None
+        super(LiveChat, self).save(*args, **kwargs)
+
 
 class LiveChatRegisterInfo(models.Model):
     live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE,
