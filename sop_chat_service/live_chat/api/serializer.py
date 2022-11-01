@@ -16,9 +16,36 @@ class LiveChatSerializer(serializers.ModelSerializer):
         sz = RegisterInfoSerializer(data=register_info, many=True)
         sz.is_valid()
         return sz.data
-    
 
-
+class CreateLiveChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LiveChat
+        fields = '__all__'
+        
+    def validate(self,attrs,*args, **kwargs):
+        mes=""
+        if not attrs.get("name") or len(attrs.get('name')) > 50:
+            mes="name is valid"
+            return  mes
+        if not attrs.get("name_agent") or len(attrs.get('name_agent')) > 50:
+            mes="name_agent is valid"
+            return  mes
+        if attrs.get('icon_content') and len(attrs.get('icon_content')) > 50:
+            mes= "icon_content is valid"
+            return  mes
+        if attrs.get('start_btn') and len(attrs.get('start_btn')) > 300:
+            mes= "start_btn is valid"
+            return  mes
+        if attrs.get('introduce_message') and len(attrs.get('introduce_message')) > 300:
+            mes="introduce_message is valid"
+            return  mes
+        if attrs.get('start_message') and  len(attrs.get('start_message')) > 300:
+            mes=  "start_message is valid"
+            return  mes
+        if attrs.get('offline_message') and len(attrs.get('offline_message')) > 300:
+            mes=  "offline_message is valid"
+            return  mes
+        return  mes
 class UpdateAvatarLiveChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = LiveChat
@@ -30,6 +57,24 @@ class RegisterInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = LiveChatRegisterInfo
         fields = '__all__'
+    def validate(self,attrs,*args, **kwargs):
+        mes=[]
+        if attrs and len(attrs) >10:
+            mes=" in_valid survey"
+        for item in attrs:
+            if item.get('type') == "text" and (len(item.get('value')) > 1000 or not item.get("value")):
+                mes="survey value is valid"
+                
+                return  mes
+            if item.get('type') == "menu":
+                if len(item.get('value')) > 10 :
+                    mes=" in_valid total of survey (max_value = 10)"
+                    return mes
+                for value in item.get('value'):
+                    if len(value) >1000:
+                        mes=" in_valid value in register_info(max_lenght = 1000)"
+                        return mes
+  
 
 
 class MessageLiveChatSend(serializers.Serializer):
@@ -48,9 +93,11 @@ class MessageLiveChatSend(serializers.Serializer):
             room= Room.objects.filter(room_id=attrs.get("room_id")).first()
             if not room or room.status == "expired" or room.status =="completed":
                 raise serializers.ValidationError({"room_id": "Room is Invalid"})
-        if str(attrs.get("is_text")).lower() == "true":
+        if str(attrs.get("is_text")).lower() == "true" :
             if not attrs.get("message_text"):
                 raise serializers.ValidationError({"message_text": "message is required"})
+            if len(attrs.get("message_text")) >1000:
+                raise serializers.ValidationError({"message_text": "message is in_valid"})
         if str(attrs.get("is_text")).lower() == "false":
             if not file:
                 raise serializers.ValidationError({"file": "file is required"})

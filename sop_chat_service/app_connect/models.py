@@ -154,4 +154,4 @@ class ServiceSurvey(models.Model):
                             on_delete=models.SET_NULL)     # foreign key with message
     
     name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
-    value = models.CharField(max_length=500, null=True, blank=True)
+    value = models.CharField(max_length=1000, null=True, blank=True)

@@ -128,7 +128,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         room = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)), room_id=pk).first()
         if not room:
             return custom_response(400,"Invalid room",[])    
-        Message.objects.filter(room_id=room, is_seen__isnull=True, is_sender=False).update(is_seen=timezone.now())
+        Message.objects.filter(room_id=room, is_seen__isnull=True).update(is_seen=timezone.now())
         message = Message.objects.filter(room_id=room).order_by("-created_at")
         paginator = Pagination()
         page = paginator.paginate_queryset(message, request)

@@ -27,13 +27,13 @@ class LiveChat(models.Model):
     icon_content= models.CharField(max_length=255, null=True, blank=True)
     size = models.JSONField(null=True, blank=True)
     location = models.CharField(max_length=20, default=LocationChoice.TOP_RIGHT, choices=LocationChoice.choices)
-    start_btn = models.CharField(max_length=255, null=True, blank=True)
+    start_btn = models.CharField(max_length=500, null=True, blank=True)
     is_introduce_message = models.BooleanField(default=False)
-    introduce_message = models.CharField(max_length=255, null=True, blank=True)
+    introduce_message = models.CharField(max_length=500, null=True, blank=True)
     is_start_message = models.BooleanField(default=False)
-    start_message = models.CharField(max_length=255, null=True, blank=True)
+    start_message = models.CharField(max_length=500, null=True, blank=True)
     is_offline_message = models.BooleanField(default=False)
-    offline_message = models.CharField(max_length=255, null=True, blank=True)
+    offline_message = models.CharField(max_length=500, null=True, blank=True)
     is_registerinfor = models.BooleanField(default=False)
     script = models.CharField(max_length=1500, null=True, blank=True)
 
@@ -49,6 +49,7 @@ class LiveChat(models.Model):
         else:
             self.avatar_url=None
         super(LiveChat, self).save(*args, **kwargs)
+
 
 class LiveChatRegisterInfo(models.Model):
     live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE,

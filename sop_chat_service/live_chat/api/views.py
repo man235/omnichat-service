@@ -12,7 +12,7 @@ from ..utils import  connect_nats_client_publish_websocket, format_room, saleman
 from ...app_connect.models import Attachment, Message, Room
 from core.utils import format_message, format_message_to_nats_chat_message
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
-from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, LiveChatSerializer, MessageLiveChatSend, UpdateAvatarLiveChatSerializer
+from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, CreateLiveChatSerializer, LiveChatSerializer, MessageLiveChatSend, RegisterInfoSerializer, UpdateAvatarLiveChatSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -49,14 +49,23 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         if config:
             if data:
                 data_config = data.get('live_chat', None)
-                update_config = LiveChatSerializer(config, data=data_config, partial=True)
-                update_config.is_valid(raise_exception=True)
-                update_config.save()
-                if data_config:
-                    LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
-                    if data.get('registerinfo', None):
-                        for item in data.get('registerinfo', None):
-                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
+                update_config = CreateLiveChatSerializer(config, data=data_config, partial=True)
+                msg= update_config.validate(data_config)
+                info_sz = RegisterInfoSerializer(data= data.get('registerinfo'))
+                info = info_sz.validate(data.get('registerinfo'))
+                if msg :
+                    return custom_response(400 ,msg,"Errors")
+                if info:
+                    return custom_response(400 ,info,"Errors")
+                update_sz= LiveChatSerializer(config, data=data_config, partial=True)
+                update_sz.is_valid(raise_exception=True)
+                update_sz.save()
+                LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
+
+                if data.get('registerinfo', None):
+                    for item in data.get('registerinfo', None):
+                        LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
+                            
                 sz = LiveChatSerializer(config, many=False)
                 data = {
                     "user_info" : {
@@ -72,6 +81,14 @@ class LiveChatViewSet(viewsets.ModelViewSet):
             if data:
                 data_config = data.get('live_chat', None)
                 if data_config:
+                    live_chat = CreateLiveChatSerializer(data=data_config)
+                    msg= live_chat.validate(data.get('live_chat', None))
+                    info_sz = RegisterInfoSerializer(data= data.get('registerinfo',None))
+                    info = info_sz.validate(data.get('registerinfo'))
+                    if msg:
+                        return custom_response(400 ,msg,"Errors")
+                    if info:
+                        return custom_response(400 ,msg,"Errors")
                     live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
                     if data.get('registerinfo', None):
                         for item in data.get('registerinfo', None):
@@ -152,10 +169,8 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         user_header = get_user_from_header(request.headers)
         sz = MessageLiveChatSend(data=request.data, context={"request": request})
         sz.is_valid(raise_exception=True)
-        # try:
         room_id = sz.data['room_id']
         room = Room.objects.filter(room_id = room_id).first()
-        Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         data_message={}
         if sz.data.get("mid"):
             message = Message.objects.get(id = sz.data.get("mid"))
@@ -181,6 +196,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     url = str(domain+sub_url) + str(data_upload_file)
                 )
             data_message = format_message_to_nats_chat_message(room, new_message)
+        Message.objects.filter(room_id=room).update(is_seen= datetime.now())
         asyncio.run(saleman_send_message_to_anonymous(room, data_message))
         logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
         return custom_response(200,"ok",data_message)
