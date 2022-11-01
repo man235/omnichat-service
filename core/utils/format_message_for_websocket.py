@@ -60,6 +60,11 @@ def format_receive_message(room, data: NatsChatMessage):
     return message_ws
 
 def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessage, event: str, is_sender: bool):
+    user_id = []
+    if room.admin_room_id:
+        user_id = [room.admin_room_id, room.user_id]
+    else:
+        user_id = [room.user_id]
     attachments= []
     user_info=[]
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type,name=attachment.name,size=attachment.size) for attachment in data.attachments]
@@ -85,13 +90,18 @@ def livechat_format_message_from_corechat_to_websocket(room ,data: NatsChatMessa
         mid = data.mid,
         room_id = room.room_id,
         event = event,
-        user_id = [room.user_id, room.admin_room_id if room.admin_room_id else ""],
+        user_id = user_id,
         timestamp = data.timestamp
     )
     return message_ws
 
 
 def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage, event: str, is_sender: bool):
+    user_id = []
+    if room.admin_room_id:
+        user_id = [room.admin_room_id, room.user_id]
+    else:
+        user_id = [room.user_id]
     attachments= []
     user_info=[]
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type,name=attachment.name,size=attachment.size) for attachment in data.attachments]
@@ -100,7 +110,7 @@ def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage
             is_sender = data.optionals[0].data.get("is_sender")
         if data.optionals[0].data.get("user_info"):
             user_info = [ChatMessageUserInfo(title=user_info['title'], value=user_info['value']) for user_info in data.optionals[0].data.get("user_info")]
-    message_ws = MessageChat(
+    message_ws = MessageToWebSocket(
         attachments = attachments,
         user_info = user_info,
         created_at = str(timezone.now()),
@@ -116,7 +126,7 @@ def livechat_format_message_from_corechat_to_webhook(room ,data: NatsChatMessage
         uuid = data.uuid,
         mid = data.mid,
         room_id = room.room_id,
-        user_id = [room.user_id, room.admin_room_id if room.admin_room_id else ""],
+        user_id = user_id,
         event = event,
         timestamp = data.timestamp
     )
@@ -243,6 +253,11 @@ def facebook_format_data_from_mid_facebook(room, message_response, uuid):
     return data_mid_json
 
 def format_receive_message_to_websocket(room, data: NatsChatMessage):
+    user_id = []
+    if room.admin_room_id:
+        user_id = [room.admin_room_id, room.user_id]
+    else:
+        user_id = [room.user_id]
     attachments = [ChatMessageAttachment(url=attachment.payloadUrl, type=attachment.type, name=attachment.name, size=attachment.size) for attachment in data.attachments]
     message_ws = MessageToWebSocket(
         attachments = attachments,
@@ -261,7 +276,7 @@ def format_receive_message_to_websocket(room, data: NatsChatMessage):
         mid = data.mid,
         room_id = room.room_id,
         created_time = None,
-        user_id = [room.user_id, room.admin_room_id if room.admin_room_id else ""],
+        user_id = user_id,
         timestamp = data.timestamp,
         event = constants.SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN
     )
