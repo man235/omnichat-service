@@ -15,6 +15,7 @@ def check_room_zalo(data: NatsChatMessage) -> Room:
     check_fanpage = FanPage.objects.filter(
         page_id=data.recipientId,
         is_active=True,
+        is_deleted=False,
         type='zalo',
     ).first()
         
@@ -25,8 +26,6 @@ def check_room_zalo(data: NatsChatMessage) -> Room:
     user_app = UserApp.objects.filter(
         external_id=data.senderId,
     ).first()
-
-    # print(f"check_room_zalo -------------------------- user_app-{user_app.__dict__}")
 
     if not user_app:
         logger.debug(f' NOT FIND USER ZALO APP FROM DATABASE ------------------------- ')
@@ -85,6 +84,7 @@ def check_room_zalo(data: NatsChatMessage) -> Room:
             room_id = f'{check_fanpage.id}{data.senderId}',
             user_id=check_fanpage.user_id,
         )
+        new_room.save()
         return new_room
     else:
         return check_room
@@ -95,9 +95,12 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
     check_fanpage = FanPage.objects.filter(
         page_id=data.recipientId,
         is_active=True,
+        is_deleted=False,
         type=constants.ZALO,
     ).first()
-        
+    
+    print(f'check_fanpage ---------- {check_fanpage}')
+    
     if not check_fanpage:
         logger.debug(f' NOT FIND FROM DATABASE -------------------------')
         return None
@@ -106,6 +109,8 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         external_id=data.senderId,
     ).first()
 
+    print(f'user_app ---------- {user_app}')
+    
     if not user_app:
         logger.debug(f' NOT FIND USER ZALO APP FROM DATABASE ------------------------- ')
         # Find user from zalo oa: Anomynous or Follower
@@ -137,8 +142,15 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         external_id=data.senderId
     ).first()
 
+    print(f'check_room ---------- {check_room}')
+    
     if not check_room:
-        result_new_user = await find_user_new_chat(data, check_fanpage)
+        print('here')
+        # result_new_user = await find_user_new_chat(data, check_fanpage)
+        result_new_user = {
+            'admin': None,
+            'staff': None
+        }
         new_room_user = Room.objects.create(
             page_id = check_fanpage,
             external_id = data.senderId,
@@ -151,6 +163,7 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             user_id = result_new_user.get('staff'),
             admin_room_id = result_new_user.get('admin') if check_fanpage.setting_chat != constants.SETTING_CHAT_ONLY_ME else None
         )
+        new_room_user.save()
         return new_room_user
     else:
         return check_room
