@@ -1,4 +1,5 @@
 from django.utils import timezone
+from jinja2 import is_undefined
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets, permissions, status
 from rest_framework.decorators import action
@@ -33,19 +34,16 @@ class ZaloViewSet(viewsets.ModelViewSet):
         if oa_connection_sz.is_valid(raise_exception=True):
             queryset = FanPage.objects.filter(
                 page_id=oa_connection_sz.data.get('oa_id'),
-                type='zalo'
+                type='zalo',
             ).first()
             
             # Verify the first Zalo OA owner
             if queryset:
-                is_existing_oa = True
-                if not queryset.user_id == user_header:
+                if not queryset.user_id == user_header and not queryset.is_deleted:
                     return custom_response(
                         400,
                         'Zalo OA is connected. May be you are not the first admin connect to this OA',
                     )
-            else:
-                is_existing_oa = False
                 
             oa_auth_sz = ZaloAuthenticationSerializer(data=request.data)
             oa_auth_sz.is_valid(raise_exception=True)
@@ -66,9 +64,14 @@ class ZaloViewSet(viewsets.ModelViewSet):
             if not oa_info:
                 return custom_response(403, 'Failed to get Zalo OA infomation')
             elif oa_info.get('message') != 'Success':
-                return custom_response(400, oa_info.get('error'))
+                return custom_response(403, oa_info.get('error'))
             else:
                 oa_data = oa_info.get('data')
+                
+                # 2 oa id must be matched
+                if oa_connection_sz.data.get('oa_id') != oa_data.get('page_id'):
+                    return custom_response(400, 'The connecting Zalo OA id doesn\'t match with the requested OA id')
+                
                 try:                  
                     oa_data_bundle = {
                         'page_id': oa_data.get('page_id'),
@@ -86,7 +89,10 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     oa_sz = FanPageSerializer(data=oa_data_bundle)
 
                     if oa_sz.is_valid(raise_exception=True):                                        
-                        if not is_existing_oa:
+                        if not FanPage.objects.filter(
+                            page_id=oa_data.get('page_id'),
+                            type='zalo'
+                        ):
                             oa_model = oa_sz.create(oa_data_bundle)
                         else:
                             oa_model = oa_sz.update(queryset, oa_data_bundle)
@@ -101,7 +107,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 except Exception as e:
                     return custom_response(500, str(e))
         else:
-            return custom_response(400, 'Bad request')
+            return custom_response(400, 'Can not connect to Zalo OA')
     
     @action(detail=False, methods=['post'], url_path='delete')
     def delete_oa(self, request, *args, **kwargs) -> Response:
@@ -126,6 +132,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         if qs.user_id == user_header:
             qs.is_deleted = True
             qs.is_active = False
+            qs.access_token_page = 'Invalid'
             qs.save()
             return custom_response(200, 'Delete OA successfully')    
         else:
@@ -156,6 +163,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         
         if qs.user_id == user_header:
             qs.is_active = False
+            qs.access_token_page = 'invalid'
             qs.last_subscribe = timezone.now()
             qs.save()
             
@@ -195,7 +203,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
             for room in room_queryset_by_user_id:
                 if room.page_id:
                     oa_id_owner_list.append(room.page_id.page_id)
-        
+
         oa_owner_queryset = FanPage.objects.filter(
             type='zalo',
             page_id__in=oa_id_owner_list
@@ -205,23 +213,37 @@ class ZaloViewSet(viewsets.ModelViewSet):
         # Verify access token expiration of active Zalo OA  
         for item in oa_owner_serializers.data:
             data = dict(item)
-
-            if not data.get('is_active') or data.get('is_deleted'):
-                continue
             
             oa_id = data.get('page_id')
-            oa_model = FanPage.objects.filter(type='zalo', page_id=oa_id).first()
+            oa_model = FanPage.objects.filter(
+                type='zalo',
+                page_id=oa_id
+            ).first()
+            
+            if data.get('is_deleted') or None is oa_model.access_token_page == 'invalid':
+                continue
+            
             access_token = oa_model.access_token_page
+            refresh_token = oa_model.refresh_token_page
             oa_info = zalo_oa_auth.get_oa_info(access_token)
-
             if not oa_info or oa_info.get('message') != 'Success':
-                oa_model.is_active = False
-                oa_model.last_subscribe = timezone.now()
-                oa_model.save()
+                # Call refresh Zalo OA token
+                oa_token = zalo_oa_auth.get_oa_token(refresh_token=refresh_token)
+                if not oa_token or oa_token.get('message') == 'Failure':
+                    oa_model.is_active = False
+                    oa_model.last_subscribe = timezone.now()
+                    oa_model.save()
+                else:
+                    oa_model.access_token_page = oa_token.get('data').get('access_token')
+                    oa_model.refresh_token_page = oa_token.get('data').get('refresh_token')
+                    oa_model.is_active = True
+                    oa_model.last_subscribe = timezone.now()
+                    oa_model.save()
             else:
                 oa_data = oa_info.get('data')
                 oa_model.name = oa_data.get('name')
                 oa_model.avatar_url = oa_data.get('avatar_url')
+                oa_model.is_active = True
                 oa_model.save()
                 
         return custom_response(
