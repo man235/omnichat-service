@@ -137,7 +137,9 @@ SITE_ID = 1
 NATS_URL = env(
     "NATS_URL", default="nats://172.24.222.112:4222"
 )
+GET_USER_PROFILE_URL="http://172.24.222.101:4002"
 
+# PROXY
 
 # -----------------SENTINEL & REDIS-----------------
 SENTINEL_NAMESPACE = 'ThienHi'

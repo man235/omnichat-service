@@ -376,4 +376,3 @@ CORS_ALLOW_METHODS = [
 'POST',
 'PUT',
 ]
-GET_USER_PROFILE_URL="https://gateway.minhhv11.xyz/user-service/api/user/profile"
