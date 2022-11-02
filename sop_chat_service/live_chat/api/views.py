@@ -6,7 +6,7 @@ import uuid
 import ujson
 from django.conf import settings
 from sop_chat_service.facebook.utils import custom_response
-from sop_chat_service.utils.request_headers import get_user_from_header
+from sop_chat_service.utils.request_headers import get_email_from_header, get_user_from_header
 
 from ..utils import  connect_nats_client_publish_websocket, format_room, saleman_send_message_to_anonymous
 from ...app_connect.models import Attachment, Message, Room
@@ -23,6 +23,7 @@ from core.stream.redis_connection import redis_client
 from core import constants
 from iteration_utilities import unique_everseen
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -42,68 +43,79 @@ class LiveChatViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        
-        # try:
-        config = LiveChat.objects.filter(user_id = user_header).first()
-        data = request.data
-        if config:
-            if data:
-                data_config = data.get('live_chat', None)
-                update_config = CreateLiveChatSerializer(config, data=data_config, partial=True)
-                msg= update_config.validate(data_config)
-                info_sz = RegisterInfoSerializer(data= data.get('registerinfo'))
-                info = info_sz.validate(data.get('registerinfo'))
-                if msg :
-                    return custom_response(400 ,msg,"Errors")
-                if info:
-                    return custom_response(400 ,info,"Errors")
-                update_sz= LiveChatSerializer(config, data=data_config, partial=True)
-                update_sz.is_valid(raise_exception=True)
-                update_sz.save()
-                LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
-
-                if data.get('registerinfo', None):
-                    for item in data.get('registerinfo', None):
-                        LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
-                            
-                sz = LiveChatSerializer(config, many=False)
-                data = {
-                    "user_info" : {
-                        "name":"SaleMan",
-                        "avatar":""
-                        },
-                    "config" : sz.data, 
-                }
-                redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
-                message= 'Update success'
-                return custom_response(200,message,sz.data['id'])
-        else:
-            if data:
-                data_config = data.get('live_chat', None)
-                if data_config:
-                    live_chat = CreateLiveChatSerializer(data=data_config)
-                    msg= live_chat.validate(data.get('live_chat', None))
-                    info_sz = RegisterInfoSerializer(data= data.get('registerinfo',None))
+        user_email=get_email_from_header(request.headers)
+        name = ""
+        query = {'email': user_email}
+        user_profile = requests.get(settings.GET_USER_PROFILE_URL, params=query,headers =request.headers)
+        if user_profile.status_code == 200:
+            logger.debug(user_profile.json())
+            data_user = user_profile.json()['data']
+            logger.debug(data_user,"Data user From NOC")
+            config = LiveChat.objects.filter(user_id = user_header).first()
+            data = request.data
+            if config:
+                if data:
+                    data_config = data.get('live_chat', None)
+                    update_config = CreateLiveChatSerializer(config, data=data_config, partial=True)
+                    msg= update_config.validate(data_config)
+                    info_sz = RegisterInfoSerializer(data= data.get('registerinfo'))
                     info = info_sz.validate(data.get('registerinfo'))
-                    if msg:
+                    if msg :
                         return custom_response(400 ,msg,"Errors")
                     if info:
-                        return custom_response(400 ,msg,"Errors")
-                    live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
+                        return custom_response(400 ,info,"Errors")
+                    update_sz= LiveChatSerializer(config, data=data_config, partial=True)
+                    update_sz.is_valid(raise_exception=True)
+                    update_sz.save()
+                    LiveChatRegisterInfo.objects.filter(live_chat_id=config).all().delete()
+
                     if data.get('registerinfo', None):
                         for item in data.get('registerinfo', None):
-                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
-                    sz = LiveChatSerializer(live_chat, many=False)
+                            LiveChatRegisterInfo.objects.create(**item, live_chat_id=config)
+                                
+                    sz = LiveChatSerializer(config, many=False)
                     data = {
-                    "user_info" : {
-                        "name":"SaleMan",
-                        "avatar":""
-                        },
-                    "config" : sz.data,
+                        "user_info" : {
+                            "name":"SaleMan",
+                            "avatar":""
+                            },
+                        "config" : sz.data, 
                     }
                     redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
-                    message= 'Create success'
-                    return custom_response(200,message,sz.data)
+                    message= 'Update success'
+                    return custom_response(200,message,sz.data['id'])
+            else:
+                if data:
+                    data_config = data.get('live_chat', None)
+                    if data_config:
+                        live_chat = CreateLiveChatSerializer(data=data_config)
+                        msg= live_chat.validate(data.get('live_chat', None))
+                        info_sz = RegisterInfoSerializer(data= data.get('registerinfo',None))
+                        info = info_sz.validate(data.get('registerinfo'))
+                        if msg:
+                            return custom_response(400 ,msg,"Errors")
+                        if info:
+                            return custom_response(400 ,msg,"Errors")
+                        live_chat = LiveChat.objects.create(**data_config,user_id = user_header)
+                        if data.get('registerinfo', None):
+                            for item in data.get('registerinfo', None):
+                                LiveChatRegisterInfo.objects.create(**item, live_chat_id=live_chat)
+                        sz = LiveChatSerializer(live_chat, many=False)
+                        data = {
+                        "user_info" : {
+                            "name":"SaleMan",
+                            "avatar":""
+                            },
+                        "config" : sz.data,
+                        }
+                        redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
+                        message= 'Create success'
+                        return custom_response(200,message,sz.data)
+        else:
+            return custom_response(500,"HTTP_500_INTERNAL_SERVER_ERROR",[])
+                       
+
+
         # except Exception:
         #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
