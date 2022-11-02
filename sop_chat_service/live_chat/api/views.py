@@ -8,11 +8,11 @@ from django.conf import settings
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_email_from_header, get_user_from_header
 
-from ..utils import  connect_nats_client_publish_websocket, format_room, saleman_send_message_to_anonymous
+from ..utils import   saleman_send_message_to_anonymous
 from ...app_connect.models import Attachment, Message, Room
 from core.utils import format_message, format_message_to_nats_chat_message
 from sop_chat_service.live_chat.models import LiveChat, LiveChatRegisterInfo
-from sop_chat_service.live_chat.api.serializer import CompletedRoomSerializer, CreateLiveChatSerializer, LiveChatSerializer, MessageLiveChatSend, RegisterInfoSerializer, UpdateAvatarLiveChatSerializer
+from sop_chat_service.live_chat.api.serializer import  CreateLiveChatSerializer, LiveChatSerializer, MessageLiveChatSend, RegisterInfoSerializer, UpdateAvatarLiveChatSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -44,13 +44,10 @@ class LiveChatViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
         user_email=get_email_from_header(request.headers)
-        name = ""
         query = {'email': user_email}
-        user_profile = requests.get(settings.GET_USER_PROFILE_URL, params=query,headers =request.headers)
-        if user_profile.status_code == 200:
-            logger.debug(user_profile.json())
+        user_profile = requests.get(f'{settings.GET_USER_PROFILE_URL}/api/user/profile', params=query)
+        if user_profile.status_code == 200 and user_profile.json()['status'] == "success":
             data_user = user_profile.json()['data']
-            logger.debug(data_user,"Data user From NOC")
             config = LiveChat.objects.filter(user_id = user_header).first()
             data = request.data
             if config:
@@ -76,7 +73,7 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                     sz = LiveChatSerializer(config, many=False)
                     data = {
                         "user_info" : {
-                            "name":"SaleMan",
+                            "name":data_user['name'],
                             "avatar":""
                             },
                         "config" : sz.data, 
@@ -116,30 +113,34 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                        
 
 
-        # except Exception:
-        #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     def update(self, request, pk=None, *args, **kwargs):
-        live_chat = self.get_object()
-        data = request.data
-        if request.data:
-            if data['avatar']:
-                update = UpdateAvatarLiveChatSerializer(live_chat,data=request.data)
-                update.is_valid(raise_exception=True)
-                update.save()
-                message= 'Update success'
-            qs = LiveChat.objects.filter(id =pk).first()
-            sz = LiveChatSerializer(qs, many=False)
-            data = {
-                    "user_info" : {
-                        "name":"SaleMan",
-                        "avatar":""
-                        },
-                    "config" : sz.data, 
-                }
-            redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
-            return custom_response(200,message,sz.data)
-        return Response(200, status=status.HTTP_200_OK)
+        user_email=get_email_from_header(request.headers)
+        query = {'email': user_email}
+        user_profile = requests.get(f'{settings.GET_USER_PROFILE_URL}/api/user/profile', params=query)
+        if  user_profile.status_code == 200 and user_profile.json()['status'] == "success":
+            data_user = user_profile.json()['data']
+            live_chat = self.get_object()
+            data = request.data
+            if request.data:
+                if data['avatar']:
+                    update = UpdateAvatarLiveChatSerializer(live_chat,data=request.data)
+                    update.is_valid(raise_exception=True)
+                    update.save()
+                    message= 'Update success'
+                qs = LiveChat.objects.filter(id =pk).first()
+                sz = LiveChatSerializer(qs, many=False)
+                data = {
+                        "user_info" : {
+                            "name":data_user['name'],
+                            "avatar":""
+                            },
+                        "config" : sz.data, 
+                    }
+                redis_client.hset(constants.REDIS_CONFIG_LIVECHAT, sz.data['id'], str(ujson.dumps(data)))
+                return custom_response(200,message,sz.data)
+            return Response(200, status=status.HTTP_200_OK)
+        else:
+            return custom_response(500,"HTTP_500_INTERNAL_SERVER_ERROR",[])
 
     @action(detail=False, methods=["GET"], url_path="room")
     def room(self, request, *args):
