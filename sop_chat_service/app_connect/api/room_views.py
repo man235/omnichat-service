@@ -1,6 +1,9 @@
 from crypt import methods
+from datetime import datetime
+import uuid
 from rest_framework import viewsets, permissions
 from sop_chat_service.app_connect.serializers.room_serializers import (
+    CompleteRoomSerializer,
     InfoSerializer,
     RoomInfoSerializer,
     RoomMessageSerializer,
@@ -12,6 +15,8 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     CountAttachmentRoomSerializer,
     LabelSerializer
 )
+import time
+from django.utils import timezone
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
 from sop_chat_service.app_connect.models import Room, Message, UserApp, Label
@@ -118,17 +123,29 @@ class RoomViewSet(viewsets.ModelViewSet):
         user_header = get_user_from_header(request.headers)
         room = Room.objects.get(room_id=pk, user_id=user_header)
         if not room:
-            return custom_response(400,"Invalid room",[])  
-        room.completed_date =timezone.now()
-        room.save()
-        return custom_response(200,"Completed Room Successfully",[])
+            return custom_response(400,"Invalid room",[])
+        sz = CompleteRoomSerializer(request.data)
+        msg = ""
+        if sz.data.get("is_complete"):
+            room.completed_date =timezone.now()
+            room.save()
+            msg = "Complete Room Successfully"
+            
+        else:
+            room.completed_date =None
+            room.save()
+            msg = "Re-open Room Successfully"
+
+        return custom_response(200,msg,[])
+        
+        
 
     def retrieve(self, request, pk=None):
         user_header = get_user_from_header(request.headers)
         room = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)), room_id=pk).first()
         if not room:
             return custom_response(400,"Invalid room",[])    
-        Message.objects.filter(room_id=room, is_seen__isnull=True, is_sender=False).update(is_seen=timezone.now())
+        Message.objects.filter(room_id=room, is_seen__isnull=True).update(is_seen=timezone.now())
         message = Message.objects.filter(room_id=room).order_by("-created_at")
         paginator = Pagination()
         page = paginator.paginate_queryset(message, request)
@@ -158,6 +175,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             "external_id": sz_customer.data.get("external_id"),
             "block_room": True if user_header == room.admin_room_id else False
         }
+        Message.objects.filter(room_id=room).update(is_seen=timezone.now())
         return custom_response(200,"User Info",data)
 
     @action(detail=True, methods=["GET"], url_path="count-attachment")

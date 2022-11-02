@@ -2,12 +2,12 @@ from sop_chat_service.app_connect.models import Message, Attachment
 from core.utils.api_facebook_app import get_message_from_mid
 from core.utils.format_message_for_websocket import facebook_format_mid
 from django.utils import timezone
-from core.schema import MessageWebSocket
+from core.schema import MessageChat
 from core.schema import NatsChatMessage
 from core.schema import FormatSendMessage
 
 
-async def facebook_save_message_store_databases(room, msg: MessageWebSocket):
+async def facebook_save_message_store_databases(room, msg: MessageChat):
     data_res = get_message_from_mid(room.page_id.access_token_page, msg.mid)
     data = facebook_format_mid(room, data_res)
     message = Message(

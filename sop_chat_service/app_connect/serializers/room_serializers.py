@@ -9,7 +9,7 @@ from sop_chat_service.utils.request_headers import get_user_from_header
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
-        fields = ['id', 'mid', 'type', 'url', 'name']
+        fields = ['id', 'mid', 'type', 'url', 'name', 'size']
 class ServiceSurveytSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceSurvey
@@ -27,14 +27,20 @@ class GetMessageSerializer(serializers.ModelSerializer):
         return sz.data
 
 
+class FanpageInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FanPage
+        fields = ['name', 'avatar_url']
+
 class RoomSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField(source='get_last_message', read_only=True)
     unseen_message_count = serializers.SerializerMethodField(source='get_unseen_message_count', read_only=True)
+    fanpage = serializers.SerializerMethodField(source='get_fanpage', read_only=True)
 
     class Meta:
         model = Room
         fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
-                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'room_id',"unseen_message_count"]
+                  'completed_date', 'conversation_id', 'created_at', 'last_message', 'room_id',"unseen_message_count", "fanpage"]
         
     def get_unseen_message_count(self, obj):
         count = Message.objects.filter(room_id=obj, is_seen__isnull=True).count()
@@ -44,6 +50,13 @@ class RoomSerializer(serializers.ModelSerializer):
         message = Message.objects.filter(room_id=obj, is_sender=False).order_by('-id').first()
         sz = GetMessageSerializer(message)
         return sz.data
+    
+    def get_fanpage(self, obj):
+        if not obj.page_id:
+            return None
+        fanpage_info = FanPage.objects.filter(id=obj.page_id.id).first()
+        sz_fanpage_info = FanpageInfoSerializer(fanpage_info)
+        return sz_fanpage_info.data
 
 
 class LabelSerializer(serializers.ModelSerializer):
@@ -51,11 +64,6 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
         fields = ["name", "color"]
 
-
-class FanpageInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FanPage
-        fields = ['name', 'avatar_url']
 
 
 class RoomMessageSerializer(serializers.ModelSerializer):
@@ -113,6 +121,16 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
     def get_user_info(self, obj):
         if not obj:
             return None
+        if obj.type == "livechat":
+            return {
+                "avatar":None,
+                "name": obj.name,
+                "external_id":obj.external_id,
+                "email":None,
+                "gender":None,
+                "id":None,
+                "phone":None
+            }
         user_info = UserApp.objects.filter(external_id=obj.external_id).first()
         sz_user_info = UserInfoSerializer(user_info)
         return sz_user_info.data
@@ -261,3 +279,7 @@ class InfoSerializer(serializers.ModelSerializer):
         message = Label.objects.filter(room_id=obj)
         sz = LabelSerializer(message, many=True)
         return sz.data
+    
+    
+class CompleteRoomSerializer(serializers.Serializer):
+    is_complete = serializers.BooleanField(required=True)

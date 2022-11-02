@@ -99,7 +99,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                 recipient_id=validated_recipient_id,
                 room_room_id=qs_room_id,
                 room_id=queryset.id,
-                user_id=queryset.user_id
+                user_id=[queryset.user_id, queryset.admin_room_id] if queryset.admin_room_id else [queryset.user_id]
             )
             store_sending_message_database_zalo(
                 room = queryset,
@@ -192,7 +192,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                             recipient_id=validated_recipient_id,
                             room_room_id=queryset.room_id,
                             room_id=queryset.id,
-                            user_id=queryset.user_id
+                            user_id=[queryset.user_id, queryset.admin_room_id] if queryset.admin_room_id else [queryset.user_id]
                         )
                         logger.debug(f'{socket_attachment} ********************************************************************* ')
                         asyncio.run(connect_nats_client_publish_websocket(

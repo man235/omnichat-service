@@ -14,7 +14,7 @@ class ChatMessageUserInfo(CustomBaseModel):
     title: Optional[str]
     value: Optional[str]
 
-class MessageWebSocket(CustomBaseModel):
+class MessageChat(CustomBaseModel):
     mid: Optional[str]
     room_id: Optional[str]
     attachments: List[ChatMessageAttachment] = []
@@ -33,4 +33,26 @@ class MessageWebSocket(CustomBaseModel):
     created_time: Optional[str]
     event: Optional[str]
     user_id: Optional[str]
+    timestamp: Optional[float]
+
+
+class MessageToWebSocket(CustomBaseModel):
+    mid: Optional[str]
+    room_id: Optional[str]
+    attachments: List[ChatMessageAttachment] = []
+    user_info: List[ChatMessageUserInfo] = []
+    created_at: str
+    is_seen: Optional[str]
+    is_sender: bool = False
+    message_reply: Optional[str]
+    reaction: Optional[str] = None
+    recipient_id: str
+    reply_id: Optional[str] = None
+    sender_id: str
+    sender_name: Optional[str] = None
+    text: Optional[str] = None
+    uuid: Optional[str]
+    created_time: Optional[str]
+    event: Optional[str]
+    user_id: List[str] = []
     timestamp: Optional[float]

@@ -3,7 +3,7 @@ from typing import Any, List
 from core.schema.message_receive import ChatOptional
 from sop_chat_service.app_connect.models import Message, Attachment, Room
 from django.utils import timezone
-from core.schema import MessageWebSocket
+from core.schema import MessageChat
 from sop_chat_service.utils.storages import upload_file_to_minio
 from sop_chat_service.zalo.utils.chat_support.type_constant import FILE_CONTENT_TYPE, FILE_DOC_EXTENSION, FILE_MESSAGE, FILE_MSWORD_EXTENSION
 from django.conf import settings
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 async def save_msg_store_database_zalo(
     room,
-    msg: MessageWebSocket,
+    msg: MessageChat,
     optionals: List[ChatOptional] = None
 ) -> None:
     for _room in room:
@@ -76,7 +76,7 @@ async def save_msg_store_database_zalo(
 
 async def save_message_store_database_zalo(
     room,
-    msg: MessageWebSocket,
+    msg: MessageChat,
     optionals: List[ChatOptional] = None
 ) -> None:
     message = Message(
