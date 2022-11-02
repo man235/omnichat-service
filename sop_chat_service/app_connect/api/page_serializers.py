@@ -11,16 +11,16 @@ class FanPageSerializer(serializers.ModelSerializer):
         return FanPage.objects.create(**validated_data) 
     
     def update(self, instance: FanPage, validated_data: dict):
-        instance.name = validated_data.get('name')
-        instance.page_id = validated_data.get('page_id')
-        instance.access_token_page = validated_data.get('access_token_page')
-        instance.refresh_token_page = validated_data.get('refresh_token_page')
-        instance.avatar_url = validated_data.get('avatar_url')
-        instance.is_active = validated_data.get('is_active')
-        instance.is_deleted = validated_data.get('is_deleted')
-        instance.created_by = validated_data.get('created_by')
-        instance.type = validated_data.get('type')
-        instance.last_subscribe = validated_data.get('last_subscribe')
+        instance.name = validated_data.get('name', instance.name)
+        instance.page_id = validated_data.get('page_id', instance.page_id)
+        instance.access_token_page = validated_data.get('access_token_page', instance.access_token_page)
+        instance.refresh_token_page = validated_data.get('refresh_token_page', instance.refresh_token_page)
+        instance.avatar_url = validated_data.get('avatar_url', instance.avatar_url)
+        instance.is_active = validated_data.get('is_active', instance.is_active )
+        instance.is_deleted = validated_data.get('is_deleted', instance.is_deleted)
+        instance.created_by = validated_data.get('created_by', instance.created_by)
+        instance.type = validated_data.get('type', instance.type)
+        instance.last_subscribe = validated_data.get('last_subscribe', instance.last_subscribe)
         instance.save()
         return instance
 

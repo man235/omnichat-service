@@ -1,8 +1,7 @@
-from datetime import datetime
 from typing import Union, Any
 from django.conf import settings
-import requests
 from .response_templates import json_response
+import requests
 
 
 def get_oa_token(
@@ -36,9 +35,12 @@ def get_oa_token(
             'Content-Type': 'application/x-www-form-urlencoded',
             'secret_key': settings.ZALO_APP_SECRET_KEY
         }
-        oa_token_rp = requests.post(url=url,
-                                    data=payload, 
-                                    headers=headers)
+        oa_token_rp = requests.post(
+            url=url,
+            data=payload, 
+            headers=headers,
+            timeout=(5, 10)
+        )
     
         if oa_token_rp.status_code == 200:
             oa_token_json = oa_token_rp.json()
@@ -61,7 +63,11 @@ def get_oa_info(access_token: str = None) -> Any:
         try:
             url = f'{settings.ZALO_OA_OPEN_API}/getoa'
             headers = {'access_token': access_token}
-            oa_info_reponse = requests.get(url=url, headers=headers)  
+            oa_info_reponse = requests.get(
+                url=url,
+                headers=headers,
+                timeout=(5, 10)
+            )  
             
             oa_info_json = oa_info_reponse.json()
 
