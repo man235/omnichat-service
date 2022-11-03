@@ -6,3 +6,4 @@ from .validations_abs import *
 from .router_abs import *
 from .manager_abs import *
 from .stream import *
+from .worker_abs import *

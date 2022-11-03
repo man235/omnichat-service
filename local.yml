@@ -76,6 +76,17 @@ services:
       - postgres
     ports: []
     command: /start-celerybeat
+  
+
+  natsworker:
+    <<: *django
+    image: sop_chat_service_local_natsworker
+    container_name: sop_chat_service_local_natsworker
+    depends_on:
+      - django
+      - postgres
+    ports: []
+    command: /start-worker
 
   # flower:
   #   <<: *django

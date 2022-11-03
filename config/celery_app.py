@@ -11,7 +11,8 @@ if disable_nat_in_celery_beat == "true":
 else:
     _include = ['core.nats']
 
-app = Celery("sop_chat_service", include=_include)
+# app = Celery("sop_chat_service", include=_include)
+app = Celery("sop_chat_service")
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
 # - namespace='CELERY' means all celery-related configuration keys
