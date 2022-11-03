@@ -1,5 +1,7 @@
 from django.conf import settings
 import requests, json
+import logging
+logger = logging.getLogger(__name__)
 
 
 def get_user_info(user_id, access_token):
@@ -24,6 +26,7 @@ def api_send_message_text_facebook(access_token, data):
     }
     try:
         response = requests.post(url, headers= headers, data=json.dumps(data))
+        logger.info(f" *********************************************** {response.text}")
         if response.status_code == 200:
             return response.json()
         else:
