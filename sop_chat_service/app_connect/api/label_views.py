@@ -29,7 +29,6 @@ class LabelViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk=None, *args, **kwargs):
         data = request.data
-        print(data)
         label = Label.objects.get(id=pk)
         serializer = LabelSerializer(label,data=data, partial=True)
         serializer.is_valid(raise_exception=True)
