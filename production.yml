@@ -62,3 +62,13 @@ services:
     <<: *django
     image: sop_chat_service_production_flower
     command: /start-flower
+
+  natsworker:
+    <<: *django
+    image: sop_chat_service_production_natsworker
+    container_name: sop_chat_service_production_natsworker
+    depends_on:
+      - django
+      - postgres
+    ports: []
+    command: /start-worker
