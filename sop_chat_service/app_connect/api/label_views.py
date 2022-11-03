@@ -15,7 +15,7 @@ class LabelViewSet(viewsets.ModelViewSet):
         data = request.data
         serializer = CreateLabelSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
-            room = Room.objects.get(id=data['room_id'])
+            room = Room.objects.get(room_id=data['room_id'])
             if not room:
                 serializers.ValidationError({"room": "Room is not valid"})
             else:
