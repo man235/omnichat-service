@@ -154,4 +154,12 @@ class ServiceSurvey(models.Model):
                             on_delete=models.SET_NULL)     # foreign key with message
     
     name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
-    value = models.CharField(max_length=1000, null=True, blank=True)
+    value = models.CharField(max_length=500, null=True, blank=True)
+    
+class LogMessage(models.Model):
+    mid = models.ForeignKey(Message, related_name='log_message_id', null=True, blank=True,
+                            on_delete=models.SET_NULL)
+    log_type = models.CharField(max_length=255, null=True, blank=True) 
+    from_user = models.CharField(max_length=255, null=True, blank=True)     # active action
+    to_user = models.CharField(max_length=255, null=True, blank=True)  # passive action
+    
