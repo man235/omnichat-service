@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from sop_chat_service.app_connect.serializers.label_serializers import LabelSerializer, CreateLabelSerializer, UpdateLabelSerializer
 from sop_chat_service.app_connect.models import Label, Room
-
+from sop_chat_service.facebook.utils import custom_response
 
 class LabelViewSet(viewsets.ModelViewSet):
     queryset = Label.objects.all()
@@ -19,19 +19,19 @@ class LabelViewSet(viewsets.ModelViewSet):
             if not room:
                 serializers.ValidationError({"room": "Room is not valid"})
             else:
-                Label.objects.create(
+                label =Label.objects.create(
                     room_id=room,
                     name=data['name'],
                     color=data['color']
                 )
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                sz = LabelSerializer(label,many=False)
+                return custom_response(200, "Create Label Successfully",sz.data)
 
     def update(self, request, pk=None, *args, **kwargs):
         data = request.data
-        serializer = UpdateLabelSerializer(data=data)
-        if serializer.is_valid(raise_exception=True):
-            label = Label.objects.get(id=pk)
-            label.name = data['name']
-            label.color = data['color']
-            label.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(data)
+        label = Label.objects.get(id=pk)
+        serializer = LabelSerializer(label,data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()    
+        return custom_response(200,"Update Label Successfully",serializer.data)
