@@ -1,6 +1,3 @@
-from crypt import methods
-from datetime import datetime
-import uuid
 from rest_framework import viewsets, permissions
 from sop_chat_service.app_connect.serializers.room_serializers import (
     CompleteRoomSerializer,
@@ -15,7 +12,6 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     CountAttachmentRoomSerializer,
     LabelSerializer
 )
-import time
 from django.utils import timezone
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
@@ -28,6 +24,8 @@ from sop_chat_service.utils.filter import filter_room
 from iteration_utilities import unique_everseen
 from sop_chat_service.utils.pagination_data import pagination_list_data
 from sop_chat_service.utils.request_headers import get_user_from_header
+from core.constants.log_triggers import TRIGGER_COMPLETED, TRIGGER_REOPENED
+from core.message_logger.log_message import LogMessageSupport, pub_nats_and_emit_socket_log_msg
 
 
 class RoomViewSet(viewsets.ModelViewSet):
@@ -125,21 +123,33 @@ class RoomViewSet(viewsets.ModelViewSet):
         if not room:
             return custom_response(400,"Invalid room",[])
         sz = CompleteRoomSerializer(request.data)
-        msg = ""
+        msg = "Complete Room Successfully"
+        
+        log_msg = LogMessageSupport()
+        
         if sz.data.get("is_complete"):
             room.completed_date =timezone.now()
             room.save()
             msg = "Complete Room Successfully"
             
+            # Assign log type
+            log_msg.trigger = TRIGGER_COMPLETED
         else:
             room.completed_date =None
             room.save()
             msg = "Re-open Room Successfully"
-
+            
+            # Assign log type
+            log_msg.trigger = TRIGGER_REOPENED
+        
+        # Save log message
+        log_msg.save(room.room_id, from_user=user_header)
+        formatted_log_msg = log_msg.format_data()
+        pub_nats_and_emit_socket_log_msg(room.room_id, formatted_log_msg)
+        
         return custom_response(200,msg,[])
         
-        
-
+    
     def retrieve(self, request, pk=None):
         user_header = get_user_from_header(request.headers)
         room = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)), room_id=pk).first()

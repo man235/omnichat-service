@@ -156,10 +156,17 @@ class ServiceSurvey(models.Model):
     name = models.CharField(max_length=500, null=True, blank=True)      # name of attachment
     value = models.CharField(max_length=500, null=True, blank=True)
     
+    
 class LogMessage(models.Model):
-    mid = models.ForeignKey(Message, related_name='log_message_id', null=True, blank=True,
-                            on_delete=models.SET_NULL)
-    log_type = models.CharField(max_length=255, null=True, blank=True) 
+    mid = models.OneToOneField(
+        Message,
+        related_name='log_message_id',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    log_type = models.CharField(max_length=255, null=True, blank=True)
+    room_id = models.CharField(max_length=255, null=True, blank=True)
     from_user = models.CharField(max_length=255, null=True, blank=True)     # active action
     to_user = models.CharField(max_length=255, null=True, blank=True)  # passive action
-    
+    created_at = models.DateTimeField(auto_now_add=True)
