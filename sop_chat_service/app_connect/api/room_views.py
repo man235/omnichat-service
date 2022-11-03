@@ -98,7 +98,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             result=[]
             cursor = connection.cursor()
             cursor.execute('''
-                    select * 
+                    select room.id 
                     from public.app_connect_room room 
                 	where un_accent(room.name) ~* '\y%s' 
                     and(room.user_id = '%s' 
