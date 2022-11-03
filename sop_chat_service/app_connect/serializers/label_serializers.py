@@ -11,9 +11,10 @@ class CreateLabelSerializer(serializers.ModelSerializer):
         model = Label
         fields = ["name", "color", "room_id"]
 
-class UpdateLabelSerializer(serializers.Serializer):
-    name = serializers.CharField(required=True)
-    color = serializers.CharField(required=True)
+class UpdateLabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Label
+        fields = '__all__'
 
 class LabelSerializer(serializers.ModelSerializer):
     class Meta:
