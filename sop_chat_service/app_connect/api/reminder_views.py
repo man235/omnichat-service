@@ -1,8 +1,7 @@
-from rest_framework import viewsets, permissions, status, serializers
-from rest_framework.response import Response
+from rest_framework import viewsets, permissions, serializers
 from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer, CreateReminderSerializer, UpdateReminderSerializer
 from sop_chat_service.app_connect.models import Reminder, Room
-
+from sop_chat_service.facebook.utils import custom_response
 
 class ReminderViewSet(viewsets.ModelViewSet):
     queryset = Reminder.objects.all()
@@ -17,23 +16,19 @@ class ReminderViewSet(viewsets.ModelViewSet):
             if not room:
                 serializers.ValidationError({"room_id": "Room is not valid"})
             else:
-                Reminder.objects.create(
+                reminder=Reminder.objects.create(
                     room_id=room,
                     unit = data['unit'],
                     title = data['title'],
                     time_reminder = data['time_reminder'],
                     repeat_time = data['repeat_time']
                 )
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+                sz = ReminderSerializer(reminder)
+                return custom_response(200,"Create Reminder Successfully",sz.data)
     def update(self, request, pk=None, *args, **kwargs):
         data = request.data
-        serializer = UpdateReminderSerializer(data=data)
-        if serializer.is_valid(raise_exception=True):
-            reminder = Reminder.objects.get(id=pk)
-            reminder.unit = data['unit']
-            reminder.title = data['title']
-            reminder.time_reminder = data['time_reminder']
-            reminder.repeat_time = data['repeat_time']
-            reminder.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        reminder = Reminder.objects.get(id=pk)
+        serializer = ReminderSerializer(reminder,data=data,partial=True)
+        serializer.is_valid(raise_exception=True)       
+        serializer.save()
+        return custom_response(200,"Update Reminder Successfully",serializer.data)
