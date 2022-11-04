@@ -24,8 +24,8 @@ from sop_chat_service.utils.filter import filter_room
 from iteration_utilities import unique_everseen
 from sop_chat_service.utils.pagination_data import pagination_list_data
 from sop_chat_service.utils.request_headers import get_user_from_header
-from core.constants.log_triggers import TRIGGER_COMPLETED, TRIGGER_REOPENED
-from core.message_logger.log_message import LogMessageSupport, pub_nats_and_emit_socket_log_msg
+from core.constants.log_messages import LOG_COMPLETED, LOG_REOPENED, TRIGGER_COMPLETED, TRIGGER_REOPENED
+from core.message_logger.log_message import LogMessageSupport, format_log_message, pub_log_message_to_nats
 
 
 class RoomViewSet(viewsets.ModelViewSet):
@@ -125,7 +125,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         sz = CompleteRoomSerializer(request.data)
         msg = "Complete Room Successfully"
         
-        log_msg = LogMessageSupport()
+        log_msg_sp = LogMessageSupport()
         
         if sz.data.get("is_complete"):
             room.completed_date =timezone.now()
@@ -133,19 +133,21 @@ class RoomViewSet(viewsets.ModelViewSet):
             msg = "Complete Room Successfully"
             
             # Assign log type
-            log_msg.trigger = TRIGGER_COMPLETED
+            log_msg_sp.trigger = TRIGGER_COMPLETED
+            log_msg_sp.message = LOG_COMPLETED
         else:
             room.completed_date =None
             room.save()
             msg = "Re-open Room Successfully"
             
             # Assign log type
-            log_msg.trigger = TRIGGER_REOPENED
+            log_msg_sp.trigger = TRIGGER_REOPENED
+            log_msg_sp.message = LOG_REOPENED
         
-        # Save log message
-        log_msg.save(room.room_id, from_user=user_header)
-        formatted_log_msg = log_msg.format_data()
-        pub_nats_and_emit_socket_log_msg(room.room_id, formatted_log_msg)
+        # Store log message into db
+        log_message = log_msg_sp.save(room, from_user=user_header)
+        formatted_log_message = format_log_message(log_message)
+        pub_log_message_to_nats(room.room_id, formatted_log_message)
         
         return custom_response(200,msg,[])
         

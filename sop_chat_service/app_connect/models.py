@@ -158,14 +158,14 @@ class ServiceSurvey(models.Model):
     
     
 class LogMessage(models.Model):
-    mid = models.OneToOneField(
-        Message,
-        related_name='log_message_id',
-        on_delete=models.CASCADE,
+    mid = models.ForeignKey(
+        Message, related_name='log_message_id',
+        null=True,
         blank=True,
-        null=True
-    )
+        on_delete=models.SET_NULL
+    )     # foreign key with message
     log_type = models.CharField(max_length=255, null=True, blank=True)
+    message = models.CharField(max_length=500, null=True, blank=True)
     room_id = models.CharField(max_length=255, null=True, blank=True)
     from_user = models.CharField(max_length=255, null=True, blank=True)     # active action
     to_user = models.CharField(max_length=255, null=True, blank=True)  # passive action

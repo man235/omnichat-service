@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, ServiceSurvey, UserApp, Label
+from sop_chat_service.app_connect.models import Attachment, LogMessage, Message, FanPage, Room, ServiceSurvey, UserApp, Label
 from django.db.models import Q
 from sop_chat_service.utils.remove_accent import remove_accent
 
@@ -283,3 +283,10 @@ class InfoSerializer(serializers.ModelSerializer):
     
 class CompleteRoomSerializer(serializers.Serializer):
     is_complete = serializers.BooleanField(required=True)
+
+
+class LogMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogMessage
+        fields = '__all__'
+        
