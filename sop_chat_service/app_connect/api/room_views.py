@@ -1,5 +1,4 @@
-from crypt import methods
-from datetime import datetime
+
 import uuid
 from rest_framework import viewsets, permissions
 from sop_chat_service.app_connect.serializers.room_serializers import (
@@ -30,7 +29,8 @@ from sop_chat_service.utils.pagination_data import pagination_list_data
 from sop_chat_service.utils.request_headers import get_user_from_header
 from django.db import connection
 from sop_chat_service.utils.remove_accent import remove_accent  
-
+from sop_chat_service.app_connect.models import Reminder
+from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer
 class RoomViewSet(viewsets.ModelViewSet):
     pagination_class=Pagination
     serializer_class = RoomSerializer
@@ -42,6 +42,16 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         pass
+    @action(detail=False, methods=["POST"], url_path="reminder")
+    def get_reminder(self, request, *args, **kwargs):
+        data = request.data
+        user_header = get_user_from_header(request.headers)
+        room= Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),room_id = data.get('room_id',None)).first()
+        if not room:
+            return custom_response(400," Room id invalid",[])
+        qs = Reminder.objects.filter(room_id = room)
+        sz = ReminderSerializer(qs,many=True)
+        return custom_response(200,"success",sz.data)
     @action(detail=False, methods=["POST"], url_path="room-info")
     def room_info(self, request, *args, **kwargs):
         sz = RoomInfoSerializer(data= request.data,many=False)
