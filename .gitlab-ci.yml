@@ -2,20 +2,26 @@ stages:
   - build
   - deploy
 
+.docker-dind:
+  image: docker:dind
+  services:
+    - name: docker:dind
+
+.docker-login:
+  before_script:
+    - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
+
+
 build-dev:
   stage: build
   only:
     - dev
-  image: docker:18.09.7-dind
-  services:
-    - name: docker:18.09.7-dind
-
-  before_script:
-    - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
-  #  - docker login $CI_REGISTRY_URL
+  extends:
+    - .docker-dind
+    - .docker-login 
   script:
-#    - mv $DEV_ENV .env
-#    - cat .env
+    - mv $DEV_ENV .env
+    - cat .env
     - docker build --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA --tag $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:latest -f compose/production/django/Dockerfile .
     
     - docker push $CI_REGISTRY_URL/$DEV_REGISTRY_NAME:$CI_COMMIT_SHA
@@ -30,7 +36,7 @@ deploy-dev:
     - chmod og= $DEV_ID_RSA
     - apk update && apk add openssh-client
 
-    - ssh -v -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker pull $CI_REGISTRY_URL/$DEV_REGISTRY_NAME && docker compose up -d"
+    - ssh -i $DEV_ID_RSA -o StrictHostKeyChecking=no $DEV_SERVER_USER@$DEV_SERVER_IP "cd /opt/omnichat && docker pull $CI_REGISTRY_URL/$DEV_REGISTRY_NAME && docker compose up -d"
   only:
     - dev
 
@@ -38,13 +44,12 @@ build-stg:
   stage: build
   only:
     - stg
-  image: docker:18.09.7-dind
-  services:
-    - name: docker:18.09.7-dind
-
-  before_script:
-    - mkdir ~/.docker && touch ~/.docker/config.json && cp $DOCKER_AUTH_CONFIG ~/.docker/config.json
+  extends:
+    - .docker-dind
+    - .docker-login 
   script:
+    - mv $STG_ENV .env
+    - cat .env
     - docker build --tag $CI_REGISTRY_URL/$STG_REGISTRY_NAME:$CI_COMMIT_SHA --tag $CI_REGISTRY_URL/$STG_REGISTRY_NAME:latest -f compose/production/django/Dockerfile .
 
     - docker push $CI_REGISTRY_URL/$STG_REGISTRY_NAME:$CI_COMMIT_SHA
@@ -57,6 +62,6 @@ deploy-stg:
     - chmod og= $STG_ID_RSA
     - apk update && apk add openssh-client
 
-    - ssh -i $STG_ID_RSA -o StrictHostKeyChecking=no $STG_SERVER_USER@$STG_SERVER_IP "cd /opt/sop && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_omnichat && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_chatwss"
+    - ssh -i $STG_ID_RSA -o StrictHostKeyChecking=no $STG_SERVER_USER@$STG_SERVER_IP "docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_omnichat && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_celerybeat && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_celeryworker && docker service update --force --with-registry-auth --image $CI_REGISTRY_URL/$STG_REGISTRY_NAME sop_natsworker"
   only:
     - stg
