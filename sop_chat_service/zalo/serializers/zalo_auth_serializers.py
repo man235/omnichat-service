@@ -9,5 +9,5 @@ class ZaloAuthenticationSerializer(serializers.Serializer):
 
 
 class ZaloConnectPageSerializer(serializers.Serializer):
-    is_subscribed = serializers.BooleanField(required=False)
+    is_subscribe = serializers.BooleanField(required=True)
     oa_id = serializers.CharField(required=True)
