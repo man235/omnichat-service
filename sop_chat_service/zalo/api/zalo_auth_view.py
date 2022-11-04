@@ -38,8 +38,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
             ).first()
             
             # Verify the first Zalo OA owner
-            if queryset:
-                if not queryset.user_id == user_header and not queryset.is_deleted:
+            if queryset and not queryset.is_deleted:
+                if not queryset.user_id == user_header:
                     return custom_response(
                         400,
                         'Zalo OA is connected. May be you are not the first admin connect to this OA',
@@ -70,7 +70,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 
                 # 2 oa id must be matched
                 if oa_connection_sz.data.get('oa_id') != oa_data.get('page_id'):
-                    return custom_response(400, 'The connecting Zalo OA id doesn\'t match with the requested OA id')
+                    return custom_response(400, 'The connecting Zalo OA id doesn\'t match with the required OA id')
                 
                 try:                  
                     oa_data_bundle = {
@@ -78,10 +78,10 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         'type': 'zalo',
                         'name': oa_data.get('name'),
                         'user_id': user_header,
-                        'access_token_page': access_token,
+                        'access_token_page': access_token if oa_connection_sz.data.get('is_subscribe') else None,
                         'refresh_token_page': refresh_token,
                         'avatar_url': oa_data.get('avatar_url'),
-                        'is_active': True,
+                        'is_active': True if oa_connection_sz.data.get('is_subscribe') else False,
                         'is_deleted': False,
                         'created_by': user_header,
                         'last_subscribe': str(timezone.now())
@@ -132,7 +132,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         if qs.user_id == user_header:
             qs.is_deleted = True
             qs.is_active = False
-            qs.access_token_page = 'Invalid'
+            qs.access_token_page = None
             qs.save()
             return custom_response(200, 'Delete OA successfully')    
         else:
@@ -163,7 +163,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         
         if qs.user_id == user_header:
             qs.is_active = False
-            qs.access_token_page = 'invalid'
+            qs.access_token_page = None
             qs.last_subscribe = timezone.now()
             qs.save()
             
@@ -220,7 +220,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 page_id=oa_id
             ).first()
             
-            if data.get('is_deleted') or None is oa_model.access_token_page == 'invalid':
+            if data.get('is_deleted') or oa_model.access_token_page is None:
                 continue
             
             access_token = oa_model.access_token_page
