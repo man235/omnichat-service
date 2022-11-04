@@ -28,7 +28,8 @@ from sop_chat_service.utils.filter import filter_room
 from iteration_utilities import unique_everseen
 from sop_chat_service.utils.pagination_data import pagination_list_data
 from sop_chat_service.utils.request_headers import get_user_from_header
-
+from django.db import connection
+from sop_chat_service.utils.remove_accent import remove_accent  
 
 class RoomViewSet(viewsets.ModelViewSet):
     pagination_class=Pagination
@@ -93,8 +94,20 @@ class RoomViewSet(viewsets.ModelViewSet):
         sz.is_valid(raise_exception=True)
         data = {}
         if sz.data.get('search'):
-            qs_contact = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),
-                name__icontains=sz.data.get('search'), room_message__is_sender=False).distinct()
+            search = remove_accent(sz.data.get('search'))
+            result=[]
+            cursor = connection.cursor()
+            cursor.execute('''
+                    select room.id 
+                    from public.app_connect_room room 
+                	where un_accent(room.name) ~* '\y%s' 
+                    and(room.user_id = '%s' 
+                    or room.admin_room_id = '%s')
+            '''%(search,user_header,user_header))
+            rows = cursor.fetchall()
+            for row in rows:
+                result.append(row[0])
+            qs_contact = Room.objects.filter(id__in=result, room_message__is_sender=False).distinct()
             serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
             data['contact'] = serializer_contact.data
             qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False).distinct()
@@ -186,6 +199,27 @@ class RoomViewSet(viewsets.ModelViewSet):
             return custom_response(400,"Invalid room",[])
         sz = CountAttachmentRoomSerializer(room, many=False)
         return custom_response(200,"Count Attachment",sz.data)
+    @action(detail=False, methods=["GET"], url_path="add-un-accent")
+    def add_func(self, request, *args, **kwargs):
+        cursor = connection.cursor()
+        cursor.execute('''
+                CREATE OR REPLACE FUNCTION un_accent (x text) RETURNS text AS
+                $$
+                DECLARE
+                 cdau text; kdau text; r text;
+                BEGIN
+                 cdau = 'áàảãạâấầẩẫậăắằẳẵặđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵÁÀẢÃẠÂẤẦẨẪẬĂẮẰẲẴẶĐÉÈẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴ';
+                 kdau = 'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyaaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy';
+                 r = x;
+                 FOR i IN 0..length(cdau)
+                 LOOP
+                 r = replace(r, substr(cdau,i,1), substr(kdau,i,1));
+                 END LOOP;
+                 RETURN r;  
+                END;
+                $$ LANGUAGE plpgsql;
+        ''')
+        return custom_response(200,"Count Attachment",[])
 
     @action(detail=False, methods=["GET"], url_path="channel")
     def count_unseen_message_room(self, request, *args, **kwargs):
