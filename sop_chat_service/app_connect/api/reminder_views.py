@@ -37,10 +37,10 @@ class ReminderViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         new_reminder = Reminder.objects.create(
             room_id = room,
-            unit = serializer.data('unit'),
-            title = serializer.data('title'),
-            time_reminder = serializer.data('time_reminder'),
-            repeat_time = serializer.data('repeat_time')
+            unit = serializer.data.get('unit'),
+            title = serializer.data.get('title'),
+            time_reminder = serializer.data.get('time_reminder'),
+            repeat_time = serializer.data.get('repeat_time')
         )
         reminder.delete()
         create_reminder_task.delay(new_reminder.id, new_reminder.repeat_time)
