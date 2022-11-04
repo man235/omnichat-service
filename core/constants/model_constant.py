@@ -6,3 +6,9 @@ SETTING_CHAT_ROTATION = "rotation"
 MAX_SIZE_FACEBOOK_UPLOAD = 25600000
 FILE_ZIP = "zip"
 FILE_RAR = "rar"
+
+# unit time
+DAY = 'day'
+HOUR = 'hour'
+MINUTE = 'minute'
+SECOND = 'second'
