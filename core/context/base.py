@@ -6,7 +6,7 @@ from core.abstractions import (
 )
 from core.routers import MessageTextRouter, MessageEmojiRouter, SendMessageRouter
 from core.schema import CoreChatInputMessage, NatsChatMessage, FormatSendMessage
-from core.managers import StorageManager, WebSocketManager, SendMessageManager
+from core.managers import StorageManager, WebSocketManager, SendMessageManager, MessageLogManager
 
 
 # ----------------------------      BASE CONTEXT        ----------------------------
@@ -51,7 +51,7 @@ class BaseAppContext(AbsAppContext):
 
 # ----------------    MANAGER    ----------------
     async def _get_manager(self, manager_type: str) -> Dict[str, AbsManager]:
-        for manager_class in (StorageManager, WebSocketManager, SendMessageManager):
+        for manager_class in (StorageManager, WebSocketManager, SendMessageManager, MessageLogManager):
             manager_instance = manager_class()
             self._managers.update({manager_instance.manager_type: manager_instance})
         return self._managers.get(manager_type)

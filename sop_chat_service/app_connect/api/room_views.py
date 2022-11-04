@@ -1,5 +1,3 @@
-
-import uuid
 from rest_framework import viewsets, permissions
 from sop_chat_service.app_connect.serializers.room_serializers import (
     CompleteRoomSerializer,
@@ -14,8 +12,6 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     CountAttachmentRoomSerializer,
     LabelSerializer
 )
-import time
-from django.utils import timezone
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
 from sop_chat_service.app_connect.models import Room, Message, UserApp, Label
@@ -31,6 +27,12 @@ from django.db import connection
 from sop_chat_service.utils.remove_accent import remove_accent  
 from sop_chat_service.app_connect.models import Reminder
 from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer
+from .message_facebook_views import connect_nats_client_publish_websocket
+from core import constants
+from core.utils import format_log_message
+import asyncio, ujson
+
+
 class RoomViewSet(viewsets.ModelViewSet):
     pagination_class=Pagination
     serializer_class = RoomSerializer
@@ -149,14 +151,19 @@ class RoomViewSet(viewsets.ModelViewSet):
             return custom_response(400,"Invalid room",[])
         sz = CompleteRoomSerializer(request.data)
         msg = ""
+        subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         if sz.data.get("is_complete"):
             room.completed_date =timezone.now()
             room.save()
+            log_message = format_log_message(room, f'{user_header} {constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
+            asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
             msg = "Complete Room Successfully"
             
         else:
-            room.completed_date =None
+            room.completed_date = None
             room.save()
+            log_message = format_log_message(room, f'{user_header} {constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
+            asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
             msg = "Re-open Room Successfully"
 
         return custom_response(200,msg,[])
