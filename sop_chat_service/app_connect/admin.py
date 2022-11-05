@@ -45,7 +45,7 @@ class LabelAdmin(admin.ModelAdmin):
 
 @admin.register(Reminder)
 class ReminderAdmin(admin.ModelAdmin):
-    list_display = ["id", "unit", "room_id"]
+    list_display = ["id", "unit", "room_id", "title"]
 
 
 @admin.register(UserApp)
