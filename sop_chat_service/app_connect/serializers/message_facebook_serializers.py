@@ -25,7 +25,7 @@ class MessageFacebookSerializer(serializers.Serializer):
                 "recipient": {
                     "id": recipient_id
                 },
-                "tag": "NON_PROMOTIONAL_SUBSCRIPTION",
+                "tag": "CUSTOMER_FEEDBACK",
                 "message": {
                     "text": attrs.get("message_text")
                 }

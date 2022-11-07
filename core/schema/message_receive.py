@@ -16,6 +16,14 @@ class ChatOptional(CustomBaseModel):
     chat_type: str
     data: Optional[Dict] = {}
 
+class LogMessage(CustomBaseModel):
+    log_type:Optional[str]
+    message: Optional[str]
+    room_id: Optional[str]
+    from_user: Optional[str]
+    to_user: Optional[str]
+    created_at: Optional[str]
+
 class NatsChatMessage(CustomBaseModel):
     senderId: str
     recipientId: str
@@ -29,3 +37,4 @@ class NatsChatMessage(CustomBaseModel):
     optionals: List[ChatOptional] = []
     uuid: Optional[str] = ""
     room_id: Optional[str] = None
+    log_message: Optional[LogMessage] = None

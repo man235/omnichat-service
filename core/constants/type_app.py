@@ -7,6 +7,11 @@ LIVECHAT_ROOM_MINIO = "livechat_room"
 
 MESSAGE_TEXT = "text"
 MESSAGE_EMOJI = "emoji"
+MESSAGE_LOG = "message_log"
+
+MESSAGE_LOG_MANAGER = "message_log-manager"
+MESSAGE_LOG_STORAGE_DATABASE = 'message_log-storage'
+MESSAGE_LOG_WEBSOCKET = 'message_log-websocket'
 
 WEBSOCKET_MANAGER = "websocket-manager"
 
@@ -35,3 +40,16 @@ SIO_EVENT_ACK_MSG_SALEMAN_TO_CUSTOMER = 'SaleMan.To.Customer.ACK'
 
 
 ZALO_DISTRIBUTE_USER_NEW_CHAT = 'Zalo.distribute.user.new.chat'
+
+# Log message
+LOG_COMPLETED = 'have completed the conversation'
+LOG_REOPENED = 'have reopened the conversation'
+LOG_REMINDED = 'has set up reminder'
+LOG_LEFT = 'have left the conversation'
+LOG_FORWARDED = 'has forwarded the message to'
+
+TRIGGER_COMPLETED = 'completed'
+TRIGGER_REOPENED = 'reopen'
+TRIGGER_REMINDED = 'reminder'
+TRIGGER_LEFT = 'left'
+TRIGGER_FORWARDED = 'forwarded'

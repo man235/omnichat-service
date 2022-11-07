@@ -7,8 +7,10 @@ import time
 def create_reminder_task(id: int, repeat_time: int):
     try:
         for repeat_time in range(0, repeat_time):
-            reminder = Reminder.objects.get(id=id)
+            reminder = Reminder.objects.filter(id=id).first()
             time_reminder = 1
+            if reminder:
+                return "Error"
             if reminder.unit == constants.DAY:
                 time_reminder = reminder.time_reminder * 60 * 60 * 24
             elif reminder.unit == constants.HOUR:
@@ -22,4 +24,4 @@ def create_reminder_task(id: int, repeat_time: int):
             reminder.save()
         return "Success"
     except Exception as e:
-        raise e
+        return f"Exception Create Task Reminder {e}"
