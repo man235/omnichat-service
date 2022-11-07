@@ -2,7 +2,7 @@ from sop_chat_service.app_connect.models import FanPage, Room, UserApp
 from .api_facebook_app import get_user_info
 from django.utils import timezone
 from asgiref.sync import sync_to_async
-from core.schema import CoreChatInputMessage, NatsChatMessage
+from core.schema import  NatsChatMessage
 import logging
 logger = logging.getLogger(__name__)
 
@@ -28,9 +28,11 @@ def check_room_facebook(data: NatsChatMessage):
             phone = res_user_app.get(''),
             gender = res_user_app.get('gender')
         )
-    
     check_room = Room.objects.filter(page_id=check_fanpage.id, external_id=data.senderId,user_id=check_fanpage.user_id).first()
-    if not check_room or check_room.completed_date:
+    if check_room.completed_date:
+        check_room.status = 'processing'
+        check_room.save()
+    if not check_room:
         new_room = Room(
             page_id = check_fanpage,
             external_id = data.senderId,
@@ -44,5 +46,6 @@ def check_room_facebook(data: NatsChatMessage):
         )
         new_room.save()
         return new_room
+    
     else:
         return check_room

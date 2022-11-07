@@ -32,12 +32,13 @@ class ReminderViewSet(viewsets.ModelViewSet):
                     time_reminder = data['time_reminder'],
                     repeat_time = data['repeat_time']
                 )
+                print(room.user_id)
                 sz = ReminderSerializer(reminder)
                 msg_log = f'{user_header} {constants.LOG_REMINDED} "{reminder.title}"'
                 log_message = format_log_message(room, msg_log, constants.TRIGGER_REMINDED)
                 subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
                 asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
-                create_reminder_task.delay(reminder.id, reminder.repeat_time)
+                create_reminder_task.delay(reminder.id, int(reminder.repeat_time))
                 return custom_response(200,"Create Reminder Successfully",sz.data)
 
     def update(self, request, pk=None, *args, **kwargs):

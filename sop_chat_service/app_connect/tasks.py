@@ -5,7 +5,9 @@ import time
 
 @shared_task
 def create_reminder_task(id: int, repeat_time: int):
+    
     try:
+
         for repeat_time in range(0, repeat_time):
             reminder = Reminder.objects.filter(id=id).first()
             time_reminder = 1
