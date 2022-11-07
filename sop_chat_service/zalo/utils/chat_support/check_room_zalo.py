@@ -3,8 +3,12 @@ from sop_chat_service.app_connect.models import FanPage, Room, UserApp
 from django.utils import timezone
 from asgiref.sync import sync_to_async
 from sop_chat_service.zalo.utils.api_suport.api_zalo_caller import get_oa_follower
+from sop_chat_service.app_connect.api.message_facebook_views import connect_nats_client_publish_websocket
+from core.utils import format_log_message
 from core.schema import NatsChatMessage
+import ujson
 import logging
+import asyncio
 from core import constants
 from core.utils.distribute_new_chat import find_user_new_chat
 
@@ -151,6 +155,10 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             user_id = result_new_user.get('staff'),
             admin_room_id = result_new_user.get('admin') if check_fanpage.setting_chat != constants.SETTING_CHAT_ONLY_ME else None
         )
+        if check_fanpage.setting_chat != constants.SETTING_CHAT_ONLY_ME:
+            subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{new_room_user.room_id}"
+            log_message = format_log_message(new_room_user, f'{new_room_user.admin_room_id} {constants.LOG_FORWARDED} {new_room_user.user_id}', constants.TRIGGER_COMPLETED)
+            asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         return new_room_user
     else:
         return check_room
