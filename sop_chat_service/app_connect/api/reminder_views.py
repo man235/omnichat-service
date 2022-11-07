@@ -47,7 +47,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
         room = Room.objects.filter(id=reminder.room_id.id).first()
         if not room:
             return custom_response(200,"Create Reminder Successfully",{"room_id": "Room is not valid"})
-        serializer = UpdateReminderSerializer(data=data)
+        serializer = CreateReminderSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         reminder.delete()
         new_reminder = Reminder.objects.create(
