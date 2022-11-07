@@ -38,4 +38,4 @@ class FormatSendMessage(CustomBaseModel):
     type : Optional[str] = constants.FACEBOOK
     user_id: List[str] = []
     event: Optional[str]
-    log_type: Optional[str]
+    log_type: Optional[str] = None
