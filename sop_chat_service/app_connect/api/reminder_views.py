@@ -34,8 +34,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                 )
                 print(room.user_id)
                 sz = ReminderSerializer(reminder)
-                msg_log = f'You {constants.LOG_REMINDED} "{reminder.title}"'
-                log_message = format_log_message(room, msg_log, constants.TRIGGER_REMINDED)
+                log_message = format_log_message(room, constants.LOG_REMINDED, constants.TRIGGER_REMINDED)
                 subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
                 asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
                 create_reminder_task.delay(reminder.id, int(reminder.repeat_time))
@@ -58,9 +57,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
             time_reminder = serializer.data.get('time_reminder'),
             repeat_time = serializer.data.get('repeat_time')
         )
-        # msg_log = f'{user_header} {constants.LOG_REMINDED} "{new_reminder.title}"'
-        msg_log = f'You {constants.LOG_REMINDED} "{new_reminder.title}"'
-        log_message = format_log_message(room, msg_log, constants.TRIGGER_REMINDED)
+        log_message = format_log_message(room, constants.LOG_REMINDED, constants.TRIGGER_REMINDED)
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         create_reminder_task.delay(new_reminder.id, new_reminder.repeat_time)

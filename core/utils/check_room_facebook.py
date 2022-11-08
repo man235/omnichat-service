@@ -29,9 +29,6 @@ def check_room_facebook(data: NatsChatMessage):
             gender = res_user_app.get('gender')
         )
     check_room = Room.objects.filter(page_id=check_fanpage.id, external_id=data.senderId,user_id=check_fanpage.user_id).first()
-    if check_room.completed_date:
-        check_room.status = 'processing'
-        check_room.save()
     if not check_room:
         new_room = Room(
             page_id = check_fanpage,
@@ -46,6 +43,9 @@ def check_room_facebook(data: NatsChatMessage):
         )
         new_room.save()
         return new_room
-    
     else:
+        if check_room.completed_date:
+            check_room.completed_date = None
+            check_room.status = 'processing'
+            check_room.save()
         return check_room

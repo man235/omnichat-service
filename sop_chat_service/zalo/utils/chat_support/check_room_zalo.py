@@ -140,7 +140,6 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         page_id=check_fanpage,
         external_id=data.senderId
     ).first()
-
     if not check_room:
         result_new_user = await find_user_new_chat(data, check_fanpage)
         new_room_user = Room.objects.create(
@@ -161,4 +160,8 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         return new_room_user
     else:
+        if check_room.completed_date:
+            check_room.completed_date = None
+            check_room.status = constants.PROCESSING
+            check_room.save()
         return check_room

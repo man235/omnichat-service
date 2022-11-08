@@ -53,3 +53,11 @@ TRIGGER_REOPENED = 'reopen'
 TRIGGER_REMINDED = 'reminder'
 TRIGGER_LEFT = 'left'
 TRIGGER_FORWARDED = 'forwarded'
+
+LOG_MESSAGE_ACK = 'Log.Message.ACK'
+
+# Status room
+ALL='all'
+PROCESSING='processing'
+COMPLETED = 'completed'
+EXPIRED ="expired"
