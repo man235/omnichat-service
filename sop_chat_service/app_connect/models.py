@@ -104,9 +104,7 @@ class Reminder(models.Model):
 class Label(models.Model):
     room_id = models.ForeignKey(Room, related_name='room_label', null=True, blank=True,
                                 on_delete=models.SET_NULL)     # foreign key with room
-    name = models.CharField(max_length=255, null=True, blank=True)      # name contains content of label
-    color = models.CharField(max_length=255, null=True, blank=True)      # color of content label
-    created_at = models.DateTimeField(auto_now_add=True)
+    label_id = models.CharField(max_length=255, null=True, blank=True)      # name contains content of label
 
 
 class Message(models.Model):

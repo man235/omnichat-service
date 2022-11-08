@@ -62,7 +62,7 @@ class RoomSerializer(serializers.ModelSerializer):
 class LabelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Label
-        fields = ["name", "color"]
+        fields = ["label_id"]
 
 
 
@@ -170,7 +170,7 @@ class RoomInfoSerializer(serializers.Serializer):
             raise serializers.ValidationError({"room": "Room Invalid"})
         
         return room
-       
+    
 
 class SortMessageSerializer(serializers.Serializer):
     sort = serializers.CharField(required=False)
@@ -276,8 +276,8 @@ class InfoSerializer(serializers.ModelSerializer):
         return sz_fanpage_info.data
 
     def get_label(self, obj):
-        message = Label.objects.filter(room_id=obj)
-        sz = LabelSerializer(message, many=True)
+        label = Label.objects.filter(room_id=obj)
+        sz = LabelSerializer(label, many=True)
         return sz.data
     
     

@@ -41,7 +41,7 @@ class ServiceSurveyAdmin(admin.ModelAdmin):
 
 @admin.register(Label)
 class LabelAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "room_id"]
+    list_display = ["id", "label_id", "room_id"]
 
 @admin.register(Reminder)
 class ReminderAdmin(admin.ModelAdmin):
