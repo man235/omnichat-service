@@ -47,7 +47,7 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta: 
         model= Message
         fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id',
-            'text','message_reply','sender_name','is_sender','created_at', 'is_seen',"uuid",'count_message_unseen',"service_survey"]
+            'text','message_reply','sender_name','is_sender','created_at', 'is_seen',"uuid",'count_message_unseen',"service_survey", "msg_log"]
         
         
 class ResultMessageSerializer(serializers.ModelSerializer):
