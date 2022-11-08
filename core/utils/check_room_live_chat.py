@@ -48,4 +48,5 @@ async def check_room_live_chat(data: NatsChatMessage):
         new_room.save()
         return new_room
     else:
+        
         return check_room

@@ -3,7 +3,7 @@ from sop_chat_service.app_connect.models import Room, Reminder
 
 
 class CreateReminderSerializer(serializers.ModelSerializer):
-    room_id = serializers.IntegerField(required=True)
+    room_id = serializers.CharField(required=True)
     class Meta:
         model = Reminder
         fields = "__all__"

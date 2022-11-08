@@ -154,6 +154,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         if sz.data.get("is_complete"):
             room.completed_date =timezone.now()
+            room.status='completed'
             room.save()
             log_message = format_log_message(room, f'You {constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
