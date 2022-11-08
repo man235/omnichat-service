@@ -33,7 +33,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                     repeat_time = data['repeat_time']
                 )
                 sz = ReminderSerializer(reminder)
-                msg_log = f'{user_header} {constants.LOG_REMINDED} "{reminder.title}"'
+                msg_log = f'You {constants.LOG_REMINDED} "{reminder.title}"'
                 log_message = format_log_message(room, msg_log, constants.TRIGGER_REMINDED)
                 subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
                 asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
@@ -57,7 +57,8 @@ class ReminderViewSet(viewsets.ModelViewSet):
             time_reminder = serializer.data.get('time_reminder'),
             repeat_time = serializer.data.get('repeat_time')
         )
-        msg_log = f'{user_header} {constants.LOG_REMINDED} "{new_reminder.title}"'
+        # msg_log = f'{user_header} {constants.LOG_REMINDED} "{new_reminder.title}"'
+        msg_log = f'You {constants.LOG_REMINDED} "{new_reminder.title}"'
         log_message = format_log_message(room, msg_log, constants.TRIGGER_REMINDED)
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))

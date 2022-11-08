@@ -155,14 +155,14 @@ class RoomViewSet(viewsets.ModelViewSet):
         if sz.data.get("is_complete"):
             room.completed_date =timezone.now()
             room.save()
-            log_message = format_log_message(room, f'{user_header} {constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
+            log_message = format_log_message(room, f'You {constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
             msg = "Complete Room Successfully"
             
         else:
             room.completed_date = None
             room.save()
-            log_message = format_log_message(room, f'{user_header} {constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
+            log_message = format_log_message(room, f'You {constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
             msg = "Re-open Room Successfully"
 

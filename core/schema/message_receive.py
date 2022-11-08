@@ -16,7 +16,7 @@ class ChatOptional(CustomBaseModel):
     chat_type: str
     data: Optional[Dict] = {}
 
-class LogMessage(CustomBaseModel):
+class LogMessageSchema(CustomBaseModel):
     log_type:Optional[str]
     message: Optional[str]
     room_id: Optional[str]
@@ -37,4 +37,4 @@ class NatsChatMessage(CustomBaseModel):
     optionals: List[ChatOptional] = []
     uuid: Optional[str] = ""
     room_id: Optional[str] = None
-    log_message: Optional[LogMessage] = None
+    log_message: Optional[LogMessageSchema] = None

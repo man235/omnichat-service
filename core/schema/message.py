@@ -18,6 +18,14 @@ class SendMessageAttachment(CustomBaseModel):
     size: Optional[str]
     video_url: Optional[str]
 
+class LogMessageSchema(CustomBaseModel):
+    log_type:Optional[str]
+    message: Optional[str]
+    room_id: Optional[str]
+    from_user: Optional[str]
+    to_user: Optional[str]
+    created_at: Optional[str]
+
 class FormatSendMessage(CustomBaseModel):
     mid: Optional[str]
     attachments: List[SendMessageAttachment] = []
@@ -38,4 +46,5 @@ class FormatSendMessage(CustomBaseModel):
     type : Optional[str] = constants.FACEBOOK
     user_id: List[str] = []
     event: Optional[str]
-    log_type: Optional[str] = None
+    is_log_msg: Optional[bool] = False
+    log_message: Optional[LogMessageSchema] = None

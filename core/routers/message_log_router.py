@@ -4,7 +4,7 @@ from core.abstractions import AbsAppContext
 from core import constants
 
 
-class SendMessageLogRouter(BaseRouter):
+class MessageLogRouter(BaseRouter):
     msg_type = constants.MESSAGE_LOG
 
     def bind_context(self, context: AbsAppContext, **kwargs):
