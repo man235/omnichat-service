@@ -87,7 +87,7 @@ class RoomMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status',
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
 
     def get_last_message(self, obj):
