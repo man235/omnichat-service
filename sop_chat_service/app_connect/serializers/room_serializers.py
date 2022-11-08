@@ -180,7 +180,6 @@ class RoomInfoSerializer(serializers.Serializer):
         room = Room.objects.filter(room_id=attrs.get("room_id"), user_id=user_header).first()
         if not room:
             raise serializers.ValidationError({"room": "Room Invalid"})
-        
         return room
     
 
@@ -258,7 +257,7 @@ class InfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status',
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
 
     def get_last_message(self, obj):
