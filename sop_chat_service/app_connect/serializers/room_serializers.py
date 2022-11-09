@@ -70,6 +70,13 @@ class RoomSerializer(serializers.ModelSerializer):
         sz_fanpage_info = FanpageInfoSerializer(fanpage_info)
         return sz_fanpage_info.data
 
+class RoomIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ["id"]
+
+
+
 
 class LabelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -162,6 +169,7 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
         return page.avatar_url
 class SearchRoomSerializer(serializers.Serializer):
     search = serializers.CharField(required=True)
+    is_filter =serializers.BooleanField(required=True)
   
 class SearchMessageSerializer(serializers.Serializer):
     room_id= serializers.CharField(required=True)
@@ -294,3 +302,4 @@ class InfoSerializer(serializers.ModelSerializer):
     
 class CompleteRoomSerializer(serializers.Serializer):
     is_complete = serializers.BooleanField(required=True)
+    
