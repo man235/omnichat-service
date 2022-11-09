@@ -9,6 +9,8 @@ from core.schema import NatsChatMessage
 import ujson
 import logging
 import asyncio
+import requests
+from django.conf import settings
 from core import constants
 from core.utils.distribute_new_chat import find_user_new_chat
 
@@ -141,6 +143,11 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         external_id=data.senderId
     ).first()
     if not check_room:
+        query = {'pageId': check_fanpage.page_id}
+        list_setting_chat = requests.get(f'{settings.GET_USER_PROFILE_URL}/api/social-config/config-info', params=query)
+        if list_setting_chat.status_code == 200 and list_setting_chat.json()['status'] == "success":
+            data_user = list_setting_chat.json()['data']
+            logger.debug(f"{data_user} --------------------------------------------------------------")
         result_new_user = await find_user_new_chat(data, check_fanpage)
         new_room_user = Room.objects.create(
             page_id = check_fanpage,
