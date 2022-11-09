@@ -153,12 +153,9 @@ class RoomViewSet(viewsets.ModelViewSet):
             rows = cursor.fetchall()
             for row in rows:
                 result.append(row[0])
-        print(result)
         qs_contact = Room.objects.filter(id__in=result, room_message__is_sender=False).distinct()
-        print(qs_contact)
         serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
         data['contact'] = serializer_contact.data
-        print(data)
         qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False).distinct()
         qs_messages = qs_messages.filter(room_message__text__icontains=search).distinct()
         serializer_message = []
