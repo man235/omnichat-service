@@ -205,7 +205,8 @@ def facebook_format_mid_to_nats_message(room, message_response, data: NatsChatMe
         "timestamp": data.timestamp,
         "appId": message_response['from']['id'],
         "typeChat": constants.FACEBOOK,
-        "uuid": data.uuid
+        "uuid": data.uuid,
+        "typeMessage": data.typeMessage
     }
     return data_mid_json
 

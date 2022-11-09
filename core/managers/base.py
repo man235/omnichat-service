@@ -1,5 +1,5 @@
 from typing import Dict
-from core.schema import CoreChatInputMessage
+from core.schema import NatsChatMessage
 from core.abstractions import SingletonClass, AbsAppContext, AbsHandler, AbsManager
 from core.stream import NatsClient
 
@@ -32,10 +32,10 @@ class BaseManager(SingletonClass, AbsManager):
     async def _get_handlers(self) -> Dict[str, AbsHandler]:
         pass
 
-    async def process_message(self, message: CoreChatInputMessage, data: Dict, *args, **kwargs):
-        handler: AbsHandler = self._handlers.get(message.msg_type)
+    async def process_message(self, data: NatsChatMessage, *args, **kwargs):
+        handler: AbsHandler = self._handlers.get(data.typeChat)
         if handler:
             await handler.set_manager(self)
-            await handler.handle_message(message, **kwargs)
+            await handler.handle_message(data, **kwargs)
         else:
-            print(f'{self.__class__.__name__} not found handler for {message}')
+            print(f'{self.__class__.__name__} not found handler for {data}')

@@ -1,5 +1,5 @@
 from .base import BaseRouter
-from core.schema import CoreChatInputMessage, NatsChatMessage
+from core.schema import NatsChatMessage
 from core.abstractions import AbsAppContext
 from core import constants
 from sop_chat_service.app_connect.models import Room
@@ -12,13 +12,13 @@ class MessageTextRouter(BaseRouter):
     def bind_context(self, context: AbsAppContext, **kwargs):
         self.context = context
 
-    async def process_message(self, message: CoreChatInputMessage, data: NatsChatMessage, *args, **kwargs):
-        room: Room = await self.run_check_data_message(message, data)
+    async def process_message(self, data: NatsChatMessage, *args, **kwargs):
+        room: Room = await self.run_check_data_message(data)
         if not room:
             return
-        if message.chat_type == constants.FACEBOOK:
+        if data.typeChat == constants.FACEBOOK:
             msg = get_message_from_mid(room.page_id.access_token_page, data.mid)
             fb_msg = facebook_format_mid_to_nats_message(room, msg, data)
             data = parse_obj_as(NatsChatMessage, fb_msg)
-        await self.context.run_manager(manager_type=constants.WEBSOCKET_MANAGER, room=room, data=data, message=message)
-        await self.context.run_manager(manager_type=constants.STORAGE_MANAGER, room=room, data=data, message=message)
+        await self.context.run_manager(manager_type=constants.WEBSOCKET_MANAGER, room=room, data=data)
+        await self.context.run_manager(manager_type=constants.STORAGE_MANAGER, room=room, data=data)

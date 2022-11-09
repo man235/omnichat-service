@@ -8,9 +8,9 @@ import json
 import uuid
 from django.conf import settings
 from core.context import AppContextManager
-from core.schema import CoreChatInputMessage, NatsChatMessage, FormatSendMessage
+from core.schema import NatsChatMessage, FormatSendMessage
 from core import constants
-from pydantic import BaseModel, parse_obj_as
+from pydantic import parse_obj_as, parse_raw_as
 from nats.aio.client import Client as NATS
 import logging
 
@@ -58,23 +58,19 @@ class NatsWorker(BaseWorker):
         app_context = AppContextManager()
         async def subscribe_handler(msg):
             try:
-                data = json.loads((msg.data.decode("utf-8")).replace("'", "\""))
-                data['uuid'] = str(uuid.uuid4())
-                nats_message = parse_obj_as(NatsChatMessage, data)
-                logger.debug(f' nats_message ------------------------- {data}')
-                if not nats_message.typeChat:
-                    logger.debug(f'Data Receive not chat type')
-                    return
-                text_message = CoreChatInputMessage(msg_type=constants.MESSAGE_TEXT, chat_type=data.get('typeChat'))
-                await app_context.run_receiver(text_message, nats_message)
+                nats_message = parse_raw_as(NatsChatMessage, (msg.data.decode("utf-8")).replace("'", "\""))
+                nats_message.uuid = str(uuid.uuid4())
+                print(nats_message, " ***************************************8 ")
+                await app_context.run_receiver(nats_message)
                 logger.debug(f'RECEIVE DATA -----------------')
             except Exception as e:
                 logger.debug(f'Exception subscribe ----------------- {e}')
         
         async def chat_message_to_corechat(msg):
             try:
-                data = json.loads(msg.data.decode("utf-8"))
-                _message = parse_obj_as(FormatSendMessage, data)
+                _message = parse_raw_as(FormatSendMessage, msg.data.decode("utf-8"))
+                # data = json.loads(msg.data.decode("utf-8"))
+                # _message = parse_obj_as(FormatSendMessage, data)
                 logger.debug(f'RECEIVE DATA chat_message_to_corechat ------------------------------------------------------- {_message}')
                 await app_context.run_send_message(_message)
             except Exception as e:
