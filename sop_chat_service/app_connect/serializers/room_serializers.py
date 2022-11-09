@@ -51,7 +51,7 @@ class RoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date',
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status',
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'room_id',"unseen_message_count", "fanpage"]
         
     def get_unseen_message_count(self, obj):
