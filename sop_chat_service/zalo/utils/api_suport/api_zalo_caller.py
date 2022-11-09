@@ -19,7 +19,7 @@ def get_oa_follower(user_id: Any=None, access_token: str=None) -> Any:
             'access_token': access_token,
         }
         payload = {}
-        oa_follower_rp = requests.get(url=url, headers=headers)
+        oa_follower_rp = requests.get(url=url, headers=headers, timeout=10)
         oa_follower = oa_follower_rp.json()
         if oa_follower_rp.status_code == 200:
             if oa_follower.get('message') == 'Success':
@@ -61,7 +61,7 @@ def request_shared_info(user_id: str, access_token: str, message: Any = None) ->
             },
         }
         
-        user_shared_info_rp = requests.post(url=url, headers=headers, data=payload)
+        user_shared_info_rp = requests.post(url=url, headers=headers, data=payload, timeout=10)
         user_shared_info = user_shared_info_rp.json()
         
         if user_shared_info_rp.status_code == 200:
@@ -159,7 +159,7 @@ def upload_zalo_attachment(
             files = [
                 ('file', (attachment.name, attachment, attachment.content_type))
             ],
-            timeout=30,
+            timeout=10,
         )
         
         if rp.status_code == 200:
@@ -201,7 +201,8 @@ def get_message_data_of_zalo_user(
                     'offset': offset,
                     'count': count,
                 }
-            }
+            },
+            timeout=10
         )
         
         if rp.status_code == 200:

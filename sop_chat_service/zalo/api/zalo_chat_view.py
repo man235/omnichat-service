@@ -236,7 +236,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
             
             if not quota_rp_json:
                 return custom_response(
-                    403,
+                    400,
                     'Failed to get zalo command quota'
                 )
             else:
@@ -251,6 +251,6 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                 
         except Exception as e:
             return custom_response(
-                403,
+                400,
                 str(e)
             )

@@ -40,7 +40,8 @@ def get_zalo_command_quota(
                 'Content-Type': 'application/json',
                 'access_token': access_token, 
             },
-            data=payloads
+            data=payloads,
+            timeout=15,
         )
         print(rp.status_code)
         if rp.status_code == 200:        
