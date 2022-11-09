@@ -53,7 +53,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
             )
 
             if not oa_token:
-                return custom_response(401, 'Failed to authorize Zalo OA')
+                return custom_response(400, 'Failed to authorize Zalo OA')
             elif oa_token.get('message') != 'Success':
                 return custom_response(400, oa_token.get('error'))
 
@@ -62,9 +62,9 @@ class ZaloViewSet(viewsets.ModelViewSet):
 
             oa_info = zalo_oa_auth.get_oa_info(access_token)
             if not oa_info:
-                return custom_response(403, 'Failed to get Zalo OA infomation')
+                return custom_response(400, 'Failed to get Zalo OA infomation')
             elif oa_info.get('message') != 'Success':
-                return custom_response(403, oa_info.get('error'))
+                return custom_response(400, oa_info.get('error'))
             else:
                 oa_data = oa_info.get('data')
                 
@@ -282,7 +282,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                     queryset.is_active = False
                     queryset.last_subscribe = timezone.now()
                     queryset.save()
-                    return custom_response(401, 'Failed to authorize Zalo OA')
+                    return custom_response(400, 'Failed to authorize Zalo OA')
 
                 if oa_token.get('message') == 'Success':
                     access_token = oa_token.get('data').get('access_token')
