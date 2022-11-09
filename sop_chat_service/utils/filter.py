@@ -9,7 +9,6 @@ def filter_room(data, room : Room):
     phone = data.get('phone',None)
     label = data.get('label',None)
     type =data.get('type',None)
-
     if data:
         if type:
             if type.lower() == "all":
