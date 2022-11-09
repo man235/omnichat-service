@@ -32,7 +32,6 @@ class ReminderViewSet(viewsets.ModelViewSet):
                     time_reminder = data['time_reminder'],
                     repeat_time = data['repeat_time']
                 )
-                print(room.user_id)
                 sz = ReminderSerializer(reminder)
                 log_message = format_log_message(room, constants.LOG_REMINDED, constants.TRIGGER_REMINDED)
                 subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"

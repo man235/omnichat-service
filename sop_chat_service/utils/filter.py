@@ -9,7 +9,6 @@ def filter_room(data, room : Room):
     phone = data.get('phone',None)
     label = data.get('label',None)
     type =data.get('type',None)
-
     if data:
         if type:
             if type.lower() == "all":
@@ -35,11 +34,11 @@ def filter_room(data, room : Room):
             room = room.filter(room_message__created_at__range = [start_date, end_date])
         if status:
             if status == "all":
-                room = room.filter(Q(status="processing") | Q(status="complete"))
+                pass
             elif status == "processing":
                 room = room.filter(status="processing")
-            elif status == 'complete':
-                room = room.filter(status="complete")
+            elif status == 'completed':
+                room = room.filter(status="completed")
         if state:
             for item in state :
                 if item == 'unread':

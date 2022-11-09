@@ -10,7 +10,8 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     SortMessageSerializer,
     UserInfoSerializer,
     CountAttachmentRoomSerializer,
-    LabelSerializer
+    LabelSerializer,
+    RoomIdSerializer
 )
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
@@ -66,7 +67,6 @@ class RoomViewSet(viewsets.ModelViewSet):
         user_header = get_user_from_header(request.headers)
         qs = Room.objects.filter(
             (Q(user_id=user_header) | Q(admin_room_id=user_header)),
-            completed_date__isnull=True,
             room_message__is_sender=False).distinct().order_by("-room_message__created_at")
         sz = RoomMessageSerializer(qs, many=True)
         ser_sort = SortMessageSerializer(data = request.data)
@@ -105,9 +105,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         sz = SearchRoomSerializer(data=request.data)
         sz.is_valid(raise_exception=True)
         data = {}
-        if sz.data.get('search'):
-            search = remove_accent(sz.data.get('search'))
-            result=[]
+        result=[]
+        search = remove_accent(sz.data.get('search'))
+        if sz.data.get('search') and not  sz.data.get('is_filter'):
             cursor = connection.cursor()
             cursor.execute('''
                     select room.id 
@@ -119,27 +119,61 @@ class RoomViewSet(viewsets.ModelViewSet):
             rows = cursor.fetchall()
             for row in rows:
                 result.append(row[0])
-            qs_contact = Room.objects.filter(id__in=result, room_message__is_sender=False).distinct()
-            serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
-            data['contact'] = serializer_contact.data
-            qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False).distinct()
-            qs_messages = qs_messages.filter(room_message__text__icontains=sz.data.get('search')).distinct()
-            serializer_message = []
-            for qs_message in qs_messages:
-                count_mess = Message.objects.filter(text__icontains=sz.data.get('search'), room_id=qs_message).count()
-                user_info = UserApp.objects.filter(external_id=qs_message.external_id).first()
-                data_count_message = {
-                    "user_id": qs_message.user_id,
-                    "external_id": qs_message.external_id,
-                    "name": qs_message.name,
-                    "type": qs_message.type,
-                    "room_id": qs_message.room_id,
-                    "count_message": count_mess,
-                    "avatar": user_info.avatar if user_info else None,
-                    "fan_page_name": qs_message.page_id.name if qs_message.page_id else None,
-                    "fan_page_avatar":qs_message.page_id.avatar_url if qs_message.page_id else None
-                }
-                serializer_message.append(data_count_message)
+        else:
+            ser_sort = SortMessageSerializer(data = request.data)
+            ser_sort.is_valid(raise_exception=True)
+            if sz.data.get('is_filter'):
+                filter_request = ser_sort.data.get('filter')
+                data_filter = {
+                "type":filter_request.get('type',None),
+                "time" : filter_request.get('time',None),
+                "status" : filter_request.get('status',None),
+                "state" : filter_request.get('state',None),
+                "phone" : filter_request.get('phone',None),
+                "label" : filter_request.get('label',None)
+            }
+            qs = Room.objects.filter(
+                (Q(user_id=user_header) | Q(admin_room_id=user_header)),
+                room_message__is_sender=False).distinct().order_by("-room_message__created_at")
+            qs = filter_room(data_filter, qs)
+            sz = RoomIdSerializer(qs, many=True)
+            list_data=[]
+            for item in sz.data:
+                list_data.append(item['id'])
+            list_data = tuple(set(list_data))
+            cursor = connection.cursor()
+            cursor.execute('''
+                    select room.id 
+                    from public.app_connect_room room 
+                	where room.id in %s and 
+                    un_accent(room.name) ~* '\y%s' 
+                    and(room.user_id = '%s' 
+                    or room.admin_room_id = '%s')
+            '''%(list_data,search,user_header,user_header))
+            rows = cursor.fetchall()
+            for row in rows:
+                result.append(row[0])
+        qs_contact = Room.objects.filter(id__in=result, room_message__is_sender=False).distinct()
+        serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
+        data['contact'] = serializer_contact.data
+        qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False).distinct()
+        qs_messages = qs_messages.filter(room_message__text__icontains=search).distinct()
+        serializer_message = []
+        for qs_message in qs_messages:
+            count_mess = Message.objects.filter(text__icontains=search, room_id=qs_message).count()
+            user_info = UserApp.objects.filter(external_id=qs_message.external_id).first()
+            data_count_message = {
+                "user_id": qs_message.user_id,
+                "external_id": qs_message.external_id,
+                "name": qs_message.name,
+                "type": qs_message.type,
+                "room_id": qs_message.room_id,
+                "count_message": count_mess,
+                "avatar": user_info.avatar if user_info else None,
+                "fan_page_name": qs_message.page_id.name if qs_message.page_id else None,
+                "fan_page_avatar":qs_message.page_id.avatar_url if qs_message.page_id else None
+            }
+            serializer_message.append(data_count_message)
             data['messages'] = serializer_message
         return custom_response(200, "Search Successfully", data)
 
@@ -162,6 +196,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             
         else:
             room.completed_date = None
+            room.status='processing'
             room.save()
             log_message = format_log_message(room, f'{constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
@@ -219,7 +254,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     def add_func(self, request, *args, **kwargs):
         cursor = connection.cursor()
         cursor.execute('''
-                CREATE OR REPLACE FUNCTION un_accent (x text) RETURNS text AS
+                CREATE OR REPLACE FUNCTION un_accent(x text) RETURNS text AS
                 $$
                 DECLARE
                  cdau text; kdau text; r text;

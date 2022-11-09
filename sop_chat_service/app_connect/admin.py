@@ -13,7 +13,7 @@ class PageAdmin(admin.ModelAdmin):
 
 @admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
-    list_display = ["id", "page_id", "approved_date", "type", "conversation_id", "external_id", "user_id", "name", "room_id"]
+    list_display = ["id", "page_id", 'status',"approved_date", "type", "conversation_id", "external_id", "user_id", "name", "room_id"]
     search_fields = ["name", "id"]
 
 
