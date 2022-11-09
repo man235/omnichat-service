@@ -22,18 +22,18 @@ class ServiceSurveySerializer(serializers.ModelSerializer):
         fields = ['id', 'mid', 'name', 'value']
 class GetMessageSerializer(serializers.ModelSerializer):
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
-    msg_log = serializers.SerializerMethodField(source='get_msg_log', read_only=True)
+    log_message = serializers.SerializerMethodField(source='get_log_message', read_only=True)
 
     class Meta:
         model = Message
-        fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender', 'created_at', 'uuid', 'msg_log']
+        fields = ['attachments', 'sender_id', 'recipient_id', 'text', 'reply_id', 'is_sender', 'created_at', 'uuid', 'log_message']
 
     def get_attachments(self, obj):
         attachments = Attachment.objects.filter(mid=obj.id)
         sz = AttachmentSerializer(attachments, many=True)
         return sz.data
 
-    def get_msg_log(self,obj):
+    def get_log_message(self,obj):
         _msg_log = LogMessage.objects.filter(mid=obj.id).first()
         sz = LogMessageSerializer(_msg_log)
         return sz.data

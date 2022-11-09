@@ -7,10 +7,10 @@ class MessageSerializer(serializers.ModelSerializer):
     message_reply = serializers.SerializerMethodField(source='get_message_reply',read_only=True)
     attachments = serializers.SerializerMethodField(source='get_attachments', read_only=True)
     service_survey = serializers.SerializerMethodField(source='get_service_survey', read_only=True)
-    msg_log = serializers.SerializerMethodField(source='get_msg_log', read_only=True)
+    log_message = serializers.SerializerMethodField(source='get_log_message', read_only=True)
     count_message_unseen = serializers.SerializerMethodField(source='get_count_message_unseen', read_only=True)
 
-    def get_msg_log(self,obj):
+    def get_log_message(self,obj):
         _msg_log = LogMessage.objects.filter(mid = obj.id).first()
         sz = LogMessageSerializer(_msg_log)
         return sz.data
@@ -47,7 +47,7 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta: 
         model= Message
         fields = ['attachments','id','sender_id','recipient_id','reaction','reply_id',
-            'text','message_reply','sender_name','is_sender','created_at', 'is_seen',"uuid",'count_message_unseen',"service_survey", "msg_log"]
+            'text','message_reply','sender_name','is_sender','created_at', 'is_seen',"uuid",'count_message_unseen',"service_survey", "log_message"]
         
         
 class ResultMessageSerializer(serializers.ModelSerializer):
