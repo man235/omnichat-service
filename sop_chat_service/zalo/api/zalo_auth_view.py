@@ -78,7 +78,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                         'type': 'zalo',
                         'name': oa_data.get('name'),
                         'user_id': user_header,
-                        'access_token_page': access_token if oa_connection_sz.data.get('is_subscribe') else None,
+                        'access_token_page': access_token if oa_connection_sz.data.get('is_subscribe') else 'Invalid',
                         'refresh_token_page': refresh_token,
                         'avatar_url': oa_data.get('avatar_url'),
                         'is_active': True if oa_connection_sz.data.get('is_subscribe') else False,
@@ -132,7 +132,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         if qs.user_id == user_header:
             qs.is_deleted = True
             qs.is_active = False
-            qs.access_token_page = None
+            qs.access_token_page = 'Invalid'
             qs.save()
             return custom_response(200, 'Delete OA successfully')    
         else:
@@ -163,7 +163,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
         
         if qs.user_id == user_header:
             qs.is_active = False
-            qs.access_token_page = None
+            qs.access_token_page = 'Invalid'
             qs.last_subscribe = timezone.now()
             qs.save()
             
@@ -220,7 +220,7 @@ class ZaloViewSet(viewsets.ModelViewSet):
                 page_id=oa_id
             ).first()
             
-            if data.get('is_deleted') or oa_model.access_token_page is None:
+            if data.get('is_deleted') or oa_model.access_token_page == 'Invalid':
                 continue
             
             access_token = oa_model.access_token_page
