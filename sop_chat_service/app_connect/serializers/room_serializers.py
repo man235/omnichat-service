@@ -95,7 +95,7 @@ class RoomMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status',
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status','assign_reminder',
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
     
     def get_assign_reminder(self,obj):
