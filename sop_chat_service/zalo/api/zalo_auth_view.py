@@ -12,10 +12,9 @@ from sop_chat_service.zalo.serializers.zalo_auth_serializers import ZaloAuthenti
 from sop_chat_service.zalo.utils.api_suport import zalo_oa_auth
 from core import constants
 from django.db.models import Q
+from sop_chat_service.zalo.utils.api_suport.zalo_oa_filter import get_oa_queryset_by_user_id
+from sop_chat_service.zalo.utils.api_suport.zalo_oa_filter import get_oa_queryset_by_user_id
 import logging
-from sop_chat_service.zalo.utils.api_suport.zalo_oa_filter import get_oa_queryset_by_user_id
-
-from sop_chat_service.zalo.utils.api_suport.zalo_oa_filter import get_oa_queryset_by_user_id
 
 logger = logging.getLogger(__name__)
 
