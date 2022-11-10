@@ -15,6 +15,8 @@ from django.db.models import Q
 import logging
 from sop_chat_service.zalo.utils.api_suport.zalo_oa_filter import get_oa_queryset_by_user_id
 
+from sop_chat_service.zalo.utils.api_suport.zalo_oa_filter import get_oa_queryset_by_user_id
+
 logger = logging.getLogger(__name__)
 
 
@@ -97,7 +99,22 @@ class ZaloViewSet(viewsets.ModelViewSet):
                             oa_model = oa_sz.create(oa_data_bundle)
                         else:
                             oa_model = oa_sz.update(queryset, oa_data_bundle)
-                        
+                            
+                            # update user id or admin id fields in room model
+                            room_qs = Room.objects.filter(
+                                page_id=oa_model,
+                                type=constants.ZALO
+                            )
+                            updating_room_data = {
+                                'admin_room_id': oa_model.user_id
+                            }
+                            if oa_model.setting_chat == constants.SETTING_CHAT_ONLY_ME:
+                                updating_room_data['user_id'] = oa_model.user_id
+                                
+                            room_qs.update(
+                                **updating_room_data
+                            )
+
                         return custom_response(
                             200,
                             'Connect to Zalo OA successfully',
