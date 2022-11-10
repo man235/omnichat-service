@@ -81,24 +81,36 @@ class RoomViewSet(viewsets.ModelViewSet):
         filter_request = ser_sort.data.get('filter')
         if filter_request:
             data_filter = {
-                "page_id":filter_request.get('page_id',None),
-                "type":filter_request.get('type',None),
-                "time" : filter_request.get('time',None),
-                "status" : filter_request.get('status',None),
-                "state" : filter_request.get('state',None),
-                "phone" : filter_request.get('phone',None),
-                "label" : filter_request.get('label',None)
+                "page_id": filter_request.get('page_id', constants.ALL),
+                "type": filter_request.get('type', None),
+                "time" : filter_request.get('time', None),
+                "status" : filter_request.get('status', None),
+                "state" : filter_request.get('state', None),
+                "phone" : filter_request.get('phone', None),
+                "label" : filter_request.get('label', None)
             }
+
             qs = Room.objects.filter(
                 (Q(user_id=user_header) | Q(admin_room_id=user_header)),
-                room_message__is_sender=False).distinct().order_by("-room_message__created_at")
+                room_message__is_sender=False,
+            ).distinct().order_by("-room_message__created_at")
+            
+            if data_filter.get('page_id') != constants.ALL:
+                oa_qs = FanPage.objects.filter(
+                    page_id=data_filter.get('page_id'),
+                    is_deleted=False
+                ).first()
+                qs = qs.filter(page_id=oa_qs)                
+
             qs = filter_room(data_filter, qs)
+            
             sz = RoomMessageSerializer(qs, many=True)
         list_data = list(unique_everseen(sz.data))
         #   sort by room message
         if ser_sort.data.get('sort'):
             if ser_sort.data.get('sort').lower() == "old":
                 list_data = sorted(list(unique_everseen(sz.data)), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
+
         data_result = pagination_list_data(list_data, limit_req, offset_req)
         return custom_response(200,"success",data_result)
     
