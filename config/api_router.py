@@ -28,7 +28,8 @@ router.register('reminder', ReminderViewSet)
 router.register('live-chat',LiveChatViewSet)
 router.register('zalo', ZaloViewSet)
 router.register('zalo/message', ZaloChatViewSet)
-router.register("chat",ChatViewSet)
-router.register("page",PageViewSet)
+router.register("chat", ChatViewSet)
+router.register("page", PageViewSet)
+
 app_name = "api"
 urlpatterns = router.urls
