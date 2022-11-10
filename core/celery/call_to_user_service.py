@@ -3,6 +3,8 @@ from django.conf import settings
 from celery import shared_task
 from core import constants
 import requests
+import logging
+logger = logging.getLogger(__name__)
 
 
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
@@ -24,3 +26,10 @@ def celery_task_verify_information(user_app: UserApp, room: Room):
         return response.text
     except Exception as e:
         return f"Exception Create Task Reminder {e}"
+
+
+
+@shared_task(name = "test-celery-task")
+def test_celery_task(*args, **kwargs):
+    logger.debug("TASK CELERY TEST FOR NO AUTHENTICATION")
+    return

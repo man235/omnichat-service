@@ -20,7 +20,7 @@ def format_log_message(room: Room, message_log: str, type_log: str):
         attachments = [],
         text = message_log,
         created_time = _time_now,
-        sender_id = room.page_id.page_id if room.page_id else room.user_id,
+        sender_id = room.user_id,
         recipient_id = room.external_id,
         room_id = room.room_id,
         is_sender = True,
