@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from sop_chat_service.app_connect.models import Room,FanPage
+from sop_chat_service.app_connect.models import Room,FanPage,Label
 from django.db.models.query_utils import Q
 
 def filter_room(data, room : Room):
@@ -55,6 +55,18 @@ def filter_room(data, room : Room):
                     # room = room.filter((Q(room_message__is_sender = False) & Q(room_message__is_seen__isnull=True)))
                 if item == 'remind':
                     room = room.filter(room_reminder__isnull=False)
+        if label:
+            if label['type'] == 'all':
+                for r in room :
+                    for item in label['label']:
+                        exclude_room = room.filter(id=r.id,room_label__label_id__in = [str(item)])
+                        if not exclude_room:
+                            room = room.filter(~Q(id = r.id))                            
+            elif label['type'] == 'exclude':
+                room = room.filter(~Q(room_label__label_id__in = label['label']),)
+            elif label['type'] == 'contain':
+                room = room.filter(room_label__label_id__in = label['label'])
+                
         return room
     
     else:
