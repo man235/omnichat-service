@@ -12,6 +12,7 @@ MESSAGE_LOG = "message_log"
 MESSAGE_LOG_MANAGER = "message_log-manager"
 MESSAGE_LOG_STORAGE_DATABASE = 'message_log-storage'
 MESSAGE_LOG_WEBSOCKET = 'message_log-websocket'
+MESSAGE_LEAVE_LIVECHAT_LOG = "leave-livechat-log"
 
 WEBSOCKET_MANAGER = "websocket-manager"
 
@@ -29,7 +30,6 @@ SEND_MESSAGE_WEBSOCKET = 'send_message-websocket'
 REDIS_CONFIG_LIVECHAT = "live_chat-configs"
 LIVECHAT_NEW_MESSAGE = "live_chat_new_message"
 LIVECHAT_NEW_MESSAGE_ACK = "live_chat_new_message_ack"
-NATS_MSG_TYPE_LEAVE_LIVECHAT_LOG = "leave-livechat-log"
 
 
 SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN = 'Customer.To.SaleMan'
@@ -46,13 +46,13 @@ REMINDER_SALEMAN = "reminder-saleman"
 LOG_COMPLETED = 'have completed the conversation'
 LOG_REOPENED = 'have reopened the conversation'
 LOG_REMINDED = 'has set up reminder'
-LOG_LEFT = 'have left the conversation'
+LOG_LEAVE_LIVECHAT = 'have left the conversation'
 LOG_FORWARDED = 'has forwarded the message to'
 
 TRIGGER_COMPLETED = 'completed'
 TRIGGER_REOPENED = 'reopen'
 TRIGGER_REMINDED = 'reminder'
-TRIGGER_LEFT = 'left'
+TRIGGER_LEFT_LEAVE_LIVECHAT = 'leave-livechat'
 TRIGGER_FORWARDED = 'forwarded'
 
 LOG_MESSAGE_ACK = 'Log.Message.ACK'

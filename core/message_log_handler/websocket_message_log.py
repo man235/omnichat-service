@@ -12,9 +12,9 @@ class MessageLogWebSocketHandler(BaseHandler):
 
     async def handle_message(self, room, message: FormatSendMessage, *args, **kwargs):
         data_ws = message.json().encode()
-        if message.type == 'facebook':
+        if message.type == constants.FACEBOOK:
             new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_FACEBOOK}.{room.room_id}'
-        elif message.type == 'zalo':
+        elif message.type == constants.ZALO:
             new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_ZALO}.{room.room_id}'
         await self.manager.nats_client.publish(new_topic_publish, data_ws)
         logger.debug(f"{new_topic_publish} ------ {message.uuid}")
