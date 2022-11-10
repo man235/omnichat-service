@@ -5,7 +5,7 @@ from core import constants
 
 def reminder_format_data(assign_remind: AssignReminder):
     _reminder = ReminderSchema(
-        room_id = assign_remind.room_id,
+        room_id = assign_remind.room_id.room_id,
         user_id = assign_remind.user_id,
         unit = assign_remind.unit,
         title = assign_remind.title,
