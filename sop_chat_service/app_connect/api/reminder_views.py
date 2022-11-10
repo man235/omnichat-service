@@ -1,63 +1,55 @@
-from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer, CreateReminderSerializer, UpdateReminderSerializer
-from sop_chat_service.app_connect.models import Reminder, Room
+from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer, CreateReminderSerializer
+from sop_chat_service.app_connect.models import Reminder
 from rest_framework import viewsets, permissions, serializers
-from .message_facebook_views import connect_nats_client_publish_websocket
 from sop_chat_service.utils.request_headers import get_user_from_header
-from sop_chat_service.app_connect.tasks import create_reminder_task
 from sop_chat_service.facebook.utils import custom_response
-from core.utils import format_log_message
-from core import constants
-import asyncio
-import ujson
-
+from rest_framework.decorators import action
+from django.db.models import Q
 
 class ReminderViewSet(viewsets.ModelViewSet):
     queryset = Reminder.objects.all()
     permission_classes = (permissions.AllowAny, )
     serializer_class = ReminderSerializer
 
-    def create(self, request, *args, **kwargs):
+
+
+
+    @action(detail=False, methods=["POST"], url_path="list-reminder")
+    def get_reminder(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
+        reminder = Reminder.objects.filter((Q(user_id=user_header) | Q(user_id=None))).order_by('-user_id','created_at')
+        sz= ReminderSerializer(reminder,many=True)
+        return custom_response(200,"Get List Reminder Successfully",sz.data)
+    
+    def create(self, request, *args, **kwargs):
         data = request.data
+        user_header = get_user_from_header(request.headers)
         serializer = CreateReminderSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
-            room = Room.objects.filter(room_id=data['room_id']).first()
-            if not room:
-                return custom_response(200,"Create Reminder Successfully",{"room_id": "Room is not valid"})
-            else:
-                reminder = Reminder.objects.create(
-                    room_id=room,
-                    unit = data['unit'],
-                    title = data['title'],
-                    time_reminder = data['time_reminder'],
-                    repeat_time = data['repeat_time']
-                )
-                sz = ReminderSerializer(reminder)
-                log_message = format_log_message(room, constants.LOG_REMINDED, constants.TRIGGER_REMINDED)
-                subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
-                asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
-                create_reminder_task.delay(reminder.id, int(reminder.repeat_time))
-                return custom_response(200,"Create Reminder Successfully",sz.data)
+            reminder = Reminder.objects.create(
+                user_id = user_header,
+                unit = data['unit'],
+                title = data['title'],
+                time_reminder = data['time_reminder'],
+                repeat_time = data['repeat_time']
+            )
+            sz = ReminderSerializer(reminder)
+            return custom_response(200,"Create Reminder Successfully",sz.data)
 
     def update(self, request, pk=None, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
         data = request.data
         reminder = Reminder.objects.filter(id=pk).first()
-        room = Room.objects.filter(id=reminder.room_id.id).first()
-        if not room:
-            return custom_response(200,"Create Reminder Successfully",{"room_id": "Room is not valid"})
-        serializer = CreateReminderSerializer(data=data)
+        if not reminder.user_id:
+            return custom_response(400,"Can't Edit Default Reminder",[])
+        serializer = CreateReminderSerializer(reminder,data=data,partial =True)
         serializer.is_valid(raise_exception=True)
-        reminder.delete()
-        new_reminder = Reminder.objects.create(
-            room_id = room,
-            unit = serializer.data.get('unit'),
-            title = serializer.data.get('title'),
-            time_reminder = serializer.data.get('time_reminder'),
-            repeat_time = serializer.data.get('repeat_time')
-        )
-        log_message = format_log_message(room, constants.LOG_REMINDED, constants.TRIGGER_REMINDED)
-        subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
-        asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
-        create_reminder_task.delay(new_reminder.id, new_reminder.repeat_time)
+        serializer.save()
+
         return custom_response(200,"Update Reminder Successfully",serializer.data)
+    def destroy(self, request, pk=None, *args, **kwargs):
+        reminder = Reminder.objects.filter(id=pk).first()
+        if not reminder.user_id:
+            return custom_response(400,"Can't Delete Default Reminder",[])
+        reminder.delete()
+        return custom_response(200,"Delete Reminder Successfully",[])

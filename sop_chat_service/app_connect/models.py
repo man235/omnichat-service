@@ -92,13 +92,28 @@ class Reminder(models.Model):
         MINUTE = 'minute'
         SECOND = 'second'
 
-    room_id = models.ForeignKey(Room, related_name='room_reminder', null=True, blank=True,
-                                on_delete=models.SET_NULL)     # foreign key with room
+    # room_id = models.ForeignKey(Room, related_name='room_reminder', null=True, blank=True,
+    #                             on_delete=models.SET_NULL)     # foreign key with room
+    user_id = models.CharField(max_length=255, null=True, blank=True)
     unit = models.CharField(max_length=30, default=UnitChoice.HOUR, choices=UnitChoice.choices)     # unit of reminder
     title = models.CharField(max_length=255, null=True, blank=True)      # title for reminder
     time_reminder = models.IntegerField(null=True, blank=True)
     repeat_time = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class AssignReminder(models.Model):
+    room_id = models.ForeignKey(Room, related_name='room_reminder', null=True, blank=True,
+                                on_delete=models.SET_NULL)     # foreign key with room
+    reminder_id = models.ForeignKey(Reminder, related_name='assign_reminder', null=True, blank=True,
+                                on_delete=models.SET_NULL)     # foreign key with room
+    user_id = models.CharField(max_length=255, null=True, blank=True)
+    unit = models.CharField(max_length=30, null=True, blank=True)     # unit of reminder
+    title = models.CharField(max_length=255, null=True, blank=True)      # title for reminder
+    time_reminder = models.IntegerField(null=True, blank=True)
+    repeat_time = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active_reminder=models.BooleanField(default=False)
 
 
 class Label(models.Model):
