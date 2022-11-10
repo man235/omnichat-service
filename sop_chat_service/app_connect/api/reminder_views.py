@@ -12,8 +12,6 @@ class ReminderViewSet(viewsets.ModelViewSet):
     serializer_class = ReminderSerializer
 
 
-
-
     @action(detail=False, methods=["POST"], url_path="list-reminder")
     def get_reminder(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
@@ -45,8 +43,8 @@ class ReminderViewSet(viewsets.ModelViewSet):
         serializer = CreateReminderSerializer(reminder,data=data,partial =True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return custom_response(200,"Update Reminder Successfully",serializer.data)
+
     def destroy(self, request, pk=None, *args, **kwargs):
         reminder = Reminder.objects.filter(id=pk).first()
         if not reminder.user_id:

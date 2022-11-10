@@ -57,6 +57,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         qs = Reminder.objects.filter(room_id = room)
         sz = ReminderSerializer(qs,many=True)
         return custom_response(200,"success",sz.data)
+
     @action(detail=False, methods=["POST"], url_path="room-info")
     def room_info(self, request, *args, **kwargs):
         sz = RoomInfoSerializer(data= request.data,many=False)
@@ -98,7 +99,6 @@ class RoomViewSet(viewsets.ModelViewSet):
         if ser_sort.data.get('sort'):
             if ser_sort.data.get('sort').lower() == "old":
                 list_data = sorted(list(unique_everseen(sz.data)), key=lambda d: d['last_message'].get('created_at'))       # old -> new message in room
-
         data_result = pagination_list_data(list_data, limit_req, offset_req)
         return custom_response(200,"success",data_result)
     
@@ -207,7 +207,6 @@ class RoomViewSet(viewsets.ModelViewSet):
             msg = "Re-open Room Successfully"
         return custom_response(200,msg,[])
 
-
     def retrieve(self, request, pk=None):
         user_header = get_user_from_header(request.headers)
         room = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)), room_id=pk).first()
@@ -254,6 +253,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             return custom_response(400,"Invalid room",[])
         sz = CountAttachmentRoomSerializer(room, many=False)
         return custom_response(200,"Count Attachment",sz.data)
+
     @action(detail=False, methods=["GET"], url_path="add-un-accent")
     def add_func(self, request, *args, **kwargs):
         cursor = connection.cursor()
@@ -316,7 +316,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         )
         assign.save()
         assign_sz= GetAssignReminderSerializer(assign)
-        log_message = format_log_message(room, constants.LOG_REMINDED, constants.TRIGGER_REMINDED)
+        log_message = format_log_message(room, assign.title, constants.TRIGGER_REMINDED)
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         create_reminder_task.delay(assign.id, int(assign.repeat_time))
