@@ -8,3 +8,6 @@ from .format_message_livechat import *
 from .save_message_zalo import *
 from .distribute_new_chat import *
 from .format_log_message import *
+from .reminders import *
+from .nats_connect import *
+from .convert_time import *

@@ -60,7 +60,7 @@ class NatsWorker(BaseWorker):
             try:
                 nats_message = parse_raw_as(NatsChatMessage, (msg.data.decode("utf-8")).replace("'", "\""))
                 nats_message.uuid = str(uuid.uuid4())
-                print(nats_message, " ***************************************8 ")
+                logger.debug(f"{nats_message} ********************************************** ")
                 await app_context.run_receiver(nats_message)
                 logger.debug(f'RECEIVE DATA -----------------')
             except Exception as e:

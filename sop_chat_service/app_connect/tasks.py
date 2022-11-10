@@ -1,30 +1,30 @@
+import time
+import ujson
+import asyncio
+from core import constants
 from celery import shared_task
 from .models import AssignReminder
-from core import constants
-import time
-from core.utils import format_log_message
+from core.utils import reminder_format_data, publish_data_to_nats, convert_unit_time
 
-@shared_task
+
+@shared_task(name = constants.CELERY_TASK_REMINDER_ROOM)
 def create_reminder_task(id: int, repeat_time: int):
-    
     try:
-        for repeat_time in range(0, repeat_time):
+        _repeat = True
+        while _repeat:
             assign = AssignReminder.objects.filter(id=id).first()
-            time_reminder = 1
             if not assign:
-                return "Error"
-            if assign.unit == constants.DAY:
-                time_reminder = assign.time_reminder * 60 * 60 * 24
-            elif assign.unit == constants.HOUR:
-                time_reminder = assign.time_reminder * 60 * 60
-            elif assign.unit == constants.MINUTE:
-                time_reminder = assign.time_reminder * 60
-            elif assign.unit == constants.SECOND:
-                time_reminder = assign.time_reminder
-            time.sleep(time_reminder)
+                return "Error: Not Find Assign Reminder"
+            if assign.repeat_time == 0:
+                _repeat = False
+            _time = convert_unit_time(assign.unit, assign.time_reminder)
+            time.sleep(_time)
             assign.repeat_time = assign.repeat_time - 1
-            assign.is_active_reminder = True 
+            assign.is_active_reminder = True
             assign.save()
-        return "Success"
+            reminder_ws = reminder_format_data(assign)
+            subject_nats = f"{constants.REMINDER_CHAT_SERVICE_TO_WEBSOCKET}{assign.room_id}"
+            asyncio.run(publish_data_to_nats(subject_nats, ujson.dumps(reminder_ws).encode()))
+        return f"Reminder of room: {assign.room_id} with title {assign.title} success"
     except Exception as e:
         return f"Exception Create Task Reminder {e}"
