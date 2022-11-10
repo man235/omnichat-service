@@ -54,8 +54,8 @@ class RoomViewSet(viewsets.ModelViewSet):
         room= Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),room_id = data.get('room_id',None)).first()
         if not room:
             return custom_response(400," Room id invalid",[])
-        qs = Reminder.objects.filter(room_id = room)
-        sz = ReminderSerializer(qs,many=True)
+        qs = AssignReminder.objects.filter(room_id = room).exclude(repeat_time = 0)
+        sz = GetAssignReminderSerializer(qs,many=True)
         return custom_response(200,"success",sz.data)
 
     @action(detail=False, methods=["POST"], url_path="room-info")
@@ -232,10 +232,13 @@ class RoomViewSet(viewsets.ModelViewSet):
         room_sz = RoomSerializer(room,many=False)
         qs_customer = UserApp.objects.filter(external_id=room.external_id).first()
         sz_customer = UserInfoSerializer(qs_customer,many=False)
+        qs_assign_reminder = AssignReminder.objects.filter(room_id = room,user_id = user_header).exclude(repeat_time=0)
+        assign_sz = GetAssignReminderSerializer(qs_assign_reminder,many=True)
         qs_label = Label.objects.filter(room_id=room)
         sz_label = LabelSerializer(qs_label,many=True)
         data = {
             "customer_info": sz_customer.data,
+            "assign_reminder": assign_sz.data,
             "label": sz_label.data,
             "room_info":room_sz.data,
             "fanpage_id": room.page_id.page_id if room.page_id else None,
@@ -320,7 +323,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         create_reminder_task.delay(assign.id, int(assign.repeat_time))
-        return custom_response(200,"Count Seen Message Channel",assign_sz.data)
+        return custom_response(200,"Assign Reminder Successfully",assign_sz.data)
     
     @action(detail=False, methods=["POST"], url_path="deactive-noti")
     def deactive(self, request, *args, **kwargs):
@@ -332,7 +335,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         return custom_response(200,"Close Noti Successfully",assign_sz.data)
     
     @action(detail=False, methods=["POST"], url_path="remove-assign-reminder")
-    def deactive(self, request, *args, **kwargs):
+    def remove_assign(self, request, *args, **kwargs):
         sz =  DeactiveAssignReminderSerializer(data=request.data)    
         room,assign,user_header = sz.validate(request,request.data)    
         assign.is_active_reminder = False
