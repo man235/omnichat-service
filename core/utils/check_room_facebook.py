@@ -3,13 +3,14 @@ from .api_facebook_app import get_user_info
 from django.utils import timezone
 from asgiref.sync import sync_to_async
 from core.schema import  NatsChatMessage
+from core.celery import celery_task_verify_information
 import logging
 logger = logging.getLogger(__name__)
 
-@sync_to_async
-def check_room_facebook(data: NatsChatMessage):
+
+
+async def check_room_facebook(data: NatsChatMessage):
     check_fanpage = FanPage.objects.filter(page_id=data.recipientId, is_active=True).first()
-    # check_fanpage = FanPage.objects.filter(page_id=data.recipientId).first()
     if not check_fanpage or not check_fanpage.is_active:
         logger.debug(f' NOT FIND FANPAGE FROM DATABASE -------------------------')
         return None
@@ -42,6 +43,7 @@ def check_room_facebook(data: NatsChatMessage):
             user_id=check_fanpage.user_id,
         )
         new_room.save()
+        celery_task_verify_information.delay(user_app, new_room)
         return new_room
     else:
         if check_room.completed_date:

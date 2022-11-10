@@ -1,8 +1,8 @@
 from .base import BaseCheckDataMessageManager
 from core import constants
 from typing import Dict
-from core.schema import CoreChatInputMessage, NatsChatMessage
-from sop_chat_service.zalo.utils import check_room_zalo, distribute_new_room_zalo
+from core.schema import NatsChatMessage
+from sop_chat_service.zalo.utils import distribute_new_room_zalo
 
 class CheckDataMessageZalo(BaseCheckDataMessageManager):
     chat_type: str = constants.ZALO

@@ -1,7 +1,7 @@
 from typing import Dict
 from .base import BaseManager
 from core import constants
-from core.schema import CoreChatInputMessage
+from core.schema import NatsChatMessage
 from core.abstractions import AbsHandler
 from core.storage_handler import StorageDataBase, StorageRedis
 
@@ -16,7 +16,7 @@ class StorageManager(BaseManager):
             self._handlers.update({handler_instance.storage_type: handler_instance})
         return self._handlers
 
-    async def process_message(self, room, message: CoreChatInputMessage, data: Dict, *args, **kwargs):
+    async def process_message(self, room, data: NatsChatMessage, *args, **kwargs):
         handler: AbsHandler = self._handlers.get(constants.STORAGE_DATABASE)
-        await handler.handle_message(room, message, data)
+        await handler.handle_message(room, data)
 

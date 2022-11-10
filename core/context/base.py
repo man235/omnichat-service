@@ -5,7 +5,7 @@ from core.abstractions import (
     AbsManager
 )
 from core.routers import MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter
-from core.schema import CoreChatInputMessage, NatsChatMessage, FormatSendMessage
+from core.schema import NatsChatMessage, FormatSendMessage
 from core.managers import StorageManager, WebSocketManager, SendMessageManager, MessageLogManager
 
 
@@ -21,13 +21,13 @@ class BaseAppContext(AbsAppContext):
             self._routers.update({router_instance.msg_type: router_instance})
         return self._routers.get(msg_type)
 
-    async def run_receiver(self, message: CoreChatInputMessage, data: NatsChatMessage, **kwargs):
-        router: AbsRouter = await self._get_routers(message.msg_type)
+    async def run_receiver(self, data: NatsChatMessage, **kwargs):
+        router: AbsRouter = await self._get_routers(data.typeMessage)
         if router:
             router.bind_context(self)
-            await router.process_message(message, data)
+            await router.process_message(data)
         else:
-            print(f'not found router for {message.msg_type}')
+            print(f'not found router for {data.typeMessage}')
 
 
 # ----------------    SEND MESSAGE    ----------------
@@ -56,12 +56,12 @@ class BaseAppContext(AbsAppContext):
             self._managers.update({manager_instance.manager_type: manager_instance})
         return self._managers.get(manager_type)
 
-    async def run_manager(self,room , manager_type: str, message: CoreChatInputMessage, data: Dict, **kwargs):
+    async def run_manager(self,room , manager_type: str, data: NatsChatMessage, **kwargs):
         manager: AbsManager = await self._get_manager(manager_type)
         if manager:
             manager.bind_context(self)
             await manager.initialize()
-            await manager.process_message(room, message, data)
+            await manager.process_message(room, data)
         else:
             print(f'not found router for {manager_type}')
 # ----------------    END MANAGER    ----------------

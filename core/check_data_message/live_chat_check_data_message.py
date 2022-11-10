@@ -1,5 +1,4 @@
 from typing import Dict
-from core.schema.message import CoreChatInputMessage
 from core.schema.message_receive import NatsChatMessage
 from core.utils.check_room_live_chat import check_room_live_chat
 from .base import BaseCheckDataMessageManager

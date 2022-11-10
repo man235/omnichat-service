@@ -34,6 +34,7 @@ class NatsChatMessage(CustomBaseModel):
     attachments: List[NatsChatMessageAttachment] = []
     user_info: List[NatsChatMessageUserInfo] = []
     typeChat: str
+    typeMessage: str
     optionals: List[ChatOptional] = []
     uuid: Optional[str] = ""
     room_id: Optional[str] = None
