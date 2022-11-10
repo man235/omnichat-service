@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
-from sop_chat_service.app_connect.models import Room
+from sop_chat_service.app_connect.models import Room,FanPage
 from django.db.models.query_utils import Q
 
 def filter_room(data, room : Room):
+    page_id =data.get('page_id',None)
     time =data.get('time',None)
     status = data.get('status',None)
     state = data.get('state',None)
@@ -10,6 +11,12 @@ def filter_room(data, room : Room):
     label = data.get('label',None)
     type =data.get('type',None)
     if data:
+        if page_id:
+            if str(page_id).lower() == "all":
+                pass
+            else:
+                page= FanPage.objects.filter(page_id=int(page_id)).first()
+                room = room.filter(page_id =page)
         if type:
             if type.lower() == "all":
                 pass
@@ -49,5 +56,6 @@ def filter_room(data, room : Room):
                 if item == 'remind':
                     room = room.filter(room_reminder__isnull=False)
         return room
+    
     else:
         return room

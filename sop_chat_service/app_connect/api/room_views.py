@@ -15,7 +15,7 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
 )
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
-from sop_chat_service.app_connect.models import Room, Message, UserApp, Label
+from sop_chat_service.app_connect.models import Room, Message, UserApp, Label,AssignReminder
 from sop_chat_service.facebook.utils import custom_response
 from rest_framework.decorators import action
 from django.db.models import Q
@@ -27,11 +27,13 @@ from sop_chat_service.utils.request_headers import get_user_from_header
 from django.db import connection
 from sop_chat_service.utils.remove_accent import remove_accent  
 from sop_chat_service.app_connect.models import Reminder
-from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer
+from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer,AssignReminderSerializer,GetAssignReminderSerializer,DeactiveAssignReminderSerializer
 from .message_facebook_views import connect_nats_client_publish_websocket
 from core import constants
 from core.utils import format_log_message
 import asyncio, ujson
+from sop_chat_service.app_connect.tasks import create_reminder_task
+
 
 
 class RoomViewSet(viewsets.ModelViewSet):
@@ -78,6 +80,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         filter_request = ser_sort.data.get('filter')
         if filter_request:
             data_filter = {
+                "page_id":filter_request.get('page_id',None),
                 "type":filter_request.get('type',None),
                 "time" : filter_request.get('time',None),
                 "status" : filter_request.get('status',None),
@@ -125,6 +128,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             if sz.data.get('is_filter'):
                 filter_request = ser_sort.data.get('filter')
                 data_filter = {
+                "page_id":filter_request.get('page_id',None),
                 "type":filter_request.get('type',None),
                 "time" : filter_request.get('time',None),
                 "status" : filter_request.get('status',None),
@@ -296,3 +300,43 @@ class RoomViewSet(viewsets.ModelViewSet):
             "live_chat": live_chat,
         }
         return custom_response(200,"Count Seen Message Channel",data)
+    
+    @action(detail=False, methods=["POST"], url_path="assign-reminder")
+    def assign_reminder(self, request, *args, **kwargs):
+        sz =  AssignReminderSerializer(data=request.data)        
+        room,reminder,user_header = sz.validate(request,request.data)
+        assign= AssignReminder.objects.create(
+            room_id = room,
+            user_id = user_header,
+            reminder_id= reminder,
+            title= reminder.title,
+            unit=reminder.unit,
+            time_reminder= reminder.time_reminder,
+            repeat_time= reminder.repeat_time,
+        )
+        assign.save()
+        assign_sz= GetAssignReminderSerializer(assign)
+        log_message = format_log_message(room, constants.LOG_REMINDED, constants.TRIGGER_REMINDED)
+        subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
+        asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
+        create_reminder_task.delay(assign.id, int(assign.repeat_time))
+        return custom_response(200,"Count Seen Message Channel",assign_sz.data)
+    
+    @action(detail=False, methods=["POST"], url_path="deactive-noti")
+    def deactive(self, request, *args, **kwargs):
+        sz =  DeactiveAssignReminderSerializer(data=request.data)    
+        room,assign,user_header = sz.validate(request,request.data)    
+        assign.is_active_reminder = False
+        assign.save()
+        assign_sz= GetAssignReminderSerializer(assign)
+        return custom_response(200,"Close Noti Successfully",assign_sz.data)
+    
+    @action(detail=False, methods=["POST"], url_path="remove-assign-reminder")
+    def deactive(self, request, *args, **kwargs):
+        sz =  DeactiveAssignReminderSerializer(data=request.data)    
+        room,assign,user_header = sz.validate(request,request.data)    
+        assign.is_active_reminder = False
+        assign.delete()
+        return custom_response(200,"Delete Assign Reminder Successfully",[])
+    
+    
