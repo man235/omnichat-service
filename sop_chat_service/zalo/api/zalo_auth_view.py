@@ -13,6 +13,7 @@ from sop_chat_service.zalo.utils.api_suport import zalo_oa_auth
 from core import constants
 from django.db.models import Q
 import logging
+from sop_chat_service.zalo.utils.api_suport.zalo_oa_filter import get_oa_queryset_by_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -181,33 +182,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
         """
         logger.debug(f'headers ----------------- {request.headers}')
         user_header = get_user_from_header(request.headers)
-        
-        # The list uses for gathering all oa_id that request user is a owner
-        oa_id_owner_list = []
-        
-        oa_queryset_by_user_id = FanPage.objects.filter(
-            type='zalo',
-            is_deleted=False,
-            user_id=user_header
-        )
-        if oa_queryset_by_user_id.exists():
-            for oa in oa_queryset_by_user_id:
-                oa_id_owner_list.append(oa.page_id)
-                    
-        room_queryset_by_user_id = Room.objects.filter(
-            Q(type='zalo') &
-            Q(page_id__is_deleted=False) &
-            (Q(user_id=user_header) | Q(admin_room_id=user_header)),
-        ).distinct()
-        if room_queryset_by_user_id.exists():
-            for room in room_queryset_by_user_id:
-                if room.page_id:
-                    oa_id_owner_list.append(room.page_id.page_id)
 
-        oa_owner_queryset = FanPage.objects.filter(
-            type='zalo',
-            page_id__in=oa_id_owner_list
-        )
+        oa_owner_queryset = get_oa_queryset_by_user_id(user_header)
         oa_owner_serializers = FanPageSerializer(oa_owner_queryset, many=True)
         
         # Verify access token expiration of active Zalo OA  
