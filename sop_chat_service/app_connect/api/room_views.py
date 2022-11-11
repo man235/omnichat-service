@@ -245,7 +245,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         qs_customer = UserApp.objects.filter(external_id=room.external_id).first()
         sz_customer = UserInfoSerializer(qs_customer,many=False)
         qs_assign_reminder = AssignReminder.objects.filter(room_id = room,user_id = user_header).exclude(repeat_time=0)
-        assign_sz = GetAssignReminderSerializer(qs_assign_reminder,many=True)
+        assign_sz = GetAssignReminderSerializer(qs_assign_reminder,many=False)
         qs_label = Label.objects.filter(room_id=room)
         sz_label = LabelSerializer(qs_label,many=True)
         data = {
