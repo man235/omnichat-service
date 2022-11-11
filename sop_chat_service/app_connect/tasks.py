@@ -20,6 +20,7 @@ def create_reminder_task(id: int, repeat_time: int):
                 return "Error: Not Find Assign Reminder"
             if assign.repeat_time == 0:
                 _repeat = False
+                return f"Reminder of room: {assign.room_id} with title {assign.title} success"
             _time = convert_unit_time(assign.unit, assign.time_reminder)
             time.sleep(_time)
             assign.repeat_time = assign.repeat_time - 1 if assign.repeat_time >= 1 else 0
