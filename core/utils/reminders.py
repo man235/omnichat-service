@@ -15,4 +15,4 @@ def reminder_format_data(assign_remind: AssignReminder):
         is_active_reminder = True,
         event = constants.REMINDER_SALEMAN
     )
-    return _reminder
+    return _reminder.dict()
