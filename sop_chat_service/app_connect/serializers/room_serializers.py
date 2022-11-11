@@ -100,8 +100,9 @@ class RoomMessageSerializer(serializers.ModelSerializer):
     
     def get_assign_reminder(self,obj):
         assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id,is_active_reminder=True) 
-        sz = GetAssignReminderSerializer(assign_reminder,many=True)
-        return sz.data
+        sz = GetAssignReminderSerializer(assign_reminder,many=False)
+        result = sz.data if sz.data else None
+        return result
     
     def get_last_message(self, obj):
         message = Message.objects.filter(room_id=obj).order_by('-id').first()

@@ -15,7 +15,7 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
 )
 from django.utils import timezone
 from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
-from sop_chat_service.app_connect.models import Room, Message, UserApp, Label,AssignReminder
+from sop_chat_service.app_connect.models import Room, Message, UserApp, Label,AssignReminder, FanPage
 from sop_chat_service.facebook.utils import custom_response
 from rest_framework.decorators import action
 from django.db.models import Q
