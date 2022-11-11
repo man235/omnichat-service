@@ -250,7 +250,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         sz_label = LabelSerializer(qs_label,many=True)
         data = {
             "customer_info": sz_customer.data,
-            "assign_reminder": assign_sz.data,
+            "assign_reminder": assign_sz.data if assign_sz.data else None,
             "label": sz_label.data,
             "room_info":room_sz.data,
             "fanpage_id": room.page_id.page_id if room.page_id else None,
