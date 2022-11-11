@@ -22,7 +22,7 @@ def create_reminder_task(id: int, repeat_time: int):
                 _repeat = False
             _time = convert_unit_time(assign.unit, assign.time_reminder)
             time.sleep(_time)
-            assign.repeat_time = assign.repeat_time - 1 if assign.repeat_time == 1 else 0
+            assign.repeat_time = assign.repeat_time - 1 if assign.repeat_time >= 1 else 0
             assign.is_active_reminder = True
             assign.save()
             reminder_ws = reminder_format_data(assign)
