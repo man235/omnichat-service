@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, ServiceSurvey, UserApp, Label, LogMessage
+from sop_chat_service.app_connect.models import Attachment, Message, FanPage, Room, ServiceSurvey, UserApp, Label, LogMessage,AssignReminder
 from django.db.models import Q
 from sop_chat_service.utils.remove_accent import remove_accent
-
+from .reminder_serializers import GetAssignReminderSerializer
 from sop_chat_service.utils.request_headers import get_user_from_header
 
 
@@ -91,12 +91,18 @@ class RoomMessageSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
     fanpage = serializers.SerializerMethodField(source='get_fanpage', read_only=True)
     label = serializers.SerializerMethodField(source='get_label', read_only=True)
+    assign_reminder = serializers.SerializerMethodField(source='get_assign_reminder', read_only=True)
 
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status',
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status','assign_reminder',
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
-
+    
+    def get_assign_reminder(self,obj):
+        assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id,is_active_reminder=True) 
+        sz = GetAssignReminderSerializer(assign_reminder,many=True)
+        return sz.data
+    
     def get_last_message(self, obj):
         message = Message.objects.filter(room_id=obj).order_by('-id').first()
         sz = GetMessageSerializer(message)
@@ -262,12 +268,17 @@ class InfoSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField(source='get_user_info', read_only=True)
     fanpage = serializers.SerializerMethodField(source='get_fanpage', read_only=True)
     label = serializers.SerializerMethodField(source='get_label', read_only=True)
-
+    assign_reminder = serializers.SerializerMethodField(source='get_assign_reminder', read_only=True)
     class Meta:
         model = Room
-        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status',
+        fields = ['id', 'user_id', 'name', 'type', 'note', 'approved_date', 'status',"assign_reminder",
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
 
+    def get_assign_reminder(self,obj):
+        assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id,is_active_reminder=True) 
+        sz = GetAssignReminderSerializer(assign_reminder,many=True)
+        return sz.data
+    
     def get_last_message(self, obj):
         if obj.type.lower() == "facebook":
             message = Message.objects.filter(room_id=obj, is_sender=False).order_by('-id').first()

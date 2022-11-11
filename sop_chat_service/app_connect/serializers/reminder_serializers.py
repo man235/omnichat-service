@@ -29,10 +29,13 @@ class AssignReminderSerializer(serializers.Serializer):
         room = Room.objects.filter(room_id=attrs.get("room_id"), user_id=user_header).first()
         if not room:
             raise serializers.ValidationError({"room": "Room Invalid"})
-        assign =AssignReminder.objects.filter(room_id = room,user_id=user_header).exclude(repeat_time=0)
+        assign =AssignReminder.objects.filter(room_id = room,user_id=user_header).order_by('-created_at').first()
         if assign:
-            raise serializers.ValidationError({"room": "Room Had Assign Reminder"})
-
+            if assign.repeat_time != 0:
+                raise serializers.ValidationError({"room": "Room Had Assign Reminder"})
+            else: 
+                assign.is_active_reminder= False
+                assign.save()
         reminder= Reminder.objects.filter((Q(user_id=user_header) | Q(user_id=None)),id = attrs.get('reminder_id')).first()
         if not reminder:
             raise serializers.ValidationError({"reminder": "Reminder Invalid"})
@@ -41,7 +44,7 @@ class AssignReminderSerializer(serializers.Serializer):
 class GetAssignReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignReminder
-        fields = ["id", "unit", "title", "time_reminder", "repeat_time"]
+        fields = ["id", "unit", "title", "time_reminder", "repeat_time","is_active_reminder"]
         
         
 class DeactiveAssignReminderSerializer(serializers.Serializer):
