@@ -28,7 +28,8 @@ def create_reminder_task(id: int, repeat_time: int):
             reminder_ws = reminder_format_data(assign)
             subject_nats = f"{constants.REMINDER_CHAT_SERVICE_TO_WEBSOCKET}{assign.room_id}"
             logger.debug(reminder_ws,"------------------------------------")
-            # asyncio.run(publish_data_to_nats(subject_nats, ujson.dumps(reminder_ws).encode()))
+            logger.debug("Log Message Reminder for WebSocket Server!!!")
+            asyncio.run(publish_data_to_nats(subject_nats, ujson.dumps(reminder_ws).encode()))
         return f"Reminder of room: {assign.room_id} with title {assign.title} success"
     except Exception as e:
         return f"Exception Create Task Reminder {e}"
