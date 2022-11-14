@@ -10,6 +10,7 @@ from sop_chat_service.utils.request_headers import get_user_from_header
 from sop_chat_service.zalo.serializers.zalo_chat_serializer import ZaloChatSerializer, ZaloQuotaSerializer
 from sop_chat_service.zalo.utils.api_suport.quota import get_last_message_from_zalo_user, get_zalo_command_quota
 from sop_chat_service.zalo.utils.chat_support.format_message_zalo import format_attachment_type, format_sended_message_to_socket, reformat_attachment_type
+from sop_chat_service.zalo.utils.chat_support.room_chat_actions import block_admin_room
 from sop_chat_service.zalo.utils.chat_support.save_message_zalo import store_sending_message_database_zalo
 from django.conf import settings
 import nats
@@ -83,15 +84,9 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                     'error',
                     'Failed to send message to Zalo'
                 )
-            if not queryset.block_admin:
-                if queryset.admin_room_id == user_header:
-                    queryset.user_id = user_header
-                    queryset.admin_room_id = None
-                    queryset.save()
-                elif queryset.user_id == user_header:
-                    queryset.user_id = user_header
-                    queryset.block_admin = True
-                    queryset.save()
+                
+            block_admin_room(queryset, user_header)
+            
             message_data_to_socket = format_sended_message_to_socket(
                 text=validated_data_sz.get('message_text'),
                 msg_id=rp_send_data.get('message_id'),
@@ -141,6 +136,8 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                         }
                     )
                 else:
+                    block_admin_room(queryset, user_header)
+                    
                     successful_attachment_uploading.append(attachment.name)
                     attachment_token = rp_upload_data.get('data').get('token', None)
                     attachment_id = rp_upload_data.get('data').get('attachment_id', None)
