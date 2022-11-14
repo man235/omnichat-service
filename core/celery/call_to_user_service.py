@@ -32,7 +32,7 @@ def celery_task_verify_information(user_app: UserApp, room: Room):
 
 @shared_task(name = "collect_livechat_social_profile")
 def collect_livechat_social_profile(*args, **kwargs):
-    print("collect_livechat_social_profile", *args, **kwargs)
+    print("collect_livechat_social_profile", args, kwargs)
     return {
         "timestamp": time.time(),
         "**kwargs": kwargs
