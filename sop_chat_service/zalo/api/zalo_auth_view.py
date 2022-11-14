@@ -104,12 +104,14 @@ class ZaloViewSet(viewsets.ModelViewSet):
                                 page_id=oa_model,
                                 type=constants.ZALO
                             )
-                            updating_room_data = {
-                                'admin_room_id': oa_model.user_id
-                            }
+                            updating_room_data = {}
+                            # updating_room_data = {
+                            #     'admin_room_id': oa_model.user_id
+                            # }
                             if oa_model.setting_chat == constants.SETTING_CHAT_ONLY_ME:
                                 updating_room_data['user_id'] = oa_model.user_id
-                                
+                            elif oa_model.setting_chat != constants.SETTING_CHAT_ONLY_ME:
+                                updating_room_data['admin_room_id'] = user_header
                             room_qs.update(
                                 **updating_room_data
                             )
