@@ -3,6 +3,7 @@ from django.conf import settings
 from celery import shared_task
 from core import constants
 import requests
+import time
 import logging
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,10 @@ def celery_task_verify_information(user_app: UserApp, room: Room):
 
 
 
-@shared_task(name = "test-celery-task")
-def test_celery_task(*args, **kwargs):
-    logger.debug("TASK CELERY TEST FOR NO AUTHENTICATION")
-    return
+@shared_task(name = "collect_livechat_social_profile")
+def collect_livechat_social_profile(*args, **kwargs):
+    print("collect_livechat_social_profile", *args, **kwargs)
+    return {
+        "timestamp": time.time(),
+        "**kwargs": kwargs
+    }
