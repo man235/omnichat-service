@@ -5,17 +5,25 @@ from core.schema import NatsChatMessage
 from sop_chat_service.app_connect.models import FanPage
 import ast
 from core import constants
+import requests
+from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)
 # redis_client  = RedisClient()
 
 
 async def get_users_from_noc(chat_msg: NatsChatMessage, fanpage: FanPage):
     list_user_new_chat = []
     get_list_user_noc = []
+
     if fanpage.setting_chat == constants.SETTING_CHAT_ONLY_ME:
         get_list_user_noc = [fanpage.user_id]
     else:
-        get_list_user_noc = fanpage.group_user
+        user_list = call_noc_api_get_users(fanpage)
+        users: list[dict] = user_list.get('users')
+        for user in users:
+            get_list_user_noc.append(user.get('user_id'))
     get_list_user_redis = redis_client.get(f'{constants.REDIS_LIST_USER_NEW_CHAT}.{chat_msg.recipientId}')
     if not get_list_user_redis:
         list_user_new_chat = get_list_user_noc
@@ -53,10 +61,27 @@ async def do_something_else(msg):
     print(f'do something else with {msg}')
 
 
-async def find_user_new_chat(chat_message: NatsChatMessage, fanpage: FanPage):
+async def find_user_new_chat(chat_message: NatsChatMessage, fanpage: FanPage, users: dict):
     if not await is_new_room(chat_message):
         return await do_something_else(chat_message)
 
     zalo_users = await get_users_from_noc(chat_message, fanpage)
     result = await distribute_new_chat(chat_message, fanpage.user_id, zalo_users)
     return result
+
+async def call_noc_api_get_users(page: FanPage):
+    try:
+        query = {'pageId': page.page_id}
+        list_setting_chat = requests.get(
+            url=f'{settings.GET_USER_PROFILE_URL}/api/social-config/config-info',
+            params=query,
+            timeout=5
+        )
+        if list_setting_chat.status_code == 200 and list_setting_chat.json()['status'] == "success":
+            data_user = list_setting_chat.json()['data']
+            logger.debug(f"{data_user} --------------------------------------------------------------")
+            return data_user
+        else:
+            return None
+    except Exception as e:
+        return None
