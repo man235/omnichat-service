@@ -9,14 +9,30 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
-def celery_task_verify_information(user_app: UserApp, room: Room):
+def celery_task_verify_information(user_app: UserApp, room: Room, *args, **kwargs):
     try:
-        payload={
-            "name": user_app.name,
-            "email": user_app.email,
-            "facebook_id": user_app.external_id if room.type == constants.FACEBOOK else "",
-            "zalo_id": user_app.external_id if room.type == constants.ZALO else "",
-            "type": room.type,
+        # payload={
+        #     "name": user_app.name,
+        #     "email": user_app.email,
+        #     "facebook_id": user_app.external_id if room.type == constants.FACEBOOK else "",
+        #     "zalo_id": user_app.external_id if room.type == constants.ZALO else "",
+        #     "type": room.type,
+        #     "room_id": room.room_id
+        # }
+        payload = {
+            'name': user_app.name,
+            'email': user_app.email,
+            'facebook_id': user_app.external_id if room.type == constants.FACEBOOK else "",
+            'phone': user_app.phone,
+            'zalo_id': user_app.external_id if room.type == constants.ZALO else "",
+            'type': room.type,
+            'avatar': user_app.avatar,
+            'page': None,
+            'page_url': None,
+            'approach_date': None,
+            'ip': None,
+            'device': None,
+            'browser': None,
             "room_id": room.room_id
         }
         headers = {
