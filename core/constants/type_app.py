@@ -8,7 +8,7 @@ LIVECHAT_ROOM_MINIO = "livechat_room"
 MESSAGE_TEXT = "text"
 MESSAGE_EMOJI = "emoji"
 MESSAGE_LOG = "message_log"
-ACTION_FOLLOW = 'action-follow'
+ACTION_FOLLOW = 'follow'
 
 MESSAGE_LOG_MANAGER = "message_log-manager"
 MESSAGE_LOG_STORAGE_DATABASE = 'message_log-storage'
