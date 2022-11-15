@@ -48,11 +48,13 @@ ZALO_DISTRIBUTE_USER_NEW_CHAT = 'Zalo.distribute.user.new.chat'
 REMINDER_SALEMAN = "reminder-saleman"
 # Log message
 LOG_COMPLETED = 'have completed the conversation'
+LOG_SEND_MESSAGE = 'send message to'
 LOG_REOPENED = 'have reopened the conversation'
 LOG_REMINDED = 'has set up reminder'
 LOG_LEAVE_LIVECHAT = 'have left the conversation'
 LOG_FORWARDED = 'has forwarded the message to'
 
+TRIGGER_SEND_MESSAGE = "send_message"
 TRIGGER_COMPLETED = 'completed'
 TRIGGER_REOPENED = 'reopen'
 TRIGGER_REMINDED = 'reminder'

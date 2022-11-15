@@ -17,6 +17,9 @@ class StorageManager(BaseManager):
         return self._handlers
 
     async def process_message(self, room, data: NatsChatMessage, *args, **kwargs):
-        handler: AbsHandler = self._handlers.get(constants.STORAGE_DATABASE)
-        await handler.handle_message(room, data)
+        handler_storage: AbsHandler = self._handlers.get(constants.STORAGE_DATABASE)
+        handler_redis: AbsHandler = self._handlers.get(constants.STORAGE_REDIS)
+
+        await handler_storage.handle_message(room, data)
+        await handler_redis.handle_message(room, data)
 

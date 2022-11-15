@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import List, Optional, Dict
 from .base_model import CustomBaseModel
+from core import constants
 
 
 class NatsChatMessageAttachment(CustomBaseModel):
@@ -34,7 +35,7 @@ class NatsChatMessage(CustomBaseModel):
     attachments: List[NatsChatMessageAttachment] = []
     user_info: List[NatsChatMessageUserInfo] = []
     typeChat: str
-    typeMessage: str
+    typeMessage: Optional[str] = constants.MESSAGE_TEXT
     optionals: List[ChatOptional] = []
     uuid: Optional[str] = ""
     room_id: Optional[str] = None

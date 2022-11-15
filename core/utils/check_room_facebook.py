@@ -1,12 +1,17 @@
 from sop_chat_service.app_connect.models import FanPage, Room, UserApp
+from sop_chat_service.app_connect.serializers.room_serializers import RoomSerializer
 from .api_facebook_app import get_user_info
 from django.utils import timezone
 from asgiref.sync import sync_to_async
 from core.schema import  NatsChatMessage
-from core.celery import celery_task_verify_information
+from core.celery import celery_task_verify_information,create_log_time_message
 import logging
 logger = logging.getLogger(__name__)
+from core import constants
+import time
 
+
+from core.stream.redis_connection import redis_client
 
 
 async def check_room_facebook(data: NatsChatMessage):
@@ -43,11 +48,17 @@ async def check_room_facebook(data: NatsChatMessage):
             user_id=check_fanpage.user_id,
         )
         new_room.save()
-        celery_task_verify_information.delay(user_app, new_room)
+        celery_task_verify_information.delay(user_app.__dict__, new_room)
         return new_room
-    else:
+    elif check_room:
+        last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
+        if last_msg:
+            if int(time.time() * 1000) - int(last_msg) >= 3:
+                create_log_time_message.delay(check_room.room_id)
         if check_room.completed_date:
             check_room.completed_date = None
             check_room.status = 'processing'
             check_room.save()
         return check_room
+
+
