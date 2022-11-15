@@ -99,7 +99,7 @@ class RoomMessageSerializer(serializers.ModelSerializer):
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
     
     def get_assign_reminder(self,obj):
-        assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id,is_active_reminder=True) 
+        assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id).order_by('-created_at').first()
         sz = GetAssignReminderSerializer(assign_reminder,many=False)
         result = sz.data if sz.data else None
         return result
@@ -276,7 +276,7 @@ class InfoSerializer(serializers.ModelSerializer):
                   'completed_date', 'conversation_id', 'created_at', 'last_message', 'unseen_message_count', 'room_id', 'user_info', 'fanpage', 'label']
 
     def get_assign_reminder(self,obj):
-        assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id,is_active_reminder=True) 
+        assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id).order_by('-created_at').first()
         sz = GetAssignReminderSerializer(assign_reminder,many=True)
         return sz.data
     
