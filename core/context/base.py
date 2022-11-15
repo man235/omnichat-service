@@ -4,9 +4,9 @@ from core.abstractions import (
     AbsRouter,
     AbsManager
 )
-from core.routers import MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, MessageLogLiveChatRouter
+from core.routers import MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, MessageLogLiveChatRouter, ActionFollowRouter
 from core.schema import NatsChatMessage, FormatSendMessage
-from core.managers import StorageManager, WebSocketManager, SendMessageManager, MessageLogManager
+from core.managers import StorageManager, WebSocketManager, SendMessageManager, MessageLogManager, ActionFollowManager
 
 
 # ----------------------------      BASE CONTEXT        ----------------------------
@@ -16,7 +16,7 @@ class BaseAppContext(AbsAppContext):
 
 # ----------------    RECEIVER    ----------------
     async def _get_routers(self, msg_type: str) -> Dict[str, AbsRouter]:
-        for router_class in (MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, MessageLogLiveChatRouter):
+        for router_class in (MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, MessageLogLiveChatRouter, ActionFollowRouter):
             router_instance = router_class()
             self._routers.update({router_instance.msg_type: router_instance})
         return self._routers.get(msg_type)
@@ -51,7 +51,7 @@ class BaseAppContext(AbsAppContext):
 
 # ----------------    MANAGER    ----------------
     async def _get_manager(self, manager_type: str) -> Dict[str, AbsManager]:
-        for manager_class in (StorageManager, WebSocketManager, SendMessageManager, MessageLogManager):
+        for manager_class in (StorageManager, WebSocketManager, SendMessageManager, MessageLogManager, ActionFollowManager):
             manager_instance = manager_class()
             self._managers.update({manager_instance.manager_type: manager_instance})
         return self._managers.get(manager_type)
