@@ -11,14 +11,8 @@ class LabelViewSet(viewsets.ModelViewSet):
     queryset = Label.objects.all()
     permission_classes = (permissions.AllowAny, )
     serializer_class = LabelSerializer
-    # def list(self,request,*args, **kwargs):
-    #     serializer = GetLabelSerializer(data=request.data)
-    #     room,user = serializer.validate(request ,request.data)
-    #     if not room:
-    #         return custom_response(400,"Invalid Room",[])
-    #     label = Label.objects.filter(room_id =room)
-    #     sz = LabelSerializer(label)
-    #     return custom_response(200,"Get List Label Successfully",sz.data)
+
+
     def create(self, request, *args, **kwargs):
         data = request.data
         serializer = CreateLabelSerializer(data=data)

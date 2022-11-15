@@ -10,9 +10,9 @@ from sop_chat_service.zalo.utils import save_message_store_database_zalo
 class StorageDataBase(BaseHandler):
     storage_type = constants.STORAGE_DATABASE
 
-    async def handle_message(self, room, data: NatsChatMessage, *args, **kwargs):            
+    async def handle_message(self, room, data: NatsChatMessage, *args, **kwargs):
         message_storage = format_receive_message(room, data)
-        
+
         if data.typeChat == 'facebook':
             await facebook_save_message_store_database(room, data)
         elif data.typeChat == 'zalo':
