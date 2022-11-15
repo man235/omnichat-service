@@ -40,7 +40,7 @@ def re_open_room(room_id: str):
     room = Room.objects.filter(room_id = room_id).first()
     subject_publish = f"{constants.REMINDER_CHAT_SERVICE_TO_WEBSOCKET}.{room_id}"
     page_name = room.page_id.name if room.page_id else None
-    print('re-open rooomm -----_--__--___-___--__-')
+    print(f're-open rooomm -----_--__--___-___--__-{room}')
     log_message = format_room(room.__dict__)
     asyncio.run(publish_data_to_nats(subject_publish, ujson.dumps(log_message).encode()))
     
