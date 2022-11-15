@@ -14,3 +14,4 @@ WEBHOOK_TO_CORECHAT_MESSAGE = "Webhook.To.CoreChat.Message.*"     # SERVICE WEBH
 WEBHOOK_TO_CORECHAT_MESSAGE_OLD = "omniChat.message.receive.*"     # SERVICE WEBHOOK -> CORECHAT OLD
 
 REMINDER_CHAT_SERVICE_TO_WEBSOCKET = "reminder.ChatService.To.WebSocket." # REMINDER FOR ROOM
+UPDATE_ROOM_CHAT_SERVICE_TO_WEBSOCKET ='UpdateRoom.CoreChat.To.Websocket' # Update status of room

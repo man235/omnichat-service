@@ -8,6 +8,7 @@ from core import constants
 from core.stream.redis_connection import redis_client
 from core.utils.nats_connect import publish_data_to_nats
 from core.utils.format_log_message import format_log_message_from_celery
+from core.utils.format_message_for_websocket import format_room
 from typing import Dict
 from sop_chat_service.app_connect.models import UserApp, Room
 
@@ -34,6 +35,16 @@ def create_log_time_message(room_id: str):
     log_message = format_log_message_from_celery(room.__dict__, f'{constants.LOG_NEW_MESSAGE} to {page_name}', constants.TRIGGER_NEW_MESSAGE)
     asyncio.run(publish_data_to_nats(subject_publish, ujson.dumps(log_message).encode()))
     return "Created Logs Message"
+@shared_task(name = constants.CELERY_TASK_LOG_MESSAGE_ROOM)
+def re_open_room(room_id: str):
+    room = Room.objects.filter(room_id = room_id).first()
+    subject_publish = f"{constants.REMINDER_CHAT_SERVICE_TO_WEBSOCKET}.{room_id}"
+    page_name = room.page_id.name if room.page_id else None
+    print('re-open rooomm -----_--__--___-___--__-')
+    log_message = format_room(room.__dict__)
+    asyncio.run(publish_data_to_nats(subject_publish, ujson.dumps(log_message).encode()))
+    
+    return "Room re_open"
 
 
 @shared_task(name = constants.COLLECT_LIVECHAT_SOCIAL_PROFILE)

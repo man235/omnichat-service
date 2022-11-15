@@ -1,7 +1,7 @@
 from django.utils import timezone
 import json
 import time
-from core.schema import NatsChatMessage, MessageChat, ChatMessageAttachment, MessageToWebSocket
+from core.schema import NatsChatMessage, MessageChat, ChatMessageAttachment, MessageToWebSocket,UpdateRoom
 from core.schema.message_websocket import ChatMessageUserInfo
 from core import constants
 
@@ -282,3 +282,10 @@ def format_receive_message_to_websocket(room, data: NatsChatMessage):
         event = constants.SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN
     )
     return message_ws
+def format_room(room):
+    room= UpdateRoom(
+        room_id =room.get('room_id'),
+        status = room.get('status'),
+        event = constants.UPDATE_STATUS_ROOM
+    )
+    return room

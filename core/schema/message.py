@@ -48,3 +48,8 @@ class FormatSendMessage(CustomBaseModel):
     event: Optional[str]
     is_log_msg: Optional[bool] = False
     log_message: Optional[LogMessageSchema] = None
+
+class UpdateRoom(CustomBaseModel):
+    room_id: str
+    status: Optional[str]
+    event: Optional[str] = constants.UPDATE_STATUS_ROOM
