@@ -61,7 +61,7 @@ async def do_something_else(msg):
     print(f'do something else with {msg}')
 
 
-async def find_user_new_chat(chat_message: NatsChatMessage, fanpage: FanPage, users: dict):
+async def find_user_new_chat(chat_message: NatsChatMessage, fanpage: FanPage):
     if not await is_new_room(chat_message):
         return await do_something_else(chat_message)
 
