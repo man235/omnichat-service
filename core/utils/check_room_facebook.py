@@ -53,7 +53,7 @@ async def check_room_facebook(data: NatsChatMessage):
     elif check_room:
         last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
         if last_msg:
-            if int(time.time()) - int(last_msg) >= 86400:
+            if int(time.time() * 1000) - int(last_msg) >= 86400000:
                 create_log_time_message.delay(check_room.room_id)
         if check_room.completed_date:
             check_room.completed_date = None
