@@ -15,14 +15,6 @@ logger = logging.getLogger(__name__)
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
 def celery_task_verify_information(user_app: UserApp, room: Room, *args, **kwargs):
     try:
-        # payload={
-        #     "name": user_app.name,
-        #     "email": user_app.email,
-        #     "facebook_id": user_app.external_id if room.type == constants.FACEBOOK else "",
-        #     "zalo_id": user_app.external_id if room.type == constants.ZALO else "",
-        #     "type": room.type,
-        #     "room_id": room.room_id
-        # }
         payload = {
             'name': user_app.name,
             'email': user_app.email,
@@ -46,7 +38,7 @@ def celery_task_verify_information(user_app: UserApp, room: Room, *args, **kwarg
         response = requests.request("POST", url, headers=headers, data=payload)
         return response.text
     except Exception as e:
-        return f"Exception Create Task Reminder {e}"
+        return f"Exception Verify information ERROR: {e}"
 
 
 @shared_task(name = constants.CELERY_TASK_LOG_MESSAGE_ROOM)
@@ -62,7 +54,28 @@ def create_log_time_message(room_id: str):
 @shared_task(name = "collect_livechat_social_profile")
 def collect_livechat_social_profile(*args, **kwargs):
     print("collect_livechat_social_profile", args, kwargs)
-    return {
-        "timestamp": time.time(),
-        "**kwargs": kwargs
-    }
+    try:
+        payload = {
+            'name': None,
+            'email': None,
+            'facebook_id': None,
+            'phone': None,
+            'zalo_id': None,
+            'type': constants.FCHAT,
+            'avatar': None,
+            'page': kwargs.get('live_chat_id'),
+            'page_url': None,
+            'approach_date': None,
+            'ip': kwargs.get('client_ip'),
+            'device': kwargs.get('client_info'),
+            'browser': kwargs.get('client_info'),
+            "room_id": kwargs.get('room_id')
+        }
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        url = settings.GET_USER_PROFILE_URL + settings.API_VERIFY_INFORMATION
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return response.text
+    except Exception as e:
+        return f"Exception Verify information ERROR: {e}"

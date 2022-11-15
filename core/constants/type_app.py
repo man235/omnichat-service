@@ -1,6 +1,7 @@
 FACEBOOK = "facebook"
 ZALO = "zalo"
 LIVECHAT = "livechat"
+FCHAT = "fchat"
 
 ZALO_ROOM_MINIO = "zalo_room"
 LIVECHAT_ROOM_MINIO = "livechat_room"
