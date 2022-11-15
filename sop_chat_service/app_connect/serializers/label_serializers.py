@@ -7,7 +7,7 @@ from sop_chat_service.utils.request_headers import get_user_from_header
 
 class CreateLabelSerializer(serializers.ModelSerializer):
     room_id = serializers.CharField(required=True)
-    label_id=  serializers.CharField(required=True)
+    label_id=  serializers.ListField(child=serializers.CharField(),required=True)
 
     class Meta:
         model = Label
