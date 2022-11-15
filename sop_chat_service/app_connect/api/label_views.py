@@ -6,6 +6,7 @@ from sop_chat_service.app_connect.serializers.label_serializers import LabelSeri
 from sop_chat_service.app_connect.models import Label, Room
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_user_from_header
+from django.db.models import Q
 
 class LabelViewSet(viewsets.ModelViewSet):
     queryset = Label.objects.all()
@@ -21,12 +22,17 @@ class LabelViewSet(viewsets.ModelViewSet):
             if not room:
                 serializers.ValidationError({"room": "Room is not valid"})
             else:
-                label =Label.objects.create(
-                    room_id=room,
-                    label_id=data['label_id']
-                )
-                sz = LabelSerializer(label,many=False)
-                return custom_response(200, "Create Label Successfully",sz.data)
+                Label.objects.filter(~Q(label_id__in=data['label_id'])).delete()
+                for item in data['label_id']:
+                    label_exist= Label.objects.filter(label_id = item)
+                    if label_exist:
+                        pass
+                    else:
+                        label =Label.objects.create(
+                        room_id=room,
+                        label_id=item
+                        )
+                return custom_response(200, "Create Label Successfully",[])
 
     def destroy(self, request, pk=None, *args, **kwargs):
         label = Label.objects.get(id=pk).delete()

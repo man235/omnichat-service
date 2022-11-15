@@ -155,8 +155,8 @@ class RoomViewSet(viewsets.ModelViewSet):
             sz = RoomIdSerializer(qs, many=True)
             list_data=[]
             for item in sz.data:
-                list_data.append(item['id'])
-            list_data = tuple(set(list_data))
+                    list_data.append(item['id'])
+            list_data = str(set(list_data)).replace("{", "(").replace("}", ")")
             cursor = connection.cursor()
             cursor.execute('''
                     select room.id 
@@ -172,7 +172,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         qs_contact = Room.objects.filter(id__in=result, room_message__is_sender=False).distinct()
         serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
         data['contact'] = serializer_contact.data
-        qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False).distinct()
+        qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False,id__in = result).distinct()
         qs_messages = qs_messages.filter(room_message__text__icontains=search).distinct()
         serializer_message = []
         for qs_message in qs_messages:
