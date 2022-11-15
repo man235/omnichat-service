@@ -59,6 +59,8 @@ class RegisterInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
     def validate(self,attrs,*args, **kwargs):
         mes=[]
+        if not attrs:
+            return
         if attrs and len(attrs) >10:
             mes=" in_valid survey"
         for item in attrs:

@@ -1,10 +1,9 @@
 from typing import Dict
 from .base import BaseManager
 from core import constants
-from core.schema import FormatSendMessage
+from core.schema import NatsChatMessage
 from core.abstractions import AbsHandler
 from core.action_handler import ActionFollowHandler
-from sop_chat_service.app_connect.models import Room
 
 
 class ActionFollowManager(BaseManager):
@@ -17,7 +16,6 @@ class ActionFollowManager(BaseManager):
             self._handlers.update({handler_instance.send_message_type: handler_instance})
         return self._handlers
 
-    async def process_message(self, message: FormatSendMessage, *args, **kwargs):
-        room =  Room.objects.filter(room_id=message.room_id).first()
+    async def process_message(self, room, message: NatsChatMessage, *args, **kwargs):
         action_handler: AbsHandler = self._handlers.get(constants.ACTION_FOLLOW_HANDLER)
-        await action_handler.handle_message(room, message)
+        await action_handler.handle_message(None, message)
