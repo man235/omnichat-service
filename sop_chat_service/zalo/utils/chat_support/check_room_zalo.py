@@ -124,11 +124,23 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             # Follower
             logger.debug(f' ZALO OA`S FOLLOWER USER ------------------------- ')
             zalo_app_user_data: dict = zalo_app_user.get('data')
+
+            # Define user gender
+            gender: int = zalo_app_user_data.get('user_gender')
+            if gender == 0:
+                checked_gender = 'Others'
+            elif gender == 1:
+                checked_gender = 'Male'
+            elif gender == 2:
+                checked_gender = 'Female'
+            else:
+                checked_gender = 'Undefined'
+
             user_app = UserApp.objects.create(
                 external_id = data.senderId,
                 name = zalo_app_user_data.get('display_name'),
                 avatar = zalo_app_user_data.get('avatar'),
-                gender = zalo_app_user_data.get('gender'),
+                gender = checked_gender,
             )
         else:
             # Anonymous User
