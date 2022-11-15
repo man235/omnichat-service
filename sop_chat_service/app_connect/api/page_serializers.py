@@ -35,7 +35,7 @@ class SettingChatZaloSerializer(serializers.Serializer):
 class FanPageSerialier(serializers.ModelSerializer):
     class Meta:
         model = FanPage
-        fields = ['id','name','avatar_url']
+        fields = ['id', 'page_id', 'name', 'avatar_url']
         
         
 class GetFanPageSerialier(serializers.Serializer):
