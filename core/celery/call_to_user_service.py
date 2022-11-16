@@ -20,6 +20,7 @@ def celery_task_verify_information(data: Dict, *args, **kwargs):
             'Content-Type': 'application/json'
         }
         url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
+        print(" ********************************* ", data)
         response = requests.request("POST", url=url, headers=headers, data=data)
         return response.text
     except Exception as e:
