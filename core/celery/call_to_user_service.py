@@ -33,7 +33,7 @@ def celery_task_verify_information(_data: Dict, *args, **kwargs):
             'Content-Type': 'application/json'
         }
         url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
-        response = requests.post(url=url, headers=headers, data=payload)
+        response = requests.post(url=url, headers=headers, data=ujson.dumps(payload))
         print(" *************************************************************************************** ", _data)
         print(response.status_code)
         return response.text
