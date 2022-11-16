@@ -26,11 +26,11 @@ class LogMessageSchema(CustomBaseModel):
     created_at: Optional[str]
 
 class NatsChatMessage(CustomBaseModel):
-    senderId: str
-    recipientId: str
+    senderId: Optional[str]
+    recipientId: Optional[str]
     timestamp: int
     text: Optional[str]
-    mid: str
+    mid: Optional[str]
     appId: str
     attachments: List[NatsChatMessageAttachment] = []
     user_info: List[NatsChatMessageUserInfo] = []
@@ -40,3 +40,4 @@ class NatsChatMessage(CustomBaseModel):
     uuid: Optional[str] = ""
     room_id: Optional[str] = None
     log_message: Optional[LogMessageSchema] = None
+
