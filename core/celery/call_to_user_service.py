@@ -14,31 +14,31 @@ from sop_chat_service.app_connect.models import UserApp, Room
 logger = logging.getLogger(__name__)
 
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
-def celery_task_verify_information(user_app: Dict, room: Dict, *args, **kwargs):
+def celery_task_verify_information(data: Dict, *args, **kwargs):
     try:
         payload = {
-            'name': user_app.get('name'),
-            'email': user_app.get('email'),
-            'facebook_id': user_app.get('external_id') if room.get('type') == constants.FACEBOOK else "",
-            'phone': user_app.get('phone'),
-            'zalo_id': user_app.get('external_id') if room.get('type') == constants.ZALO else "",
-            'type': room.get('type'),
-            'avatar': user_app.get('avatar'),
+            'name': data.get('name'),
+            'email': data.get('email'),
+            'facebook_id': data.get('external_id') if data.get('type') == constants.FACEBOOK else "",
+            'phone': data.get('phone'),
+            'zalo_id': data.get('external_id') if data.get('type') == constants.ZALO else "",
+            'type': data.get('type'),
+            'avatar': data.get('avatar'),
             'page': None,
             'page_url': None,
             'approach_date': None,
             'ip': None,
             'device': None,
             'browser': None,
-            "room_id": room.get('room_id')
+            "room_id": data.get('room_id')
         }
         headers = {
             'Content-Type': 'application/json'
         }
-        # url = settings.GET_USER_PROFILE_URL + settings.API_VERIFY_INFORMATION
-        url = "http://172.24.222.101:4002/api/customer/verify-information"
+        url = settings.GET_USER_PROFILE_URL + settings.API_VERIFY_INFORMATION
+        # url = "http://172.24.222.101:4002/api/customer/verify-information"
         response = requests.request("POST", url=url, headers=headers, data=payload)
-        return response.text
+        return "response.text"
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"
 
