@@ -35,8 +35,9 @@ def celery_task_verify_information(user_app: Dict, room: Dict, *args, **kwargs):
         headers = {
             'Content-Type': 'application/json'
         }
-        url = settings.GET_USER_PROFILE_URL + settings.API_VERIFY_INFORMATION
-        response = requests.request("POST", url, headers=headers, data=payload)
+        # url = settings.GET_USER_PROFILE_URL + settings.API_VERIFY_INFORMATION
+        url = "http://172.24.222.101:4002/api/customer/verify-information"
+        response = requests.request("POST", url=url, headers=headers, data=payload)
         return response.text
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"
