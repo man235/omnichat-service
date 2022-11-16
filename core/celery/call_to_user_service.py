@@ -38,7 +38,7 @@ def create_log_time_message(room_id: str):
 @shared_task(name = constants.CELERY_TASK_LOG_MESSAGE_ROOM)
 def re_open_room(room_id: str):
     room = Room.objects.filter(room_id = room_id).first()
-    subject_publish = f"{constants.REMINDER_CHAT_SERVICE_TO_WEBSOCKET}.{room_id}"
+    subject_publish = f"{constants.UPDATE_ROOM_CHAT_SERVICE_TO_WEBSOCKET}.{room_id}"
     page_name = room.page_id.name if room.page_id else None
     print(f're-open rooomm -----_--__--___-___--__-{room}')
     log_message = format_room(room.__dict__)
