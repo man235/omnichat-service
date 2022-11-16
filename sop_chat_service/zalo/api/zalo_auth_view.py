@@ -309,8 +309,8 @@ class ZaloViewSet(viewsets.ModelViewSet):
             find_page.setting_chat = constants.SETTING_CHAT_ONLY_ME
         elif sz.data.get('setting_chat') != constants.SETTING_CHAT_ONLY_ME:
             find_page.setting_chat = sz.data.get('setting_chat')
-            if not sz.data.get('group_user'):
-                return custom_response(400, 'Group User Is Not Valid', [])
-            find_page.group_user = sz.data.get('group_user')
+            # if not sz.data.get('group_user'):
+            #     return custom_response(400, 'Group User Is Not Valid', [])
+            # find_page.group_user = sz.data.get('group_user')
         find_page.save()
         return custom_response(200, 'Setting Chat Zalo Success', [])

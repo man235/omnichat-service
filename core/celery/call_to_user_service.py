@@ -16,28 +16,27 @@ logger = logging.getLogger(__name__)
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
 def celery_task_verify_information(data: Dict, *args, **kwargs):
     try:
-        payload = {
-            'name': data.get('name'),
-            'email': data.get('email'),
-            'facebook_id': data.get('external_id') if data.get('type') == constants.FACEBOOK else "",
-            'phone': data.get('phone'),
-            'zalo_id': data.get('external_id') if data.get('type') == constants.ZALO else "",
-            'type': data.get('type'),
-            'avatar': data.get('avatar'),
-            'page': None,
-            'page_url': None,
-            'approach_date': None,
-            'ip': None,
-            'device': None,
-            'browser': None,
-            "room_id": data.get('room_id')
-        }
+        # payload = {
+        #     'name': data.get('name'),
+        #     'email': data.get('email'),
+        #     'facebook_id': data.get('external_id') if data.get('type') == constants.FACEBOOK else "",
+        #     'phone': data.get('phone'),
+        #     'zalo_id': data.get('external_id') if data.get('type') == constants.ZALO else "",
+        #     'type': data.get('type'),
+        #     'avatar': data.get('avatar'),
+        #     'page': None,
+        #     'page_url': None,
+        #     'approach_date': None,
+        #     'ip': None,
+        #     'device': None,
+        #     'browser': None,
+        #     "room_id": data.get('room_id')
+        # }
         headers = {
             'Content-Type': 'application/json'
         }
-        # url = settings.GET_USER_PROFILE_URL + settings.API_VERIFY_INFORMATION
-        url = "http://172.24.222.101:4002/api/customer/verify-information"
-        response = requests.request("POST", url=url, headers=headers, data=payload)
+        url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
+        response = requests.request("POST", url=url, headers=headers, data=data)
         return response.text
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"
@@ -76,8 +75,7 @@ def collect_livechat_social_profile(*args, **kwargs):
         headers = {
             'Content-Type': 'application/json'
         }
-        # url = settings.GET_USER_PROFILE_URL + settings.API_VERIFY_INFORMATION
-        url = "http://172.24.222.101:4002/api/customer/verify-information"
+        url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
         response = requests.request("POST", url, headers=headers, data=payload)
         return response.text
     except Exception as e:

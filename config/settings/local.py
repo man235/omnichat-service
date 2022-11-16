@@ -138,6 +138,8 @@ NATS_URL = env(
     "NATS_URL", default="nats://172.24.222.112:4222"
 )
 GET_USER_PROFILE_URL=env('GET_USER_PROFILE_URL' ,default="http://172.24.222.101:4002")
+CUSTOMER_SERVICE_URL=env('CUSTOMER_SERVICE_URL' ,default="http://172.24.222.101:4003")
+API_VERIFY_INFORMATION=env('API_VERIFY_INFORMATION' ,default="/api/customer/verify-information")
 
 # -----------------SENTINEL & REDIS-----------------
 SENTINEL_NAMESPACE = 'ThienHi'
