@@ -157,25 +157,6 @@ class LiveChatViewSet(viewsets.ModelViewSet):
                 return custom_response(200,"ok",[])
         except Exception:
             return custom_response(500,"INTERNAL_SERVER_ERROR",[])
-    # @action(detail=False, methods=["POST"], url_path="room/completed")
-    # def completed_room(self, request, *args):
-    #     user_header = get_user_from_header(request.headers)
-    #     data = request.data
-    #     sz= CompletedRoomSerializer(data=data,many=False)
-    #     sz.is_valid(raise_exception=True)
-    #     room_id=sz.data['room_id']
-    #     try:
-    #         new_topic_publish = f'live-chat-room_{room_id}'
-    #         room = Room.objects.filter(user_id =user_header,id = sz.data['room_id']).first()
-    #         if room :
-    #             room.status = "completed"
-    #             room.completed_date = timezone.now()
-    #             room.save()
-    #             room_data = format_room(room)
-    #             asyncio.run(connect_nats_client_publish_websocket(new_topic_publish, json.dumps(room_data).encode()))
-    #             return custom_response(200,"ok",[])
-    #     except Exception:
-    #         return custom_response(500,"INTERNAL_SERVER_ERROR",[])
 
     @action(detail=False, methods=["POST"], url_path="send-message")
     def send_message(self, request, *args):
@@ -213,3 +194,10 @@ class LiveChatViewSet(viewsets.ModelViewSet):
         asyncio.run(saleman_send_message_to_anonymous(room, data_message))
         logger.debug(f"SEND MESSAGE LIVECHAT ******************************************************  {data_message}")
         return custom_response(200,"ok",data_message)
+
+    @action(detail=True, methods=["GET"], url_path="social-profile")
+    def social_profile_livechat(self, request, pk, *args, **kwargs):
+        data_res = redis_client.get(f'{constants.COLLECT_LIVECHAT_SOCIAL_PROFILE}__{pk}')
+        if not data_res:
+            return custom_response(200, "Get Social Profile LiveChat Error",[])
+        return custom_response(200, "Get Social Profile LiveChat Successfully", data_res)

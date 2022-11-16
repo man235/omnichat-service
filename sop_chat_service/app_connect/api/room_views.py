@@ -353,6 +353,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         assign.is_active_reminder = False
         assign.delete()
         return custom_response(200,"Delete Assign Reminder Successfully",[])
+
     @action(detail=False, methods=["POST"], url_path="list-log")
     def list_log(self, request, *args, **kwargs):
         sz =  GetLogMessage(data=request.data)    
@@ -366,5 +367,3 @@ class RoomViewSet(viewsets.ModelViewSet):
             "logs": logs_sz.data
         }
         return custom_response(200,"Get List Log Successfully",data)
-    
-    

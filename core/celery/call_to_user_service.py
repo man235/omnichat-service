@@ -36,27 +36,19 @@ def create_log_time_message(room_id: str):
     return "Created Logs Message"
 
 
-@shared_task(name = "collect_livechat_social_profile")
+@shared_task(name = constants.COLLECT_LIVECHAT_SOCIAL_PROFILE)
 def collect_livechat_social_profile(*args, **kwargs):
-    print("collect_livechat_social_profile", args, kwargs)
+    room_id = args[0].get('room_id')
     try:
         payload = {
-            'name': None,
-            'email': None,
-            'facebook_id': None,
-            'phone': None,
-            'zalo_id': None,
             'type': constants.FCHAT,
-            'avatar': None,
-            'page': kwargs.get('live_chat_id'),
-            'page_url': None,
-            'approach_date': None,
-            'ip': kwargs.get('client_ip'),
-            'device': kwargs.get('client_info'),
-            'browser': kwargs.get('client_info'),
-            "room_id": kwargs.get('room_id')
+            'page': args[0].get('live_chat_id'),
+            'ip': args[0].get('client_ip'),
+            'device': args[0].get('client_info'),
+            'browser': args[0].get('client_info'),
+            "room_id": args[0].get('room_id')
         }
-        print(" ************************************************************************************* ", payload)
+        redis_client.set(f'{constants.COLLECT_LIVECHAT_SOCIAL_PROFILE}__{room_id}', ujson.dumps(payload))
         return payload
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"

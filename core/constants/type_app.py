@@ -69,3 +69,5 @@ ALL='all'
 PROCESSING='processing'
 COMPLETED = 'completed'
 EXPIRED ="expired"
+
+COLLECT_LIVECHAT_SOCIAL_PROFILE = "collect_livechat_social_profile"
