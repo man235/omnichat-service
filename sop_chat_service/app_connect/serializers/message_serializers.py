@@ -62,11 +62,11 @@ class LogMessageSerializer(serializers.ModelSerializer):
         model =LogMessage
         fields = ['mid','log_type','message','room_id','from_user','to_user']
 class GetLogMessage(serializers.Serializer):
-    room_id = serializers.CharField(required=True)
+    customer_id = serializers.CharField(required=True)
     
     def validate(self,request,attrs):
         user_header = get_user_from_header(request.headers)
-        room = Room.objects.filter(room_id=attrs.get("room_id"), user_id=user_header).first()
+        room = Room.objects.filter(external_id=attrs.get("customer_id"), user_id=user_header).first()
         if not room:
             raise serializers.ValidationError({"room": "Room Invalid"})
         return room,user_header

@@ -359,11 +359,11 @@ class RoomViewSet(viewsets.ModelViewSet):
         room,user_header = sz.validate(request,request.data)
         parent_log = LogMessage.objects.filter(room_id = room.room_id).order_by('created_at').first()
         parent_log_sz = LogMessageSerializer(parent_log) 
-        logs = LogMessage.objects.filter(room_id = room.room_id,log_type="").exclude(id = parent_log.id).order_by('-created_at')
-        logs_sz = LogMessageSerializer(logs) 
+        logs = LogMessage.objects.filter(room_id = room.room_id,log_type="new_message").exclude(id = parent_log.id).order_by('created_at')
+        logs_sz = LogMessageSerializer(logs,many=True) 
         data ={
             "parent_log" : parent_log_sz.data,
-            "logs": logs_sz
+            "logs": logs_sz.data
         }
         return custom_response(200,"Get List Log Successfully",data)
     
