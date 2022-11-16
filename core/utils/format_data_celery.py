@@ -9,9 +9,9 @@ async def celery_format_data_verify_customer(user_app: UserApp, room: Room):
         fanpage_url = ""
     data = {
         'name': user_app.name,
-        'email': user_app.email,
+        'email': user_app.email if user_app.email else "",
         'facebook_id': user_app.external_id if room.type == constants.FACEBOOK else "",
-        'phone': user_app.phone,
+        'phone': user_app.phone if user_app.phone else "",
         'zalo_id': user_app.external_id if room.type == constants.ZALO else "",
         'type': room.type,
         'avatar': user_app.avatar,
