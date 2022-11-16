@@ -7,8 +7,9 @@ from celery import shared_task
 from core import constants
 from core.stream.redis_connection import redis_client
 from core.utils.nats_connect import publish_data_to_nats
-from typing import Dict
 from core.utils.format_log_message import format_log_message_from_celery
+from typing import Dict
+from sop_chat_service.app_connect.models import UserApp, Room
 
 logger = logging.getLogger(__name__)
 
