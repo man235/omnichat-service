@@ -16,22 +16,6 @@ logger = logging.getLogger(__name__)
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
 def celery_task_verify_information(data: Dict, *args, **kwargs):
     try:
-        # payload = {
-        #     'name': data.get('name'),
-        #     'email': data.get('email'),
-        #     'facebook_id': data.get('external_id') if data.get('type') == constants.FACEBOOK else "",
-        #     'phone': data.get('phone'),
-        #     'zalo_id': data.get('external_id') if data.get('type') == constants.ZALO else "",
-        #     'type': data.get('type'),
-        #     'avatar': data.get('avatar'),
-        #     'page': None,
-        #     'page_url': None,
-        #     'approach_date': None,
-        #     'ip': None,
-        #     'device': None,
-        #     'browser': None,
-        #     "room_id": data.get('room_id')
-        # }
         headers = {
             'Content-Type': 'application/json'
         }
