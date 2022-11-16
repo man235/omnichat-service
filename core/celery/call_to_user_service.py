@@ -14,15 +14,15 @@ from sop_chat_service.app_connect.models import UserApp, Room
 logger = logging.getLogger(__name__)
 
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
-def celery_task_verify_information(data: Dict, *args, **kwargs):
+def celery_task_verify_information(_data: Dict, *args, **kwargs):
     try:
         headers = {
             'Content-Type': 'application/json'
         }
         url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
-        response = requests.post(url=url, headers=headers, data=data)
-        print(" ********************************* ", data)
-        print(response.status_code)
+        response = requests.post(url=url, headers=headers, data=_data)
+        print(" *************************************************************************************** ", _data)
+        print(response.status_code, response.json())
         return response.text
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"
