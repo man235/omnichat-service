@@ -16,11 +16,24 @@ logger = logging.getLogger(__name__)
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
 def celery_task_verify_information(_data: Dict, *args, **kwargs):
     try:
+        payload = {
+            "name": "Thiện Kim",
+            "email": "",
+            "facebook_id": "5385715904821196",
+            "phone": "",
+            "zalo_id": "",
+            "type": "facebook",
+            "avatar": "https://scontent.fhan2-5.fna.fbcdn.net/v/t1.30497-1/84628273_176159830277856_972693363922829312_n.jpg?stp=dst-jpg_p720x720&_nc_cat=1&ccb=1-7&_nc_sid=12b3be&_nc_ohc=rVGEGkZYcO0AX--PdJe&_nc_ht=scontent.fhan2-5.fna&edm=AP4hL3IEAAAA&oh=00_AfDzUy_BjEPkAIn8m-EAbW3fKnewFS8CYYirGZ3hXxxXYQ&oe=63995C59",
+            "fanpage": "Thiệnhi",
+            "fanpage_url": "https://www.facebook.com/profile.php?id=111462684988462",
+            "approach_date": "2022-11-16T09:22:18.222894",
+            "room_id": "85385715904821196"
+        }
         headers = {
             'Content-Type': 'application/json'
         }
         url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
-        response = requests.post(url=url, headers=headers, data=_data)
+        response = requests.post(url=url, headers=headers, data=payload)
         print(" *************************************************************************************** ", _data)
         print(response.status_code)
         return response.text
