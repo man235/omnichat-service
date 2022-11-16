@@ -14,8 +14,8 @@ from sop_chat_service.app_connect.serializers.room_serializers import (
     RoomIdSerializer
 )
 from django.utils import timezone
-from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer
-from sop_chat_service.app_connect.models import Room, Message, UserApp, Label,AssignReminder, FanPage
+from sop_chat_service.app_connect.serializers.message_serializers import MessageSerializer,LogMessageSerializer,GetLogMessage
+from sop_chat_service.app_connect.models import Room, Message, UserApp, Label,AssignReminder, FanPage,LogMessage
 from sop_chat_service.facebook.utils import custom_response
 from rest_framework.decorators import action
 from django.db.models import Q
@@ -353,5 +353,18 @@ class RoomViewSet(viewsets.ModelViewSet):
         assign.is_active_reminder = False
         assign.delete()
         return custom_response(200,"Delete Assign Reminder Successfully",[])
+    @action(detail=False, methods=["POST"], url_path="list-log")
+    def list_log(self, request, *args, **kwargs):
+        sz =  GetLogMessage(data=request.data)    
+        room,user_header = sz.validate(request,request.data)
+        parent_log = LogMessage.objects.filter(room_id = room.room_id).order_by('created_at').first()
+        parent_log_sz = LogMessageSerializer(parent_log) 
+        logs = LogMessage.objects.filter(room_id = room.room_id,log_type="").exclude(id = parent_log.id).order_by('-created_at')
+        logs_sz = LogMessageSerializer(logs) 
+        data ={
+            "parent_log" : parent_log_sz.data,
+            "logs": logs_sz
+        }
+        return custom_response(200,"Get List Log Successfully",data)
     
     

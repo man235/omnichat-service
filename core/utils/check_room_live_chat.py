@@ -7,6 +7,8 @@ from django.utils import timezone
 from core.schema import  NatsChatMessage
 import logging
 logger = logging.getLogger(__name__)
+from core.celery import create_log_time_message
+
 
 
 async def check_room_live_chat(data: NatsChatMessage):
@@ -46,6 +48,8 @@ async def check_room_live_chat(data: NatsChatMessage):
             user_id=live_chat.user_id,
         )
         new_room.save()
+        create_log_time_message.delay(check_room.room_id)
+
         return new_room
     else:
         
