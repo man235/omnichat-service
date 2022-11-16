@@ -21,8 +21,6 @@ def celery_task_verify_information(_data: Dict, *args, **kwargs):
         }
         url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
         response = requests.post(url=url, headers=headers, data=ujson.dumps(_data))
-        print(" *************************************************************************************** ")
-        print(response.status_code)
         return response.text
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"
@@ -62,7 +60,7 @@ def collect_livechat_social_profile(*args, **kwargs):
             'Content-Type': 'application/json'
         }
         url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=ujson.dumps(payload))
         return response.text
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"

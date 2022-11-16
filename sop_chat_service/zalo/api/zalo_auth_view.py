@@ -314,3 +314,14 @@ class ZaloViewSet(viewsets.ModelViewSet):
             # find_page.group_user = sz.data.get('group_user')
         find_page.save()
         return custom_response(200, 'Setting Chat Zalo Success', [])
+
+    @action(detail=True, methods=['post'], url_path='get-setting-chat')
+    def get_setting_chat_zalo(self, request, pk, *args, **kwargs) -> Response:
+        user_header = get_user_from_header(request.headers)
+        find_page = FanPage.objects.filter(page_id = pk, user_id = user_header).first()
+        if not find_page:
+            return custom_response(400, 'Not Find Zalo OA', [])
+        result = {
+            "setting_chat": find_page.setting_chat
+        }
+        return custom_response(200, 'Get Setting Chat Success', result)
