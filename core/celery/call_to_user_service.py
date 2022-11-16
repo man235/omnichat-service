@@ -7,29 +7,29 @@ from celery import shared_task
 from core import constants
 from core.stream.redis_connection import redis_client
 from core.utils.nats_connect import publish_data_to_nats
-from sop_chat_service.app_connect.models import UserApp, Room
+from typing import Dict
 from core.utils.format_log_message import format_log_message_from_celery
 
 logger = logging.getLogger(__name__)
 
 @shared_task(name = constants.CELERY_TASK_VERIFY_INFORMATION)
-def celery_task_verify_information(user_app: UserApp, room: Room, *args, **kwargs):
+def celery_task_verify_information(user_app: Dict, room: Dict, *args, **kwargs):
     try:
         payload = {
-            'name': user_app.name,
-            'email': user_app.email,
-            'facebook_id': user_app.external_id if room.type == constants.FACEBOOK else "",
-            'phone': user_app.phone,
-            'zalo_id': user_app.external_id if room.type == constants.ZALO else "",
-            'type': room.type,
-            'avatar': user_app.avatar,
+            'name': user_app.get('name'),
+            'email': user_app.get('email'),
+            'facebook_id': user_app.get('external_id') if room.get('type') == constants.FACEBOOK else "",
+            'phone': user_app.get('phone'),
+            'zalo_id': user_app.get('external_id') if room.get('type') == constants.ZALO else "",
+            'type': room.get('type'),
+            'avatar': user_app.get('avatar'),
             'page': None,
             'page_url': None,
             'approach_date': None,
             'ip': None,
             'device': None,
             'browser': None,
-            "room_id": room.room_id
+            "room_id": room.get('room_id')
         }
         headers = {
             'Content-Type': 'application/json'

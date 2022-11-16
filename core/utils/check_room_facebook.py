@@ -48,7 +48,7 @@ async def check_room_facebook(data: NatsChatMessage):
             user_id=check_fanpage.user_id,
         )
         new_room.save()
-        celery_task_verify_information.delay(user_app.__dict__, new_room)
+        celery_task_verify_information.delay(user_app.__dict__, new_room.__dict__)
         return new_room
     elif check_room:
         last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
