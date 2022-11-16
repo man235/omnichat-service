@@ -10,7 +10,7 @@ from core.utils.nats_connect import publish_data_to_nats
 from core.utils.format_log_message import format_log_message_from_celery
 from core.utils.format_message_for_websocket import format_room
 from typing import Dict
-from sop_chat_service.app_connect.models import UserApp, Room
+from sop_chat_service.app_connect.models import Room
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +42,8 @@ def re_open_room(room_id: str):
     page_name = room.page_id.name if room.page_id else None
     print(f're-open rooomm -----_--__--___-___--__-{room}')
     log_message = format_room(room.__dict__)
+    print(f'{log_message} ahaha')
     asyncio.run(publish_data_to_nats(subject_publish, ujson.dumps(log_message).encode()))
-    
     return "Room re_open"
 
 

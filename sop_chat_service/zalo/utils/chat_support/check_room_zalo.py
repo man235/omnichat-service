@@ -8,9 +8,11 @@ from core.utils import format_log_message
 from core.schema import NatsChatMessage
 import ujson
 import logging
+from core.celery import create_log_time_message,re_open_room
+from core import constants
+import time
 import asyncio
-import requests
-from django.conf import settings
+from core.stream.redis_connection import redis_client
 from core import constants
 from core.utils.distribute_new_chat import find_user_new_chat
 from core.celery import create_log_time_message
@@ -196,5 +198,5 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             check_room.completed_date = None
             check_room.status = constants.PROCESSING
             check_room.save()
-            
+            re_open_room.delay(check_room.room_id)
         return check_room

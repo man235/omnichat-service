@@ -53,3 +53,4 @@ class UpdateRoom(CustomBaseModel):
     room_id: str
     status: Optional[str]
     event: Optional[str] = constants.UPDATE_STATUS_ROOM
+    user_id: str

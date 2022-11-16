@@ -286,10 +286,10 @@ def format_receive_message_to_websocket(room, data: NatsChatMessage):
     )
     return message_ws
 def format_room(room:Dict):
-    print(f'{room} áudadasdkaksdksj')
     room= {
         "room_id":room.get('room_id'),
         "status":room.get('status'),
+        "user_id":room.get('user_id'),
         "event" :constants.UPDATE_STATUS_ROOM,
     }
     return room
