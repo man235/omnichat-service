@@ -56,11 +56,7 @@ def collect_livechat_social_profile(*args, **kwargs):
             'browser': kwargs.get('client_info'),
             "room_id": kwargs.get('room_id')
         }
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
-        response = requests.request("POST", url, headers=headers, data=ujson.dumps(payload))
-        return response.text
+        print(" ************************************************************************************* ", payload)
+        return payload
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"
