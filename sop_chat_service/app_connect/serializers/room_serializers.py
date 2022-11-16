@@ -100,6 +100,8 @@ class RoomMessageSerializer(serializers.ModelSerializer):
     
     def get_assign_reminder(self,obj):
         assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id).order_by('-created_at').first()
+        if not assign_reminder :
+            return None
         sz = GetAssignReminderSerializer(assign_reminder,many=False)
         result = sz.data if sz.data else None
         return result
@@ -277,8 +279,11 @@ class InfoSerializer(serializers.ModelSerializer):
 
     def get_assign_reminder(self,obj):
         assign_reminder = AssignReminder.objects.filter(room_id = obj, user_id= obj.user_id).order_by('-created_at').first()
-        sz = GetAssignReminderSerializer(assign_reminder,many=True)
-        return sz.data
+        # if not assign_reminder :
+        #     return None
+        sz = GetAssignReminderSerializer(assign_reminder,many=False)
+        result = sz.data if sz.data else None
+        return result
     
     def get_last_message(self, obj):
         if obj.type.lower() == "facebook":
