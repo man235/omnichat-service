@@ -13,6 +13,11 @@ import requests
 from django.conf import settings
 from core import constants
 from core.utils.distribute_new_chat import find_user_new_chat
+from core.celery import create_log_time_message
+from core import constants
+from core.stream.redis_connection import redis_client
+import time
+
 
 logger = logging.getLogger(__name__)
 
@@ -91,8 +96,15 @@ def check_room_zalo(data: NatsChatMessage) -> Room:
             room_id = f'{check_fanpage.id}{data.senderId}',
             user_id=check_fanpage.user_id,
         )
+        create_log_time_message.delay(check_room.room_id)
         return new_room
+
     else:
+        last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
+        if last_msg:
+            if int(time.time() * 1000) - int(last_msg) >= 86400000:
+                create_log_time_message.delay(check_room.room_id)
+
         return check_room
 
 
@@ -172,10 +184,17 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{new_room_user.room_id}"
             log_message = format_log_message(new_room_user, f'{new_room_user.admin_room_id} {constants.LOG_FORWARDED} {new_room_user.user_id}', constants.TRIGGER_COMPLETED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
+        create_log_time_message.delay(new_room_user.room_id)
+
         return new_room_user
     else:
+        last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
+        if last_msg:
+            if int(time.time() * 1000) - int(last_msg) >= 86400000:
+                create_log_time_message.delay(check_room.room_id)
         if check_room.completed_date:
             check_room.completed_date = None
             check_room.status = constants.PROCESSING
             check_room.save()
+            
         return check_room

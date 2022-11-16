@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from sop_chat_service.app_connect.models import Attachment, Message, Room, ServiceSurvey, LogMessage
 from sop_chat_service.app_connect.serializers.room_serializers import AttachmentSerializer, ServiceSurveySerializer, LogMessageSerializer
+from sop_chat_service.utils.request_headers import get_user_from_header
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -54,3 +55,19 @@ class ResultMessageSerializer(serializers.ModelSerializer):
     class Meta: 
         model= Message
         fields = ['id']
+        
+   
+class LogMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =LogMessage
+        fields = ['mid','log_type','message','room_id','from_user','to_user']
+class GetLogMessage(serializers.Serializer):
+    customer_id = serializers.CharField(required=True)
+    
+    def validate(self,request,attrs):
+        user_header = get_user_from_header(request.headers)
+        room = Room.objects.filter(external_id=attrs.get("customer_id"), user_id=user_header).first()
+        if not room:
+            raise serializers.ValidationError({"room": "Room Invalid"})
+        return room,user_header
+    
