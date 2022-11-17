@@ -124,53 +124,40 @@ class RoomViewSet(viewsets.ModelViewSet):
         data = {}
         result=[]
         search = remove_accent(sz.data.get('search'))
-        if sz.data.get('search') and not  sz.data.get('is_filter'):
-            cursor = connection.cursor()
-            cursor.execute('''
-                    select room.id 
-                    from public.app_connect_room room 
-                	where un_accent(room.name) ~* '\y%s' 
-                    and(room.user_id = '%s' 
-                    or room.admin_room_id = '%s')
-            '''%(search,user_header,user_header))
-            rows = cursor.fetchall()
-            for row in rows:
-                result.append(row[0])
-        else:
-            ser_sort = SortMessageSerializer(data = request.data)
-            ser_sort.is_valid(raise_exception=True)
-            if sz.data.get('is_filter'):
-                filter_request = ser_sort.data.get('filter')
-                data_filter = {
-                "page_id":filter_request.get('page_id',None),
-                "type":filter_request.get('type',None),
-                "time" : filter_request.get('time',None),
-                "status" : filter_request.get('status',None),
-                "state" : filter_request.get('state',None),
-                "phone" : filter_request.get('phone',None),
-                "label" : filter_request.get('label',None)
-            }
-            qs = Room.objects.filter(
-                (Q(user_id=user_header) | Q(admin_room_id=user_header)),
-                room_message__is_sender=False).distinct().order_by("-room_message__created_at")
-            qs = filter_room(data_filter, qs)
-            sz = RoomIdSerializer(qs, many=True)
-            list_data=[]
-            for item in sz.data:
-                    list_data.append(item['id'])
-            list_data = str(set(list_data)).replace("{", "(").replace("}", ")")
-            cursor = connection.cursor()
-            cursor.execute('''
-                    select room.id 
-                    from public.app_connect_room room 
-                	where room.id in %s and 
-                    un_accent(room.name) ~* '\y%s' 
-                    and(room.user_id = '%s' 
-                    or room.admin_room_id = '%s')
-            '''%(list_data,search,user_header,user_header))
-            rows = cursor.fetchall()
-            for row in rows:
-                result.append(row[0])
+        ser_sort = SortMessageSerializer(data = request.data)
+        ser_sort.is_valid(raise_exception=True)
+        if sz.data.get('is_filter'):
+            filter_request = ser_sort.data.get('filter')
+            data_filter = {
+            "page_id":filter_request.get('page_id',None),
+            "type":filter_request.get('type',None),
+            "time" : filter_request.get('time',None),
+            "status" : filter_request.get('status',None),
+            "state" : filter_request.get('state',None),
+            "phone" : filter_request.get('phone',None),
+            "label" : filter_request.get('label',None)
+        }
+        qs = Room.objects.filter(
+            (Q(user_id=user_header) | Q(admin_room_id=user_header)),
+            room_message__is_sender=False).distinct().order_by("-room_message__created_at")
+        qs = filter_room(data_filter, qs)
+        sz = RoomIdSerializer(qs, many=True)
+        list_data=[]
+        for item in sz.data:
+                list_data.append(item['id'])
+        list_data = str(set(list_data)).replace("{", "(").replace("}", ")")
+        cursor = connection.cursor()
+        cursor.execute('''
+                select room.id 
+                from public.app_connect_room room 
+            	where room.id in %s and 
+                un_accent(room.name) ~* '\y%s' 
+                and(room.user_id = '%s' 
+                or room.admin_room_id = '%s')
+        '''%(list_data,search,user_header,user_header))
+        rows = cursor.fetchall()
+        for row in rows:
+            result.append(row[0])
         qs_contact = Room.objects.filter(id__in=result, room_message__is_sender=False).distinct()
         serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
         data['contact'] = serializer_contact.data
