@@ -30,7 +30,7 @@ SEND_MESSAGE_MANAGER = "send_message-manager"
 SEND_MESSAGE_STATUS = "send_message-status"
 SEND_MESSAGE_STORAGE_DATABASE = 'send_message-storage'
 SEND_MESSAGE_WEBSOCKET = 'send_message-websocket'
-
+UPDATE_STATUS_ROOM ="re-open-room"
 
 REDIS_CONFIG_LIVECHAT = "live_chat-configs"
 LIVECHAT_NEW_MESSAGE = "live_chat_new_message"
