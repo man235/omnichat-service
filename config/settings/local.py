@@ -150,3 +150,20 @@ SENTINEL_URLS = [
 SENTINEL_PASSWORD = 'redisPassword'
 SENTINEL_DECODE_RESPONSE = True
 SENTINEL_DB = 1
+
+ELASTIC_SEARCH_URL = env(
+    "ELASTIC_SEARCH_URL", default="http://172.24.222.113:9200"
+)
+ELASTIC_KIBANA_URL = env(
+    "ELASTIC_KIBANA_URL", default="http://172.24.222.113:5601"
+)
+ELASTIC_USER = env(
+    "ELASTIC_USER", default="dev"
+)
+ELASTIC_PASSWORD = env(
+    "ELASTIC_PASSWORD", default="vA85m0^iAGfI"
+)
+
+ELASTIC_JOURNEY_LOGSTASH = env(
+    'ELASTIC_JOURNEY_LOGSTASH', default="dev_customer_journey_logstash"
+)

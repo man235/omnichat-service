@@ -179,3 +179,20 @@ PROFILE_USER_FIELDS = 'first_name,last_name,profile_pic,gender,locale,name,email
 SITE_ID = 1
 
 DOMAIN_MINIO_SAVE_ATTACHMENT = "https://webhook.minhhv11.xyz/"
+
+ELASTIC_SEARCH_URL = env(
+    "ELASTIC_SEARCH_URL", default="http://172.24.222.113:9200"
+)
+ELASTIC_KIBANA_URL = env(
+    "ELASTIC_KIBANA_URL", default="http://172.24.222.113:5601"
+)
+ELASTIC_USER = env(
+    "ELASTIC_USER", default="dev"
+)
+ELASTIC_PASSWORD = env(
+    "ELASTIC_PASSWORD", default="vA85m0^iAGfI"
+)
+
+ELASTIC_JOURNEY_LOGSTASH = env(
+    'ELASTIC_JOURNEY_LOGSTASH', default="stg_customer_journey_logstash"
+)

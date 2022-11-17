@@ -1,3 +1,5 @@
+from core.celery.call_to_user_service import log_elk
+from core.utils.format_elastic_log import ELK_LOG_ACTION, format_elk_log
 from rest_framework import viewsets, permissions
 from sop_chat_service.app_connect.serializers.room_serializers import (
     CompleteRoomSerializer,
@@ -208,14 +210,30 @@ class RoomViewSet(viewsets.ModelViewSet):
             room.save()
             log_message = format_log_message(room, f'{constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
+
+            elk_log = format_elk_log(
+                ELK_LOG_ACTION.get('COMPLETED'),
+                room, 
+                room.page_id, 
+                UserApp.objects.filter(external_id=room.external_id).first())
+            log_elk.deplay(doc=elk_log)
             msg = "Complete Room Successfully"
             
         else:
             room.completed_date = None
             room.status='processing'
             room.save()
+            
             log_message = format_log_message(room, f'{constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
+
+            elk_log = format_elk_log(
+                ELK_LOG_ACTION.get('REOPEN'),
+                room, 
+                room.page_id, 
+                UserApp.objects.filter(external_id=room.external_id).first())
+            log_elk.deplay(doc=elk_log)
+
             msg = "Re-open Room Successfully"
         return custom_response(200,msg,[])
 

@@ -11,6 +11,7 @@ from core.utils.format_log_message import format_log_message_from_celery
 from core.utils.format_message_for_websocket import format_room
 from typing import Dict
 from sop_chat_service.app_connect.models import Room
+from elasticsearch import Elasticsearch
 
 logger = logging.getLogger(__name__)
 
@@ -62,3 +63,25 @@ def collect_livechat_social_profile(*args, **kwargs):
         return payload
     except Exception as e:
         return f"Exception Verify information ERROR: {e}"
+
+@shared_task(name="log_elk")
+def log_elk(
+    index_pattern=settings.ELASTIC_JOURNEY_LOGSTASH,
+    doc=None,
+    *args,
+    **kwargs
+) -> None:
+    try:
+        # Create the client instance
+        es = Elasticsearch(
+            hosts=[settings.ELASTIC_SEARCH_URL],
+            basic_auth=(settings.ELASTIC_USER, settings.ELASTIC_PASSWORD),
+        )
+
+        # Log into elastic logstash
+        res = es.index(index=index_pattern, document=doc)
+        
+        logger.debug(f' RESULT OF LOG ELASTICSEARCH --------- {res} ------------ ')
+    except Exception as e:
+        logger.debug(f' FAILED TO LOG ELASTICSEARCH --------- {e} -------------- ')
+        
