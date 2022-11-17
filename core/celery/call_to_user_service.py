@@ -74,26 +74,25 @@ def log_elk(
     *args,
     **kwargs
 ) -> None:
-    try:
-        room = Room.objects.filter(room_id=room_id).first()
-        
-        elk_log = format_elk_log(
-            action,
-            room, 
-            room.page_id, 
-            UserApp.objects.filter(external_id=room.external_id).first()
-        )
-        
+    try:    
         # Create the client instance
         es = Elasticsearch(
             hosts=[settings.ELASTIC_SEARCH_URL],
             basic_auth=(settings.ELASTIC_USER, settings.ELASTIC_PASSWORD),
         )
 
+        elk_log = format_elk_log(
+            action,
+            room_id,
+        )
+        
         # Log into elastic logstash
-        res = es.index(index=index_pattern, document=vars(elk_log))
+        res = es.index(index=index_pattern, document=elk_log)
         
         logger.debug(f' RESULT OF LOG ELASTICSEARCH --------- {res} ------------ ')
+
+        return res
     except Exception as e:
         logger.debug(f' FAILED TO LOG ELASTICSEARCH --------- {e} -------------- ')
+        return f"Failed to log elasticsearch: {e}"
         
