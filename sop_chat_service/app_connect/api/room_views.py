@@ -126,16 +126,15 @@ class RoomViewSet(viewsets.ModelViewSet):
         search = remove_accent(sz.data.get('search'))
         ser_sort = SortMessageSerializer(data = request.data)
         ser_sort.is_valid(raise_exception=True)
-        if sz.data.get('is_filter'):
-            filter_request = ser_sort.data.get('filter')
-            data_filter = {
-            "page_id":filter_request.get('page_id',None),
-            "type":filter_request.get('type',None),
-            "time" : filter_request.get('time',None),
-            "status" : filter_request.get('status',None),
-            "state" : filter_request.get('state',None),
-            "phone" : filter_request.get('phone',None),
-            "label" : filter_request.get('label',None)
+        filter_request = ser_sort.data.get('filter')
+        data_filter = {
+        "page_id":filter_request.get('page_id',None),
+        "type":filter_request.get('type',None),
+        "time" : filter_request.get('time',None),
+        "status" : filter_request.get('status',None),
+        "state" : filter_request.get('state',None),
+        "phone" : filter_request.get('phone',None),
+        "label" : filter_request.get('label',None)
         }
         qs = Room.objects.filter(
             (Q(user_id=user_header) | Q(admin_room_id=user_header)),
