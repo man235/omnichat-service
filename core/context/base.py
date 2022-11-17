@@ -4,7 +4,7 @@ from core.abstractions import (
     AbsRouter,
     AbsManager
 )
-from core.routers import MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, ActionFollowRouter
+from core.routers import MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, ActionFollowRouter,MessageLogLiveChatRouter
 from core.schema import NatsChatMessage, FormatSendMessage
 from core.managers import StorageManager, WebSocketManager, SendMessageManager, MessageLogManager, ActionFollowManager
 
@@ -16,7 +16,7 @@ class BaseAppContext(AbsAppContext):
 
 # ----------------    RECEIVER    ----------------
     async def _get_routers(self, msg_type: str) -> Dict[str, AbsRouter]:
-        for router_class in (MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, ActionFollowRouter):
+        for router_class in (MessageTextRouter, MessageEmojiRouter, SendMessageRouter, MessageLogRouter, ActionFollowRouter,MessageLogLiveChatRouter):
             router_instance = router_class()
             self._routers.update({router_instance.msg_type: router_instance})
         return self._routers.get(msg_type)
