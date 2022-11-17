@@ -1,5 +1,5 @@
 from .base import BaseRouter
-from core.schema import NatsChatMessage
+from core.schema import FormatSendMessage
 from core.abstractions import AbsAppContext
 from core import constants
 from sop_chat_service.app_connect.models import Room
@@ -12,7 +12,7 @@ class MessageLogLiveChatRouter(BaseRouter):
     def bind_context(self, context: AbsAppContext, **kwargs):
         self.context = context
 
-    async def process_message(self, data: NatsChatMessage, *args, **kwargs):
+    async def process_message(self, data: FormatSendMessage, *args, **kwargs):
         room =  Room.objects.filter(room_id=data.room_id).first()
         if not room:
             return
