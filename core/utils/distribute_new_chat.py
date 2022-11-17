@@ -69,7 +69,7 @@ async def find_user_new_chat(chat_message: NatsChatMessage, fanpage: FanPage):
     result = await distribute_new_chat(chat_message, fanpage.user_id, zalo_users)
     return result
 
-async def call_noc_api_get_users(page: FanPage):
+def call_noc_api_get_users(page: FanPage):
     try:
         query = {'pageId': page.page_id}
         list_setting_chat = requests.get(
@@ -79,9 +79,11 @@ async def call_noc_api_get_users(page: FanPage):
         )
         if list_setting_chat.status_code == 200 and list_setting_chat.json()['status'] == "success":
             data_user = list_setting_chat.json()['data']
-            logger.debug(f"{data_user} --------------------------------------------------------------")
+            logger.debug(f"----- {data_user} --------------------------------------------------------------")
             return data_user
         else:
+            logger.debug(f"----- FAILED TO CALL USERs FROM NOC --------------------------------------------------------------")
             return None
     except Exception as e:
+        logger.debug(f"----- FAILED TO HANDLE GETTING USERs FROM NOC --------------------------------------------------------------")
         return None
