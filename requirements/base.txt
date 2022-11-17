@@ -79,3 +79,5 @@ ujson
 aioredis==2.0.0
 unidecode
 django-celery-results
+elasticsearch
+elasticsearch[async]>=7.8.0

@@ -12,3 +12,4 @@ from .reminders import *
 from .nats_connect import *
 from .convert_time import *
 from .format_data_celery import *
+from .format_elastic_log import *
