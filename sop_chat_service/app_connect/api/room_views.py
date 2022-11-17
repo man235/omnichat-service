@@ -174,7 +174,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         qs_contact = Room.objects.filter(id__in=result, room_message__is_sender=False).distinct()
         serializer_contact = ResponseSearchMessageSerializer(qs_contact, many=True)
         data['contact'] = serializer_contact.data
-        qs_messages = Room.objects.filter(user_id=user_header,room_message__is_sender=False,id__in = result).distinct()
+        qs_messages = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),room_message__is_sender=False,id__in = result).distinct()
         qs_messages = qs_messages.filter(room_message__text__icontains=search).distinct()
         serializer_message = []
         for qs_message in qs_messages:
@@ -198,7 +198,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["POST"], url_path="complete")
     def complete_room(self, request, pk=None, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
-        room = Room.objects.get(room_id=pk, user_id=user_header)
+        room = Room.objects.get((Q(user_id=user_header) | Q(admin_room_id=user_header)),room_id=pk)
         if not room:
             return custom_response(400,"Invalid room",[])
         sz = CompleteRoomSerializer(request.data)
