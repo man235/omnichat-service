@@ -1,9 +1,5 @@
-
-
 from typing import Any, List
 from django.utils import timezone
-import uuid
-
 from core import constants
 from sop_chat_service.zalo.utils.chat_support.type_constant import (
     FILE_CONTENT_TYPE,
@@ -15,6 +11,8 @@ from sop_chat_service.zalo.utils.chat_support.type_constant import (
     FILE_PDF_TYPE,
     IMAGE_MESSAGE
 )
+import uuid
+
 
 def format_sended_message_to_socket(
     text: str = None,
@@ -50,7 +48,7 @@ def format_sended_message_to_socket(
     }
     
     
-def format_attachment_type(attachment: Any):
+def format_attachment_type(attachment: Any) -> str:
     attachment_content_type = attachment.content_type
     
     if attachment_content_type:
@@ -65,8 +63,7 @@ def format_attachment_type(attachment: Any):
         return IMAGE_MESSAGE
         
 
-
-def reformat_attachment_type(attachment: Any):
+def reformat_attachment_type(attachment: Any) -> str:
     reformatted_attachment_type = None
     attachment_content_type = str(attachment.content_type)  # application/docx   
     attachment_base_type = attachment_content_type.split('/')[0]
@@ -85,3 +82,37 @@ def reformat_attachment_type(attachment: Any):
     elif attachment_base_type == IMAGE_MESSAGE:
         reformatted_attachment_type = IMAGE_MESSAGE # image
     return reformatted_attachment_type
+
+
+def format_atachment_type_from_zalo_message(attachment: Any, optionals: Any, index: int) -> str:
+    if optionals[index] and optionals[index].data.get('attachments'):
+        optional_attachment = optionals[index].data.get('attachments')[index]
+        optional_attachment_payload = optional_attachment.get('payload')
+        attachment_type = optional_attachment.get('type')
+        attachment_name = optional_attachment_payload.get('name')
+        attachment_id = optional_attachment_payload.get('id')
+        attachment_size = optional_attachment_payload.get('size')
+        attachment_file_type = optional_attachment_payload.get('type')
+
+        # Reformat file type
+        if attachment_type == FILE_MESSAGE:
+            if None is not attachment_file_type in FILE_DOC_EXTENSION:
+                reformatted_attachment_type = '/'.join([
+                    FILE_CONTENT_TYPE,
+                    FILE_MSWORD_EXTENSION
+                ])
+            else:
+                reformatted_attachment_type = '/'.join([
+                    FILE_CONTENT_TYPE,
+                    attachment_file_type
+                ])
+        else:
+            reformatted_attachment_type = attachment.type   # except "file", such as: "image", "gif"
+    else:
+        # Don't have optionals
+        reformatted_attachment_type,
+        attachment_name,
+        attachment_size,
+        attachment_id = None
+
+    return reformatted_attachment_type, attachment_name, attachment_size, attachment_id

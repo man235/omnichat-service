@@ -1,10 +1,10 @@
-from logging import Logger
 from typing import Any, List
 from core.schema.message_receive import ChatOptional
 from sop_chat_service.app_connect.models import Message, Attachment, Room
 from django.utils import timezone
 from core.schema import MessageChat
 from sop_chat_service.utils.storages import upload_file_to_minio
+from sop_chat_service.zalo.utils.chat_support.format_message_zalo import format_atachment_type_from_zalo_message
 from sop_chat_service.zalo.utils.chat_support.type_constant import FILE_CONTENT_TYPE, FILE_DOC_EXTENSION, FILE_MESSAGE, FILE_MSWORD_EXTENSION
 from django.conf import settings
 from core import constants
@@ -95,54 +95,11 @@ async def save_message_store_database_zalo(
     if msg.attachments:
         for index, attachment in enumerate(msg.attachments):
             if optionals[index] and optionals[index].data.get('attachments'):
-                optional_attachment = optionals[index].data.get('attachments')[index]
-                optional_attachment_payload = optional_attachment.get('payload')
-                attachment_type = optional_attachment.get('type')
-                attachment_name = optional_attachment_payload.get('name')
-                attachment_id = optional_attachment_payload.get('id')
-                attachment_size = optional_attachment_payload.get('size')
-                attachment_file_type = optional_attachment_payload.get('type')
-
-                # Reformat file type
-                if attachment_type == FILE_MESSAGE:
-                    if None is not attachment_file_type in FILE_DOC_EXTENSION:
-                        reformatted_attachment_type = '/'.join([
-                            FILE_CONTENT_TYPE,
-                            FILE_MSWORD_EXTENSION
-                        ])
-                    else:
-                        reformatted_attachment_type = '/'.join([
-                            FILE_CONTENT_TYPE,
-                            attachment_file_type
-                        ])
-                else:
-                    reformatted_attachment_type = attachment.type   # except "file", such as: "image", "gif"
-            else:
-                # Don't have optionals
-                reformatted_attachment_type,
-                attachment_name,
-                attachment_size,
-                attachment_id = None
-            
-            # Download and upload to minio
-            # try:
-            #     rp = requests.get(
-            #         url=attachment.url,
-            #         timeout=60
-            #     )   # the timeout-second for both connecting and reading
-            #     if rp.status_code == 200:
-            #         attachment = rp.content
-            #     else:
-            #         rp.raise_for_status('Failed to download file from zalo url')
-            #     domain = settings.DOMAIN_MINIO_SAVE_ATTACHMENT
-            #     sub_url = f"api/live_chat/chat_media/get_chat_media?name=live_chat_room_{room.room_id}/"
-            #     stream_file_url = ''.join([domain, sub_url])
-            #     data_upload_file = upload_file_to_minio(attachment, room.id)
-            #     logger.debug(f' DOWN AND UP RECEIVED ZALO ATTACHMENT ---------- {data_upload_file}')
-            #     attachment_url = ''.join([stream_file_url, data_upload_file])
-            # except Exception as e:
-            #     attachment_url = attachment.url     # url from zalo
-
+                reformatted_attachment_type, \
+                attachment_name, \
+                attachment_size, \
+                attachment_id = format_atachment_type_from_zalo_message(attachment, optionals, index)
+                                
             Attachment.objects.create(
                 mid=message,
                 type=reformatted_attachment_type,
