@@ -17,4 +17,4 @@ class MessageLogLiveChatRouter(BaseRouter):
         if not room:
             return
         log_message = format_data_log_message(room, f'{constants.LOG_LEAVE_LIVECHAT}', constants.TRIGGER_LEFT_LEAVE_LIVECHAT)
-        await self.context.run_send_message_manager(manager_type=constants.MESSAGE_LOG_MANAGER, message=log_message)
+        await self.context.run_send_message_manager(manager_type=constants.MESSAGE_LOG_MANAGER, message=FormatSendMessage(**log_message))
