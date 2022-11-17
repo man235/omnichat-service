@@ -48,6 +48,24 @@ def re_open_room(room_id: str):
     return "Room re_open"
 
 
+@shared_task(name = constants.COLLECT_LIVECHAT_SOCIAL_PROFILE)
+def collect_livechat_social_profile(*args, **kwargs):
+    room_id = kwargs.get('room_id')
+    try:
+        payload = {
+            'type': constants.FCHAT,
+            'page': kwargs.get('live_chat_id'),
+            'ip': kwargs.get('client_ip'),
+            'device': kwargs.get('client_info'),
+            'browser': kwargs.get('client_info'),
+            "room_id": kwargs.get('room_id')
+        }
+        redis_client.set(f'{constants.COLLECT_LIVECHAT_SOCIAL_PROFILE}__{room_id}', ujson.dumps(payload))
+        return payload
+    except Exception as e:
+        return f"Exception Verify information ERROR: {e}"
+
+
 @shared_task(name="log_elk")
 def log_elk(
     index_pattern: str=settings.ELASTIC_JOURNEY_LOGSTASH,
@@ -66,6 +84,7 @@ def log_elk(
             UserApp.objects.filter(external_id=room.external_id).first()
         )
         
+        print(f'----here----- {elk_log.__dict__}')
         # Create the client instance
         es = Elasticsearch(
             hosts=[settings.ELASTIC_SEARCH_URL],
@@ -78,4 +97,4 @@ def log_elk(
         logger.debug(f' RESULT OF LOG ELASTICSEARCH --------- {res} ------------ ')
     except Exception as e:
         logger.debug(f' FAILED TO LOG ELASTICSEARCH --------- {e} -------------- ')
-       
+        
