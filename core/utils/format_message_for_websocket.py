@@ -289,7 +289,7 @@ def format_room(room:Dict):
     room= {
         "room_id":room.get('room_id'),
         "status":room.get('status'),
-        "user_id":room.get('user_id'),
+        "user_id": [room.get('user_id'), room.get('admin_room_id')] if room.get('admin_room_id') else [room.get('user_id')],
         "event" :constants.UPDATE_STATUS_ROOM,
     }
     return room
