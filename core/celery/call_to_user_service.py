@@ -94,6 +94,8 @@ def log_elk(
         res = es.index(index=index_pattern, document=vars(elk_log))
         
         logger.debug(f' RESULT OF LOG ELASTICSEARCH --------- {res} ------------ ')
+
+        return res
     except Exception as e:
         logger.debug(f' FAILED TO LOG ELASTICSEARCH --------- {e} -------------- ')
-        
+        return f"Failed to log elasticsearch: {e}"

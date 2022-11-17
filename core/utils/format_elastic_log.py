@@ -13,52 +13,29 @@ ELK_LOG_ACTION = {
 }
 
 
-class ElkCustomer(CustomBaseModel):
-    customer_id: Optional[str]
-    name: Optional[str]
-    from_page: Optional[str]    # page type: livechat, zalo or facebook
-
-
-class ElkFanpage(CustomBaseModel):
-    fanpage_id: Optional[str]
-    name: Optional[str]
-    
-
-class ElkLogSchema(CustomBaseModel):
-    action: str
-    user_id: str
-    room_id : str
-    fanpage: Optional[ElkFanpage]
-    customer: Optional[ElkCustomer]
-    created_at: Optional[str]
-
-
 def format_elk_log(
     action: str,
-    room: Optional[Room],
-    fanpage: Optional[FanPage],
-    customer: Optional[UserApp],
-) -> ElkLogSchema:
-    elk_page = ElkFanpage()
-    elk_customer = ElkCustomer()
+    room_id: str=None,
+) -> dict:
     
-    if fanpage:
-        elk_page.name = fanpage.name
-        elk_page.fanpage_id = fanpage.page_id
-        elk_customer.from_page = fanpage.type
+    room_qs = Room.objects.filter(room_id=room_id).first()
+    if room_qs:
+        doc = {
+            'action': action,
+            'user_id': room_qs.user_id,
+            'room_id': room_qs.room_id,
+            'fanpage': {
+                'fanpage_id': room_qs.page_id,
+                'name': room_qs.page_id.name,
+            },
+            'customer': {
+                'customer_id': room_qs.external_id,
+                'name': UserApp.objects.filter(external_id=room_qs.external_id).first().name
+            },
+            'created_at': str(timezone.now())
+        }
+        
+        return doc
     
-    if customer:
-        elk_customer.customer_id = customer.external_id
-        elk_customer.name = customer.name
-    
-    doc = ElkLogSchema(
-        action=action,
-        user_id=room.user_id,
-        room_id=room.room_id,
-        fanpage=elk_page,
-        customer=elk_customer,
-        created_at=str(timezone.now())
-    )
-
-    return doc
+    return None
     
