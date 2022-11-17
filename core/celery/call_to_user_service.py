@@ -38,18 +38,15 @@ def create_log_time_message(room_id: str):
 
 @shared_task(name = constants.COLLECT_LIVECHAT_SOCIAL_PROFILE)
 def collect_livechat_social_profile(*args, **kwargs):
-    print(" ************************************************************************** ")
-    print(kwargs, " ^^^^^^^^^^^^^^^^ ")
-    print(kwargs.get('room_id'))
-    room_id = args[0].get('room_id')
+    room_id = kwargs.get('room_id')
     try:
         payload = {
             'type': constants.FCHAT,
-            'page': args[0].get('live_chat_id'),
-            'ip': args[0].get('client_ip'),
-            'device': args[0].get('client_info'),
-            'browser': args[0].get('client_info'),
-            "room_id": args[0].get('room_id')
+            'page': kwargs.get('live_chat_id'),
+            'ip': kwargs.get('client_ip'),
+            'device': kwargs.get('client_info'),
+            'browser': kwargs.get('client_info'),
+            "room_id": kwargs.get('room_id')
         }
         redis_client.set(f'{constants.COLLECT_LIVECHAT_SOCIAL_PROFILE}__{room_id}', ujson.dumps(payload))
         return payload
