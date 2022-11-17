@@ -52,5 +52,4 @@ async def check_room_live_chat(data: NatsChatMessage):
         create_log_time_message.delay(new_room.room_id)
         return new_room
     else:
-        create_log_time_message.delay(check_room.room_id)
         return check_room
