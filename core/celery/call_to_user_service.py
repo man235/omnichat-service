@@ -84,7 +84,6 @@ def log_elk(
             UserApp.objects.filter(external_id=room.external_id).first()
         )
         
-        print(f'----here----- {elk_log.__dict__}')
         # Create the client instance
         es = Elasticsearch(
             hosts=[settings.ELASTIC_SEARCH_URL],
@@ -92,7 +91,7 @@ def log_elk(
         )
 
         # Log into elastic logstash
-        res = es.index(index=index_pattern, document=elk_log.__dict__)
+        res = es.index(index=index_pattern, document=vars(elk_log))
         
         logger.debug(f' RESULT OF LOG ELASTICSEARCH --------- {res} ------------ ')
     except Exception as e:
