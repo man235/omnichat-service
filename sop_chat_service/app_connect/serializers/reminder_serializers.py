@@ -8,7 +8,14 @@ class CreateReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reminder
         fields = "__all__"
-
+    def validate(self,attrs):
+        if len(attrs['title']) > 50:
+            raise serializers.ValidationError({"title": "Invalid title"})
+        elif attrs['time_reminder'] > 9999999999:
+            raise serializers.ValidationError({"time_reminder": "Invalid time_reminder"})
+        elif attrs['repeat_time'] > 99:
+            raise serializers.ValidationError({"repeat_time": "Invalid repeat_time"})
+        return attrs
 
 class ReminderSerializer(serializers.ModelSerializer):
     is_default = serializers.SerializerMethodField(source='get_is_default', read_only=True)
