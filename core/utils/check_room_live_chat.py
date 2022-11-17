@@ -26,7 +26,7 @@ async def check_room_live_chat(data: NatsChatMessage):
             check_room.save()
         # if count_message == 0:
         #     return check_room
-        create_log_time_message.delay(check_room.room_id)
+        # create_log_time_message.delay(check_room.room_id)
         return check_room
         # else:
         #     check_room = Room.objects.filter(
