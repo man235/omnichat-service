@@ -1,9 +1,12 @@
 from django.utils import timezone
 import json
+from typing import Dict
+
 import time
 from core.schema import NatsChatMessage, MessageChat, ChatMessageAttachment, MessageToWebSocket
 from core.schema.message_websocket import ChatMessageUserInfo
 from core import constants
+from sop_chat_service.app_connect.models import Room
 
 
 def format_receive_message_zalo(room, data: NatsChatMessage):
@@ -282,3 +285,11 @@ def format_receive_message_to_websocket(room, data: NatsChatMessage):
         event = constants.SIO_EVENT_NEW_MSG_CUSTOMER_TO_SALEMAN
     )
     return message_ws
+def format_room(room:Dict):
+    room= {
+        "room_id":room.get('room_id'),
+        "status":room.get('status'),
+        "user_id":room.get('user_id'),
+        "event" :constants.UPDATE_STATUS_ROOM,
+    }
+    return room

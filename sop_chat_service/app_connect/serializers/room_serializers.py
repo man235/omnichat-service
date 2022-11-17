@@ -320,7 +320,3 @@ class InfoSerializer(serializers.ModelSerializer):
 class CompleteRoomSerializer(serializers.Serializer):
     is_complete = serializers.BooleanField(required=True)
     
-class UserAppSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserApp
-        fields = "__all__"
