@@ -178,7 +178,6 @@ class ResponseSearchMessageSerializer(serializers.ModelSerializer):
         return page.avatar_url
 class SearchRoomSerializer(serializers.Serializer):
     search = serializers.CharField(required=True)
-    is_filter =serializers.BooleanField(required=True)
   
 class SearchMessageSerializer(serializers.Serializer):
     room_id= serializers.CharField(required=True)
