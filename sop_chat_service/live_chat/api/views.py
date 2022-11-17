@@ -197,7 +197,16 @@ class LiveChatViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["GET"], url_path="social-profile")
     def social_profile_livechat(self, request, pk, *args, **kwargs):
-        data_res = redis_client.get(f'{constants.COLLECT_LIVECHAT_SOCIAL_PROFILE}__{pk}')
-        if not data_res:
+        data_redis = redis_client.get(f'{constants.COLLECT_LIVECHAT_SOCIAL_PROFILE}__{pk}')
+        if not data_redis:
             return custom_response(200, "Get Social Profile LiveChat Error",[])
+        res = ujson.loads(data_redis.decode('utf-8'))
+        data_res = {
+            "type": res.get('type'),
+            "page": res.get('page'),
+            "ip": res.get('ip'),
+            "device": res.get('device'),
+            "browser": res.get('browser'),
+            "room_id": res.get('room_id')
+        }
         return custom_response(200, "Get Social Profile LiveChat Successfully", data_res)
