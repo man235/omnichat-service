@@ -4,7 +4,7 @@ from django.utils import timezone
 from asgiref.sync import sync_to_async
 from sop_chat_service.zalo.utils.api_suport.api_zalo_caller import get_oa_follower
 from sop_chat_service.app_connect.api.message_facebook_views import connect_nats_client_publish_websocket
-from core.utils import format_data_log_message
+from core.utils.format_log_message import format_data_log_message
 from core.schema import NatsChatMessage
 import ujson
 import logging
@@ -17,7 +17,6 @@ from core import constants
 from core.utils.distribute_new_chat import find_user_new_chat
 from core.celery import create_log_time_message
 from core import constants
-from core.stream.redis_connection import redis_client
 import time
 from core.utils.format_data_celery import celery_format_data_verify_customer
 from core.celery import celery_task_verify_information
