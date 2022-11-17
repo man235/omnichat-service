@@ -22,9 +22,9 @@ class LabelViewSet(viewsets.ModelViewSet):
             if not room:
                 serializers.ValidationError({"room": "Room is not valid"})
             else:
-                Label.objects.filter(~Q(label_id__in=data['label_id'])).delete()
+                Label.objects.filter(~Q(label_id__in=data['label_id']),room_id =room).delete()
                 for item in data['label_id']:
-                    label_exist= Label.objects.filter(label_id = item)
+                    label_exist= Label.objects.filter(label_id = item,room_id =room)
                     if label_exist:
                         pass
                     else:
