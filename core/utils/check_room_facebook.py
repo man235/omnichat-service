@@ -9,6 +9,8 @@ import logging
 import time
 from core.stream.redis_connection import redis_client
 
+logger = logging.getLogger(__name__)
+
 
 async def check_room_facebook(data: NatsChatMessage):
     check_fanpage = FanPage.objects.filter(page_id=data.recipientId, is_active=True).first()
@@ -46,7 +48,7 @@ async def check_room_facebook(data: NatsChatMessage):
         new_room.save()
         data = await celery_format_data_verify_customer(user_app, new_room)
         celery_task_verify_information.delay(data)
-        create_log_time_message.delay(check_room.room_id)
+        create_log_time_message.delay(new_room.room_id)
         return new_room
     elif check_room:
         last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)

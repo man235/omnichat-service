@@ -19,95 +19,11 @@ from core.celery import create_log_time_message
 from core import constants
 from core.stream.redis_connection import redis_client
 import time
+from core.utils.format_data_celery import celery_format_data_verify_customer
+from core.celery import celery_task_verify_information
 
 
 logger = logging.getLogger(__name__)
-
-@sync_to_async
-def check_room_zalo(data: NatsChatMessage) -> Room:
-    check_fanpage = FanPage.objects.filter(
-        page_id=data.recipientId,
-        is_active=True,
-        type='zalo',
-    ).first()
-        
-    if not check_fanpage:
-        logger.debug(f' NOT FIND FROM DATABASE -------------------------')
-        return None
-    
-    user_app = UserApp.objects.filter(
-        external_id=data.senderId,
-    ).first()
-
-
-    if not user_app:
-        logger.debug(f' NOT FIND USER ZALO APP FROM DATABASE ------------------------- ')
-        # Find user from zalo oa: Anomynous or Follower
-        zalo_app_user: dict = get_oa_follower(
-            data.senderId,
-            check_fanpage.access_token_page,
-        )
-
-        if zalo_app_user.get('message') == 'Success':
-            # Follower
-            logger.debug(f' ZALO OA`S FOLLOWER USER ------------------------- ')
-            zalo_app_user_data: dict = zalo_app_user.get('data')
-
-            # Define user gender
-            gender: int = zalo_app_user_data.get('user_gender')
-            if gender == 0:
-                checked_gender = 'Others'
-            elif gender == 1:
-                checked_gender = 'Male'
-            elif gender == 2:
-                checked_gender = 'Female'
-            else:
-                checked_gender = 'Undefined'
-
-            user_app = UserApp.objects.create(
-                external_id = data.senderId,
-                name = zalo_app_user_data.get('display_name'),
-                avatar = zalo_app_user_data.get('avatar'),
-                gender = checked_gender,
-            )
-        else:
-            # Anonymous User
-            logger.debug(f' ANONYMOUS USER ZALO ------------------------- ')
-            user_app = UserApp.objects.create(
-                external_id = data.senderId,
-                name = f'Anonymous-{data.senderId}',
-            ) 
-    
-    check_room = Room.objects.filter(
-        page_id=check_fanpage, 
-        external_id=data.senderId,
-        user_id=check_fanpage.user_id,
-    ).first()
-        
-    # user_id=check_fanpage.user_id,
-    if not check_room or check_room.completed_date:
-        new_room = Room.objects.create(
-            page_id = check_fanpage,
-            external_id = data.senderId,
-            name = user_app.name,
-            approved_date = timezone.now(),
-            type = "zalo",
-            conversation_id = "",
-            completed_date = None,
-            room_id = f'{check_fanpage.id}{data.senderId}',
-            user_id=check_fanpage.user_id,
-        )
-        create_log_time_message.delay(check_room.room_id)
-        return new_room
-
-    else:
-        last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
-        if last_msg:
-            if int(time.time() * 1000) - int(last_msg) >= 86400000:
-                create_log_time_message.delay(check_room.room_id)
-
-        return check_room
-
 
 
 async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
@@ -185,6 +101,8 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{new_room_user.room_id}"
             log_message = format_log_message(new_room_user, f'{new_room_user.admin_room_id} {constants.LOG_FORWARDED} {new_room_user.user_id}', constants.TRIGGER_COMPLETED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
+        data = await celery_format_data_verify_customer(user_app, new_room_user)
+        celery_task_verify_information.delay(data)
         create_log_time_message.delay(new_room_user.room_id)
 
         return new_room_user
