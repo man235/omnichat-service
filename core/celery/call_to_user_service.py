@@ -34,7 +34,7 @@ def create_log_time_message(room_id: str):
     room = Room.objects.filter(room_id = room_id).first()
     subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room_id}"
     page_name = room.page_id.name if room.page_id else 'Fchat'
-    log_message = format_log_message_from_celery(room.__dict__, f'{constants.LOG_NEW_MESSAGE} to {page_name}', constants.TRIGGER_NEW_MESSAGE)
+    log_message = format_log_message_from_celery(room.__dict__, f'{constants.LOG_NEW_MESSAGE} {page_name}', constants.TRIGGER_NEW_MESSAGE)
     asyncio.run(publish_data_to_nats(subject_publish, ujson.dumps(log_message).encode()))
     return "Created Logs Message"
 

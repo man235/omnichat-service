@@ -16,5 +16,7 @@ class MessageLogWebSocketHandler(BaseHandler):
             new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_FACEBOOK}.{room.room_id}'
         elif message.type == constants.ZALO:
             new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_ZALO}.{room.room_id}'
+        else:
+            new_topic_publish = f'{constants.CORECHAT_TO_WEBSOCKET_LIVECHAT}.{room.room_id}'
         await self.manager.nats_client.publish(new_topic_publish, data_ws)
         logger.debug(f"{new_topic_publish} ------ {message.uuid}")
