@@ -355,11 +355,13 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="deactive-noti")
     def deactive(self, request, *args, **kwargs):
         sz =  DeactiveAssignReminderSerializer(data=request.data)    
-        room,assign,user_header = sz.validate(request,request.data)    
+        room,assign,user_header = sz.validate(request,request.data)
         assign.is_active_reminder = False
         assign.save()
-        assign_sz= GetAssignReminderSerializer(assign)
-        return custom_response(200,"Close Noti Successfully",assign_sz.data)
+        if assign.repeat_time == 0:
+            assign.delete()
+        # assign_sz= GetAssignReminderSerializer(assign)
+        return custom_response(200,"Close Noti Successfully",[])
     
     @action(detail=False, methods=["POST"], url_path="remove-assign-reminder")
     def remove_assign(self, request, *args, **kwargs):
