@@ -35,7 +35,8 @@ def create_log_time_message(room_id: str):
     log_message = format_log_message_from_celery(room.__dict__, f'{constants.LOG_NEW_MESSAGE} to {page_name}', constants.TRIGGER_NEW_MESSAGE)
     asyncio.run(publish_data_to_nats(subject_publish, ujson.dumps(log_message).encode()))
     return "Created Logs Message"
-@shared_task(name = constants.CELERY_TASK_LOG_MESSAGE_ROOM)
+
+@shared_task(name = constants.CELERY_TASK_LOG_MESSAGE_REOPEN_ROOM)
 def re_open_room(room_id: str):
     room = Room.objects.filter(room_id = room_id).first()
     subject_publish = f"{constants.UPDATE_ROOM_CHAT_SERVICE_TO_WEBSOCKET}.{room_id}"
