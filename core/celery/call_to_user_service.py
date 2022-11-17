@@ -40,11 +40,7 @@ def create_log_time_message(room_id: str):
 def collect_livechat_social_profile(*args, **kwargs):
     print(" ************************************************************************** ")
     print(kwargs, " ^^^^^^^^^^^^^^^^ ")
-    print(kwargs[0])
-    print(kwargs[0].get('room_id'))
-
-
-
+    print(kwargs.get('room_id'))
     room_id = args[0].get('room_id')
     try:
         payload = {
