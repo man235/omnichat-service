@@ -32,7 +32,7 @@ from sop_chat_service.app_connect.models import Reminder
 from sop_chat_service.app_connect.serializers.reminder_serializers import ReminderSerializer,AssignReminderSerializer,GetAssignReminderSerializer,DeactiveAssignReminderSerializer
 from .message_facebook_views import connect_nats_client_publish_websocket
 from core import constants
-from core.utils import format_log_message
+from core.utils import format_data_log_message
 import asyncio, ujson
 from sop_chat_service.app_connect.tasks import create_reminder_task
 
@@ -208,7 +208,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             room.completed_date =timezone.now()
             room.status='completed'
             room.save()
-            log_message = format_log_message(room, f'{constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
+            log_message = format_data_log_message(room, f'{constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
 
             log_elk.delay(action=ELK_LOG_ACTION.get('COMPLETED'), room_id=room.room_id)
@@ -220,7 +220,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             room.status='processing'
             room.save()
             
-            log_message = format_log_message(room, f'{constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
+            log_message = format_data_log_message(room, f'{constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
             
             log_elk.delay(action=ELK_LOG_ACTION.get('REOPEN'), room=room.room_id)
@@ -340,7 +340,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         )
         assign.save()
         assign_sz= GetAssignReminderSerializer(assign)
-        log_message = format_log_message(room, assign.title, constants.TRIGGER_REMINDED)
+        log_message = format_data_log_message(room, assign.title, constants.TRIGGER_REMINDED)
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         create_reminder_task.delay(assign.id, int(assign.repeat_time))
@@ -349,11 +349,13 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="deactive-noti")
     def deactive(self, request, *args, **kwargs):
         sz =  DeactiveAssignReminderSerializer(data=request.data)    
-        room,assign,user_header = sz.validate(request,request.data)    
+        room,assign,user_header = sz.validate(request,request.data)
         assign.is_active_reminder = False
         assign.save()
-        assign_sz= GetAssignReminderSerializer(assign)
-        return custom_response(200,"Close Noti Successfully",assign_sz.data)
+        if assign.repeat_time == 0:
+            assign.delete()
+        # assign_sz= GetAssignReminderSerializer(assign)
+        return custom_response(200,"Close Noti Successfully",[])
     
     @action(detail=False, methods=["POST"], url_path="remove-assign-reminder")
     def remove_assign(self, request, *args, **kwargs):

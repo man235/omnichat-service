@@ -64,7 +64,7 @@ class NatsWorker(BaseWorker):
                 await app_context.run_receiver(nats_message)
                 logger.debug(f'RECEIVE DATA -----------------')
             except Exception as e:
-                logger.debug(f'Exception subscribe ----------------- {e}')
+                logger.exception(f'Exception subscribe ----------------- {e}')
         
         async def chat_message_to_corechat(msg):
             try:

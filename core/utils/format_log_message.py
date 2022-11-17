@@ -5,9 +5,9 @@ from django.utils import timezone
 from sop_chat_service.app_connect.models import Room, Message, LogMessage
 from core import constants
 
-def format_log_message(room: Room, message_log: str, type_log: str):
+def format_data_log_message(room: Room, message_log: str, type_log: str):
     _time_now = str(timezone.now())
-    log_message = LogMessageSchema(
+    _log_message = LogMessageSchema(
         log_type = type_log,
         message = message_log,
         room_id = room.room_id,
@@ -37,7 +37,7 @@ def format_log_message(room: Room, message_log: str, type_log: str):
         user_id = [room.user_id, room.admin_room_id] if room.admin_room_id else [room.user_id],
         event = constants.LOG_MESSAGE_ACK,
         is_log_msg = True,
-        log_message = log_message
+        log_message = _log_message
     )
     return log_message.dict()
 
