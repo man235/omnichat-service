@@ -6,11 +6,12 @@ from django.conf import settings
 from celery import shared_task
 from core import constants
 from core.stream.redis_connection import redis_client
+from core.utils.format_elastic_log import format_elk_log
 from core.utils.nats_connect import publish_data_to_nats
 from core.utils.format_log_message import format_log_message_from_celery
 from core.utils.format_message_for_websocket import format_room
 from typing import Dict
-from sop_chat_service.app_connect.models import Room
+from sop_chat_service.app_connect.models import Room, UserApp
 from elasticsearch import Elasticsearch
 
 logger = logging.getLogger(__name__)
@@ -47,31 +48,24 @@ def re_open_room(room_id: str):
     return "Room re_open"
 
 
-@shared_task(name = constants.COLLECT_LIVECHAT_SOCIAL_PROFILE)
-def collect_livechat_social_profile(*args, **kwargs):
-    room_id = kwargs.get('room_id')
-    try:
-        payload = {
-            'type': constants.FCHAT,
-            'page': kwargs.get('live_chat_id'),
-            'ip': kwargs.get('client_ip'),
-            'device': kwargs.get('client_info'),
-            'browser': kwargs.get('client_info'),
-            "room_id": kwargs.get('room_id')
-        }
-        redis_client.set(f'{constants.COLLECT_LIVECHAT_SOCIAL_PROFILE}__{room_id}', ujson.dumps(payload))
-        return payload
-    except Exception as e:
-        return f"Exception Verify information ERROR: {e}"
-
 @shared_task(name="log_elk")
 def log_elk(
-    index_pattern=settings.ELASTIC_JOURNEY_LOGSTASH,
-    doc=None,
+    index_pattern: str=settings.ELASTIC_JOURNEY_LOGSTASH,
+    action: str=None,
+    room_id: str=None,
     *args,
     **kwargs
 ) -> None:
     try:
+        room = Room.objects.filter(room_id=room_id).first()
+        
+        elk_log = format_elk_log(
+            action,
+            room, 
+            room.page_id, 
+            UserApp.objects.filter(external_id=room.external_id).first()
+        )
+        
         # Create the client instance
         es = Elasticsearch(
             hosts=[settings.ELASTIC_SEARCH_URL],
@@ -79,9 +73,9 @@ def log_elk(
         )
 
         # Log into elastic logstash
-        res = es.index(index=index_pattern, document=doc)
+        res = es.index(index=index_pattern, document=elk_log.__dict__)
         
         logger.debug(f' RESULT OF LOG ELASTICSEARCH --------- {res} ------------ ')
     except Exception as e:
         logger.debug(f' FAILED TO LOG ELASTICSEARCH --------- {e} -------------- ')
-        
+       

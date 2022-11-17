@@ -216,7 +216,9 @@ class RoomViewSet(viewsets.ModelViewSet):
                 room, 
                 room.page_id, 
                 UserApp.objects.filter(external_id=room.external_id).first())
-            log_elk.deplay(doc=elk_log)
+
+            log_elk.delay(ELK_LOG_ACTION.get('COMPLETED'), room_id=room.room_id)
+
             msg = "Complete Room Successfully"
             
         else:
@@ -226,13 +228,8 @@ class RoomViewSet(viewsets.ModelViewSet):
             
             log_message = format_log_message(room, f'{constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
-
-            elk_log = format_elk_log(
-                ELK_LOG_ACTION.get('REOPEN'),
-                room, 
-                room.page_id, 
-                UserApp.objects.filter(external_id=room.external_id).first())
-            log_elk.deplay(doc=elk_log)
+            
+            log_elk.delay(ELK_LOG_ACTION.get('REOPEN'), room_id=room.room_id)
 
             msg = "Re-open Room Successfully"
         return custom_response(200,msg,[])

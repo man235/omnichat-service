@@ -14,13 +14,13 @@ ELK_LOG_ACTION = {
 
 
 class ElkCustomer(CustomBaseModel):
-    customer_id: str
+    customer_id: Optional[str]
     name: Optional[str]
     from_page: Optional[str]    # page type: livechat, zalo or facebook
 
 
 class ElkFanpage(CustomBaseModel):
-    fanpage_id: str
+    fanpage_id: Optional[str]
     name: Optional[str]
     
 
@@ -52,13 +52,13 @@ def format_elk_log(
         elk_customer.name = customer.name
     
     doc = ElkLogSchema(
-        action,
-        room.user_id,
-        room.room_id,
-        elk_page,
-        elk_customer,
-        str(timezone.now())
+        action=action,
+        user_id=room.user_id,
+        room_id=room.room_id,
+        fanpage=elk_page,
+        customer=elk_customer,
+        created_at=str(timezone.now())
     )
-    
+
     return doc
     
