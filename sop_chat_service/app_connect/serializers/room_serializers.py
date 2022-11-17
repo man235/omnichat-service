@@ -185,7 +185,7 @@ class SearchMessageSerializer(serializers.Serializer):
     search = serializers.CharField(required=True)
     def validate(self, request, attrs):
         user_header = get_user_from_header(request.headers)
-        room = Room.objects.filter(room_id=attrs.get("room_id"), user_id=user_header).first()
+        room = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),room_id=attrs.get("room_id")).first()
         if not room:
             raise serializers.ValidationError({"room": "Room Invalid"})
         
@@ -194,7 +194,7 @@ class RoomInfoSerializer(serializers.Serializer):
     room_id = serializers.CharField(required=False)
     def validate(self, request, attrs):
         user_header = get_user_from_header(request.headers)
-        room = Room.objects.filter(room_id=attrs.get("room_id"), user_id=user_header).first()
+        room = Room.objects.filter((Q(user_id=user_header) | Q(admin_room_id=user_header)),room_id=attrs.get("room_id")).first()
         if not room:
             raise serializers.ValidationError({"room": "Room Invalid"})
         return room
