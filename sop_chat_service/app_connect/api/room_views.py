@@ -241,6 +241,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         assign_sz = GetAssignReminderSerializer(qs_assign_reminder,many=False)
         qs_label = Label.objects.filter(room_id=room)
         sz_label = LabelSerializer(qs_label,many=True)
+        block_admin = False
+        if room.room_message.all() and room.admin_room_id:
+            block_admin = True
         data = {
             "customer_info": sz_customer.data,
             "assign_reminder": assign_sz.data if assign_sz.data else None,
@@ -248,7 +251,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             "room_info":room_sz.data,
             "fanpage_id": room.page_id.page_id if room.page_id else None,
             "external_id": sz_customer.data.get("external_id"),
-            "block_room": True if user_header == room.admin_room_id else False
+            "block_room": block_admin
         }
         Message.objects.filter(room_id=room).update(is_seen=timezone.now())
         return custom_response(200,"User Info",data)
