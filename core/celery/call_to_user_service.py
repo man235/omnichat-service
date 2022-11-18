@@ -70,8 +70,7 @@ def collect_livechat_social_profile(*args, **kwargs):
 @shared_task(name="log_elk")
 def log_elk(
     index_pattern: str=settings.ELASTIC_JOURNEY_LOGSTASH,
-    action: str=None,
-    room_id: str=None,
+    elk_log: dict=None,
     *args,
     **kwargs
 ) -> None:
@@ -82,11 +81,6 @@ def log_elk(
             basic_auth=(settings.ELASTIC_USER, settings.ELASTIC_PASSWORD),
         )
 
-        elk_log = format_elk_log(
-            action,
-            room_id,
-        )
-        
         # Log into elastic logstash
         res = es.index(index=index_pattern, document=elk_log)
         
