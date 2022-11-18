@@ -1,3 +1,5 @@
+from core.celery.call_to_user_service import log_elk
+from core.utils.format_elastic_log import ELK_LOG_ACTION
 from sop_chat_service.app_connect.models import FanPage, Room, UserApp
 from .api_facebook_app import get_user_info
 from django.utils import timezone
@@ -49,6 +51,9 @@ async def check_room_facebook(data: NatsChatMessage):
         data = await celery_format_data_verify_customer(user_app, new_room)
         celery_task_verify_information.delay(data)
         create_log_time_message.delay(new_room.room_id)
+
+        log_elk.delay(action=ELK_LOG_ACTION.get('HANDLE_MESSAGE'), room_id=new_room.room_id)
+
         return new_room
     elif check_room:
         last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
@@ -60,6 +65,8 @@ async def check_room_facebook(data: NatsChatMessage):
             check_room.completed_date = None
             check_room.status = 'processing'
             check_room.save()
+
+        log_elk.delay(action=ELK_LOG_ACTION.get('CHAT'), room_id=check_room.room_id)
             
         return check_room
 

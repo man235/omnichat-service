@@ -3,11 +3,11 @@ from sop_chat_service.app_connect.models import Room, UserApp
 
 
 ELK_LOG_ACTION = {
-    'CHAT': 'chat',
-    'HANDLE_MESSAGE': 'handle message from customer',
-    'REOPEN': 'reopen',
-    'REMIND': 'remind',
-    'COMPLETED': 'completed'
+    'CHAT': 'CHAT',
+    'HANDLE_MESSAGE': 'HANDLE_MESSAGE',
+    'REOPEN': 'REOPEN',
+    'REMIND': 'REMIND',
+    'COMPLETED': 'COMPLETED'
 }
 
 
