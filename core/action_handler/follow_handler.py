@@ -1,6 +1,6 @@
 # from .base import BaseWebSocketHandler
 from sop_chat_service.zalo.utils.api_suport.api_zalo_caller import get_oa_follower
-from sop_chat_service.app_connect.models import FanPage, UserApp
+from sop_chat_service.app_connect.models import FanPage, Room, UserApp
 from core.schema import NatsChatMessage
 from core.handlers import BaseHandler
 from core import constants
@@ -45,6 +45,11 @@ class ActionFollowHandler(BaseHandler):
                 user_app.phone = None
                 user_app.gender = checked_gender
                 user_app.save()
+
+                # Update the Room's name for redering room list
+                room = Room.objects.filter(external_id=user_app.external_id).first()
+                room.name = user_app.name
+                room.save()
             else:
                 logger.debug(f'FAILED TO GET ZALO OA`S FOLLOWER USER ------------------------- ')
         else:
