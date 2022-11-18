@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 def celery_task_verify_information(_data: Dict, *args, **kwargs):
     try:
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Auth-User-Id': _data.get('X-Auth-User-Id')
         }
         url = settings.CUSTOMER_SERVICE_URL + settings.API_VERIFY_INFORMATION
         response = requests.post(url=url, headers=headers, data=ujson.dumps(_data))
