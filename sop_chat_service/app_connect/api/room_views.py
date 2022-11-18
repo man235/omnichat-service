@@ -241,8 +241,10 @@ class RoomViewSet(viewsets.ModelViewSet):
         assign_sz = GetAssignReminderSerializer(qs_assign_reminder,many=False)
         qs_label = Label.objects.filter(room_id=room)
         sz_label = LabelSerializer(qs_label,many=True)
+        msg_room = Message.objects.filter(room_id=room, sender_id=room.admin_room_id).first()
         block_admin = False
-        if room.room_message.all() and room.admin_room_id:
+        # print(" ********************************************** ")
+        if msg_room:
             block_admin = True
         data = {
             "customer_info": sz_customer.data,
