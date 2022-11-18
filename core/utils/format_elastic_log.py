@@ -7,12 +7,13 @@ ELK_LOG_ACTION = {
     'HANDLE_MESSAGE': 'HANDLE_MESSAGE',
     'REOPEN': 'REOPEN',
     'REMIND': 'REMIND',
-    'COMPLETED': 'COMPLETED'
+    'COMPLETED': 'COMPLETED',
+    'CUSTOMER_REOPEN': 'CUSTOMER_REOPEN'
 }
 
 
 def format_elk_log(
-    action: str,
+    action: str=None,
     room_id: str=None,
 ) -> dict:
     room_qs = Room.objects.filter(room_id=room_id).first()

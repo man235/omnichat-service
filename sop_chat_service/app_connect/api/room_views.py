@@ -197,7 +197,8 @@ class RoomViewSet(viewsets.ModelViewSet):
             log_message = format_data_log_message(room, f'{constants.LOG_COMPLETED}', constants.TRIGGER_COMPLETED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
 
-            log_elk.delay(action=ELK_LOG_ACTION.get('COMPLETED'), room_id=room.room_id)
+            elk_log = format_elk_log(ELK_LOG_ACTION.get('COMPLETED'), room.room_id)
+            log_elk.delay(elk_log=elk_log)
 
             msg = "Complete Room Successfully"
             
@@ -207,7 +208,9 @@ class RoomViewSet(viewsets.ModelViewSet):
             room.save()
             log_message = format_data_log_message(room, f'{constants.LOG_REOPENED}', constants.TRIGGER_REOPENED)
             asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
-            log_elk.delay(action=ELK_LOG_ACTION.get('REOPEN'), room_id=room.room_id)
+            
+            elk_log = format_elk_log(ELK_LOG_ACTION.get('REOPEN'), room.room_id)
+            log_elk.delay(elk_log=elk_log)
 
             msg = "Re-open Room Successfully"
         return custom_response(200,msg,[])
@@ -328,7 +331,10 @@ class RoomViewSet(viewsets.ModelViewSet):
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         create_reminder_task.delay(assign.id, int(assign.repeat_time))
-        log_elk.delay(action=ELK_LOG_ACTION.get('REMIND'), room_id=room.room_id)
+
+        elk_log = format_elk_log(ELK_LOG_ACTION.get('REMIND'), room.room_id)
+        log_elk.delay(elk_log=elk_log)
+
         return custom_response(200,"Assign Reminder Successfully",assign_sz.data)
     
     @action(detail=False, methods=["POST"], url_path="deactive-noti")

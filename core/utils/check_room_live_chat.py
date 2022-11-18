@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 import imp
 import uuid
+from core.celery.call_to_user_service import log_elk
+from core.utils.format_elastic_log import ELK_LOG_ACTION, format_elk_log
 from sop_chat_service.app_connect.models import Message, Room
 from sop_chat_service.live_chat.models import LiveChat
 from django.utils import timezone
@@ -50,6 +52,10 @@ async def check_room_live_chat(data: NatsChatMessage):
         )
         new_room.save()
         create_log_time_message.delay(new_room.room_id)
+
+        elk_log = format_elk_log(ELK_LOG_ACTION.get('CHAT'), new_room.room_id)
+        log_elk.delay(elk_log=elk_log)
+
         return new_room
     else:
         return check_room
