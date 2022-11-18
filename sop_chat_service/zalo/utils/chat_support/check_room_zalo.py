@@ -1,4 +1,6 @@
 from typing import Any
+from core.celery.call_to_user_service import log_elk
+from core.utils.format_elastic_log import ELK_LOG_ACTION
 from sop_chat_service.app_connect.models import FanPage, Room, UserApp
 from django.utils import timezone
 from asgiref.sync import sync_to_async
@@ -104,6 +106,8 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         celery_task_verify_information.delay(data)
         create_log_time_message.delay(new_room_user.room_id)
 
+        log_elk.delay(action=ELK_LOG_ACTION.get('HANDLE_MESSAGE'), room_id=new_room_user.room_id)
+
         return new_room_user
     else:
         last_msg = redis_client.hget(f'{constants.REDIS_LAST_MESSAGE_ROOM}{check_room.room_id}', constants.LAST_MESSAGE)
@@ -115,4 +119,7 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
             check_room.status = constants.PROCESSING
             check_room.save()
             re_open_room.delay(check_room.room_id)
+
+        log_elk.delay(action=ELK_LOG_ACTION.get('CHAT'), room_id=check_room.room_id)
+
         return check_room

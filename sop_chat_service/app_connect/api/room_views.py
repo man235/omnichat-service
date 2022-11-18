@@ -327,6 +327,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{room.room_id}"
         asyncio.run(connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode()))
         create_reminder_task.delay(assign.id, int(assign.repeat_time))
+        log_elk.delay(action=ELK_LOG_ACTION.get('REMIND'), room_id=room.room_id)
         return custom_response(200,"Assign Reminder Successfully",assign_sz.data)
     
     @action(detail=False, methods=["POST"], url_path="deactive-noti")
