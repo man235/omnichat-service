@@ -100,7 +100,7 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         )
         if check_fanpage.setting_chat != constants.SETTING_CHAT_ONLY_ME:
             subject_publish = f"{constants.CHAT_SERVICE_TO_CORECHAT_PUBLISH}.{new_room_user.room_id}"
-            log_message = format_data_log_message(new_room_user, f'{new_room_user.admin_room_id} {constants.LOG_FORWARDED} {new_room_user.user_id}', constants.TRIGGER_COMPLETED)
+            log_message = format_data_log_message(new_room_user, f'{constants.LOG_FORWARDED}', constants.TRIGGER_FORWARDED)
             await connect_nats_client_publish_websocket(subject_publish, ujson.dumps(log_message).encode())
         data = await celery_format_data_verify_customer(user_app, new_room_user)
         celery_task_verify_information.delay(data)
