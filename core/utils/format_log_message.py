@@ -11,8 +11,8 @@ def format_data_log_message(room: Room, message_log: str, type_log: str):
         log_type = type_log,
         message = message_log,
         room_id = room.room_id,
-        from_user = room.user_id,
-        to_user = room.external_id,
+        from_user = room.page_id.user_id if room.type == 'zalo' else room.user_id,
+        to_user = room.external_id if room.type == 'facebook' else room.user_id,
         created_at = _time_now,
     )
 
