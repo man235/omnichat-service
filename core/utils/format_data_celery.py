@@ -3,10 +3,11 @@ from core import constants
 
 
 async def celery_format_data_verify_customer(user_app: UserApp, room: Room):
+    fanpage_url = ""
     if room.type == constants.FACEBOOK:
         fanpage_url = f"https://www.facebook.com/profile.php?id={room.page_id.page_id}"
     else:
-        fanpage_url = ""
+        fanpage_url = "https://developers.zalo.me/"
     data = {
         'name': user_app.name,
         'email': user_app.email if user_app.email else "",
