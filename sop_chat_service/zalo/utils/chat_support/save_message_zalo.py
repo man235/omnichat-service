@@ -138,11 +138,12 @@ def store_sending_message_database_zalo(
             sub_url = f"api/live_chat/chat_media/get_chat_media?name={constants.ZALO_ROOM_MINIO}_{room.room_id}/"
             data_upload_file = upload_file_to_minio(attachment, room.room_id, constants.ZALO_ROOM_MINIO)    # may be 70 second timeout
             new_attachment = Attachment.objects.create(
-                mid = message,
+                mid=message,
                 file=data_upload_file,
                 type=attachment_type,
                 name=attachment.name,
                 url=str(domain+sub_url)+str(data_upload_file)
+                size=attachment.size
             )
             logger.debug(f"SENDED ATTACHMENTS {new_attachment.name} ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
             return new_attachment
