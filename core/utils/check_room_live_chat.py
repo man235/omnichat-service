@@ -53,9 +53,6 @@ async def check_room_live_chat(data: NatsChatMessage):
         new_room.save()
         create_log_time_message.delay(new_room.room_id)
 
-        elk_log = format_elk_log(ELK_LOG_ACTION.get('CHAT'), new_room.room_id)
-        log_elk.delay(elk_log=elk_log)
-
         return new_room
     else:
         return check_room
