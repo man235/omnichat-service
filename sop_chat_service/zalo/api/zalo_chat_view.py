@@ -178,7 +178,7 @@ class ZaloChatViewSet(viewsets.ModelViewSet):
                                 "type": stored_attachment.type,
                                 "name": stored_attachment.name,
                                 "url": stored_attachment.url,
-                                "size": stored_attachment.size,
+                                "size": str(stored_attachment.size),
                             }
                         else:   # Failed to upload minio
                             socket_attachment = None
