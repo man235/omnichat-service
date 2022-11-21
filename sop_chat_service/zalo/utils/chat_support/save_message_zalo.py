@@ -142,7 +142,8 @@ def store_sending_message_database_zalo(
                 file=data_upload_file,
                 type=attachment_type,
                 name=attachment.name,
-                url=str(domain+sub_url)+str(data_upload_file)
+                url=str(domain+sub_url)+str(data_upload_file),
+                size=attachment.size
             )
             logger.debug(f"SENDED ATTACHMENTS {new_attachment.name} ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ")
             return new_attachment
