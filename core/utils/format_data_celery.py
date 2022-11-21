@@ -20,6 +20,6 @@ async def celery_format_data_verify_customer(user_app: UserApp, room: Room):
         'fanpage_url': fanpage_url,
         'approach_date': str(room.created_at.isoformat()),
         "room_id": room.room_id,
-        "X-Auth-User-Id": room.page_id.user_id
+        "X-Auth-User-Id": room.user_id
     }
     return data

@@ -96,7 +96,7 @@ async def storage_log_message(room: Room, message_log: FormatSendMessage):
         log_type = message_log.log_message.log_type,
         message = message_log.text,
         room_id = room.room_id,
-        from_user = room.user_id,
-        to_user = room.external_id
+        from_user = message_log.log_message.from_user,
+        to_user = message_log.log_message.to_user
     )
     return
