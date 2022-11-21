@@ -2,11 +2,11 @@
 from datetime import datetime, timedelta
 import json
 import time
-import uuid
 import ujson
 from django.conf import settings
 from sop_chat_service.facebook.utils import custom_response
 from sop_chat_service.utils.request_headers import get_email_from_header, get_user_from_header
+import uuid
 
 from ..utils import   saleman_send_message_to_anonymous
 from ...app_connect.models import Attachment, Message, Room
@@ -37,8 +37,8 @@ class LiveChatViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         user_header = get_user_from_header(request.headers)
         qs = LiveChat.objects.filter(user_id = user_header).first()
-        sz = LiveChatSerializer(qs, many=False)
-        return custom_response(200,"Get Config Live Chat Successfully",sz.data)
+        sz = LiveChatSerializer(qs, many=False) 
+        return custom_response(200,"Get Config Live Chat Successfully",sz.data if qs else None)
     
 
     def create(self, request, *args, **kwargs):

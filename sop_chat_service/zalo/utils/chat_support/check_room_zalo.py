@@ -1,6 +1,6 @@
 from typing import Any
 from core.celery.call_to_user_service import log_elk
-from core.utils.format_elastic_log import ELK_LOG_ACTION
+from core.utils.format_elastic_log import ELK_LOG_ACTION, format_elk_log
 from sop_chat_service.app_connect.models import FanPage, Room, UserApp
 from django.utils import timezone
 from asgiref.sync import sync_to_async
@@ -106,7 +106,8 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         celery_task_verify_information.delay(data)
         create_log_time_message.delay(new_room_user.room_id)
 
-        log_elk.delay(action=ELK_LOG_ACTION.get('HANDLE_MESSAGE'), room_id=new_room_user.room_id)
+        elk_log = format_elk_log(ELK_LOG_ACTION.get('HANDLE_MESSAGE'), new_room_user.room_id)
+        log_elk.delay(elk_log=elk_log)
 
         return new_room_user
     else:
@@ -114,12 +115,16 @@ async def distribute_new_room_zalo(data: NatsChatMessage) -> Room:
         if last_msg:
             if int(time.time() * 1000) - int(last_msg) >= 86400000:
                 create_log_time_message.delay(check_room.room_id)
+
+                elk_log = format_elk_log(ELK_LOG_ACTION.get('CHAT'), check_room.room_id)
+                log_elk.delay(elk_log=elk_log)
         if check_room.completed_date:
             check_room.completed_date = None
             check_room.status = constants.PROCESSING
             check_room.save()
             re_open_room.delay(check_room.room_id)
 
-        log_elk.delay(action=ELK_LOG_ACTION.get('CHAT'), room_id=check_room.room_id)
+            elk_log = format_elk_log(ELK_LOG_ACTION.get('CUSTOMER_REOPEN'), check_room.room_id)
+            log_elk.delay(elk_log=elk_log)
 
         return check_room
